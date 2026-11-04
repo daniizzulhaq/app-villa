@@ -1,0 +1,1 @@
+@include('errors.layout', ['code' => 419, 'icon' => 'bi-hourglass-split', 'heading' => __('Sesi telah berakhir'), 'text' => __('Halaman terlalu lama terbuka. Muat ulang halaman lalu coba kirim lagi.')])

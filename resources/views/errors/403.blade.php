@@ -1,0 +1,1 @@
+@include('errors.layout', ['code' => 403, 'icon' => 'bi-shield-lock', 'heading' => __('Akses tidak diizinkan'), 'text' => __('Halaman atau data ini tidak termasuk hak akses akun Anda. Jika menurut Anda ini keliru, hubungi Manager.')])

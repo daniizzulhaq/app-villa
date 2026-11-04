@@ -1,0 +1,1 @@
+@include('errors.layout', ['code' => 500, 'icon' => 'bi-exclamation-triangle', 'heading' => __('Terjadi kesalahan'), 'text' => __('Maaf, ada gangguan di sistem. Data Anda aman. Coba lagi beberapa saat lagi.')])
