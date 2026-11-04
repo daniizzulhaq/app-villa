@@ -1,0 +1,101 @@
+{
+  "_index-CVpYm9AH.js": {
+    "file": "assets/index-CVpYm9AH.js",
+    "name": "index",
+    "isDynamicEntry": true
+  },
+  "node_modules/@fontsource-variable/inter/files/inter-cyrillic-ext-wght-normal.woff2": {
+    "file": "assets/inter-cyrillic-ext-wght-normal-BOeWTOD4.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-cyrillic-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/inter/files/inter-cyrillic-wght-normal.woff2": {
+    "file": "assets/inter-cyrillic-wght-normal-DqGufNeO.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-cyrillic-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/inter/files/inter-greek-ext-wght-normal.woff2": {
+    "file": "assets/inter-greek-ext-wght-normal-DlzME5K_.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-greek-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/inter/files/inter-greek-wght-normal.woff2": {
+    "file": "assets/inter-greek-wght-normal-CkhJZR-_.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-greek-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2": {
+    "file": "assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2": {
+    "file": "assets/inter-latin-wght-normal-Dx4kXJAl.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/inter/files/inter-vietnamese-wght-normal.woff2": {
+    "file": "assets/inter-vietnamese-wght-normal-CBcvBZtf.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-vietnamese-wght-normal.woff2"
+  },
+  "node_modules/@fullcalendar/core/locales-all.js": {
+    "file": "assets/locales-all-BJ0v4EYa.js",
+    "name": "locales-all",
+    "src": "node_modules/@fullcalendar/core/locales-all.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/@fullcalendar/daygrid/index.js": {
+    "file": "assets/index-DGwdfOKj.js",
+    "name": "index",
+    "src": "node_modules/@fullcalendar/daygrid/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_index-CVpYm9AH.js"
+    ]
+  },
+  "node_modules/@fullcalendar/interaction/index.js": {
+    "file": "assets/index-DZan4W9I.js",
+    "name": "index",
+    "src": "node_modules/@fullcalendar/interaction/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_index-CVpYm9AH.js"
+    ]
+  },
+  "node_modules/@fullcalendar/list/index.js": {
+    "file": "assets/index-DrNIhznU.js",
+    "name": "index",
+    "src": "node_modules/@fullcalendar/list/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_index-CVpYm9AH.js"
+    ]
+  },
+  "node_modules/apexcharts/dist/apexcharts.esm.js": {
+    "file": "assets/apexcharts.esm-DQ0xCbn3.js",
+    "name": "apexcharts.esm",
+    "src": "node_modules/apexcharts/dist/apexcharts.esm.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": {
+    "file": "assets/bootstrap-icons-BHUGvtHM.woff",
+    "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff"
+  },
+  "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2": {
+    "file": "assets/bootstrap-icons-DJdhg9lH.woff2",
+    "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-D5kpes5T.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-CjextC_Y.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "_index-CVpYm9AH.js",
+      "node_modules/@fullcalendar/daygrid/index.js",
+      "node_modules/@fullcalendar/list/index.js",
+      "node_modules/@fullcalendar/interaction/index.js",
+      "node_modules/@fullcalendar/core/locales-all.js",
+      "node_modules/apexcharts/dist/apexcharts.esm.js"
+    ]
+  }
+}
