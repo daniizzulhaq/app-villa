@@ -1,13 +1,14 @@
 <x-layouts.app :title="__('Villa')">
-    <x-ui.page-header :title="__('Villa')" :subtitle="__('Kelola data villa, owner, management fee, link iCal, dan penugasan staff.')">
+    <x-ui.page-header :title="__('Koleksi villa')" :subtitle="__('Setiap properti istimewa, dikelola dengan perhatian yang sama.')">
         <x-slot:actions>
             @can('create', \App\Models\Villa::class)<a href="{{ route('villas.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ __('Tambah Villa') }}</a>@endcan
         </x-slot:actions>
     </x-ui.page-header>
 
-    <x-ui.card flush>
+    <div class="pm-collection-intro"><p>{{ __('Ruang istimewa. Potensi tak terbatas.') }}<small>{{ __('Kelola data villa, owner, management fee, link iCal, dan penugasan staff.') }}</small></p><i class="bi bi-houses" aria-hidden="true"></i></div>
+    <div x-data="{ view: 'grid' }">
         {{-- Filter selalu terlihat di atas daftar --}}
-        <form method="GET" class="pm-toolbar" role="search" data-no-lock>
+        <form method="GET" class="pm-toolbar pm-collection-toolbar" role="search" data-no-lock>
             <div class="pm-search">
                 <i class="bi bi-search" aria-hidden="true"></i>
                 <label for="q" class="visually-hidden">{{ __('Cari villa') }}</label>
@@ -43,7 +44,19 @@
                 </x-ui.empty-state>
             @endif
         @else
-            <div class="table-responsive">
+            <div class="pm-section-heading">
+                <div><h2>{{ __('Villa Anda') }} <span class="pm-badge pm-badge--neutral pm-badge--plain ms-1">{{ $villas->total() }}</span></h2><p>{{ __('Seluruh properti dalam satu pandangan.') }}</p></div>
+                <div class="pm-view-toggle" role="group" aria-label="{{ __('Tampilan villa') }}">
+                    <button type="button" @click="view = 'grid'" :class="{ active: view === 'grid' }" :aria-pressed="view === 'grid'" aria-label="{{ __('Tampilan kartu') }}"><i class="bi bi-grid" aria-hidden="true"></i></button>
+                    <button type="button" @click="view = 'list'" :class="{ active: view === 'list' }" :aria-pressed="view === 'list'" aria-label="{{ __('Tampilan tabel') }}"><i class="bi bi-list-ul" aria-hidden="true"></i></button>
+                </div>
+            </div>
+            <div class="pm-villa-grid pt-0" x-show="view === 'grid'">
+                @foreach ($villas as $v)
+                    <x-ui.villa-card :villa="$v" />
+                @endforeach
+            </div>
+            <div class="pm-card table-responsive" x-show="view === 'list'" x-cloak>
                 <table class="table pm-table pm-table--stack">
                     <thead>
                     <tr>
@@ -114,11 +127,11 @@
                 </table>
             </div>
             @if ($villas->hasPages())
-                <div class="p-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="pm-pagination">
                     <span class="fs-sm text-muted">{{ __('Menampilkan :firstitem–:lastitem dari :total villa', ['firstitem' => $villas->firstItem(), 'lastitem' => $villas->lastItem(), 'total' => $villas->total()]) }}</span>
                     {{ $villas->onEachSide(1)->links() }}
                 </div>
             @endif
         @endif
-    </x-ui.card>
+    </div>
 </x-layouts.app>

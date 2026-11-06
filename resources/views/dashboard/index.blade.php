@@ -7,26 +7,40 @@
         $isManager = $user->isManager();
     @endphp
 
-    <x-ui.page-header :title="__('Halo, :name', ['name' => strtok($user->name, ' ')])" :subtitle="__('Ringkasan keuangan :period', ['period' => $periodLabel]).' · '.($filters['villa'] ? $villas[$filters['villa']] : __('semua villa'))">
+    <x-ui.page-header :title="__('Halo, :name', ['name' => strtok($user->name, ' ')]).' 👋'" :subtitle="__('Mari lihat perkembangan villa Anda hari ini.')">
         <x-slot:actions>
             @if ($isManager)
-                <a href="{{ route('incomes.create') }}" class="btn btn-light"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ __('Tambah Pemasukan') }}</a>
-                <a href="{{ route('bookings.create') }}" class="btn btn-light d-none d-xl-inline-flex"><i class="bi bi-calendar-plus" aria-hidden="true"></i> {{ __('Tambah Reservasi') }}</a>
+                <a href="{{ route('bookings.create') }}" class="btn btn-light"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ __('Tambah Reservasi') }}</a>
             @endif
             <a href="{{ route('reports.monthly', array_filter(['villa' => $filters['villa'], 'year' => $filters['year'], 'month' => $filters['month'] ?: null])) }}" class="btn btn-primary"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> {{ __('Lihat Laporan') }}</a>
         </x-slot:actions>
     </x-ui.page-header>
 
+    <section class="pm-dashboard-hero" aria-label="{{ __('Selamat datang di PropertyMe') }}" style="--pm-villa-image: url('{{ asset('images/villa-retreat.jpg') }}')">
+        <div class="pm-dashboard-hero__content">
+            <span class="pm-eyebrow"><span></span> {{ __('Villa Anda. Semua terarah.') }}</span>
+            <h2>{{ __('Kelola dengan tenang,') }}<br><em>{{ __('bertumbuh lebih jauh.') }}</em></h2>
+            <p>{{ __('Dari reservasi hingga keuangan, setiap detail villa Anda terhubung dalam satu ruang.') }}</p>
+            <a href="{{ route('bookings.calendar', array_filter(['villa' => $filters['villa']])) }}" class="pm-dashboard-hero__link">{{ __('Jelajahi kalender reservasi') }} <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+        </div>
+        <span class="pm-dashboard-hero__date"><i class="bi bi-calendar4" aria-hidden="true"></i>{{ today()->translatedFormat('l, d F Y') }}</span>
+    </section>
+
+    <div class="pm-section-heading">
+        <div><h2>{{ __('Ringkasan keuangan') }}</h2><p>{{ $periodLabel }} · {{ $filters['villa'] ? $villas[$filters['villa']] : __('Semua villa') }}</p></div>
+        <span><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>{{ __('Berdasarkan transaksi tercatat') }}</span>
+    </div>
     {{-- Filter: semua angka & grafik ikut berubah --}}
-    <form method="GET" class="pm-card pm-toolbar mb-3" data-no-lock aria-label="{{ __('Filter dashboard') }}">
+    <form method="GET" class="pm-toolbar pm-overview-filters" data-no-lock aria-label="{{ __('Filter dashboard') }}">
+        <span class="pm-overview-filters__label"><i class="bi bi-sliders2" aria-hidden="true"></i>{{ __('Sesuaikan tampilan') }}</span>
         <select name="month" class="form-select" aria-label="{{ __('Bulan') }}" onchange="this.form.submit()">
             <option value="0" @selected($filters['month'] === 0)>{{ __('Setahun penuh') }}</option>
             @for ($m = 1; $m <= 12; $m++)<option value="{{ $m }}" @selected($filters['month'] === $m)>{{ \Illuminate\Support\Carbon::create(null, $m, 1)->translatedFormat('F') }}</option>@endfor
         </select>
-        <select name="year" class="form-select" aria-label="{{ __('Tahun') }}" onchange="this.form.submit()" style="flex: 0 1 110px">
+        <select name="year" class="form-select" aria-label="{{ __('Tahun') }}" onchange="this.form.submit()">
             @for ($y = today()->year + 1; $y >= today()->year - 5; $y--)<option value="{{ $y }}" @selected($filters['year'] === $y)>{{ $y }}</option>@endfor
         </select>
-        <select name="villa" class="form-select" aria-label="{{ __('Villa') }}" onchange="this.form.submit()" style="flex: 1 1 200px">
+        <select name="villa" class="form-select" aria-label="{{ __('Villa') }}" onchange="this.form.submit()">
             <option value="">{{ __('Semua villa') }}</option>
             @foreach ($villas as $id => $n)<option value="{{ $id }}" @selected($filters['villa'] === $id)>{{ $n }}</option>@endforeach
         </select>
@@ -43,25 +57,50 @@
     @endif
 
     {{-- KPI: Net Profit paling menonjol --}}
-    <div class="row g-3 mb-3">
-        <div class="col-lg-4">
-            <x-ui.stat hero :label="__('Total net profit')" :value="Rupiah::format($s->netProfit)" :tone="$s->isLoss() ? 'negative' : 'positive'" icon="bi-trophy"
+    <div class="row g-3">
+        <div class="col-6 col-xl-3">
+            <x-ui.stat hero :label="__('Total net profit')" :value="Rupiah::format($s->netProfit)" :compact-value="Rupiah::short($s->netProfit)" :tone="$s->isLoss() ? 'negative' : 'positive'" icon="bi-trophy"
                        :hint="($p = $g($s->netProfit, $previous->netProfit)) !== null ? ($p >= 0 ? '▲ ' : '▼ ').number_format(abs($p), 1, ',', '.').'% dari periode sebelumnya' : __('Revenue after fee − pengeluaran valid')" />
         </div>
-        <div class="col-lg-8">
-            <div class="row g-3 h-100">
-                <div class="col-6 col-md-4"><x-ui.stat :label="__('Total gross income')" :value="Rupiah::short($s->gross)" :hint="Rupiah::format($s->gross)" icon="bi-cash-stack" /></div>
-                <div class="col-6 col-md-4"><x-ui.stat :label="__('Total management fee')" :value="Rupiah::short($s->managementFee)" :hint="Rupiah::format($s->managementFee)" icon="bi-percent" icon-tone="info" /></div>
-                <div class="col-6 col-md-4"><x-ui.stat :label="__('Total pengeluaran')" :value="Rupiah::short($s->expenses)" :hint="__(':count nota valid', ['count' => $s->expenseCount])" icon="bi-receipt" icon-tone="warning" /></div>
-                <div class="col-6 col-md-4"><x-ui.stat :label="__('Net profit margin')" :value="$s->marginLabel()" :tone="$s->margin() === null ? null : ($s->isLoss() ? 'negative' : 'positive')" :hint="__('Net profit ÷ gross')" icon="bi-pie-chart" icon-tone="success" /></div>
-                <div class="col-6 col-md-4"><x-ui.stat :label="__('Villa aktif')" :value="$activeVillas" icon="bi-houses" /></div>
-                <div class="col-6 col-md-4"><x-ui.stat :label="__('Net booking revenue')" :value="Rupiah::short($s->netRevenue)" :hint="__('Setelah komisi & potongan')" icon="bi-wallet2" /></div>
-            </div>
+        <div class="col-6 col-xl-3"><x-ui.stat :label="__('Total gross income')" :value="Rupiah::short($s->gross)" :hint="Rupiah::format($s->gross)" icon="bi-arrow-down-left" icon-tone="success" /></div>
+        <div class="col-6 col-xl-3"><x-ui.stat :label="__('Total pengeluaran')" :value="Rupiah::short($s->expenses)" :hint="__(':count nota valid', ['count' => $s->expenseCount])" icon="bi-arrow-up-right" icon-tone="warning" /></div>
+        <div class="col-6 col-xl-3"><x-ui.stat :label="__('Total management fee')" :value="Rupiah::short($s->managementFee)" :hint="Rupiah::format($s->managementFee)" icon="bi-percent" /></div>
+    </div>
+    <div class="pm-metrics-strip">
+        <div><i class="bi bi-houses" aria-hidden="true"></i><span><small>{{ __('Villa aktif') }}</small><strong>{{ $activeVillas }} {{ __('villa') }}</strong></span></div>
+        <div><i class="bi bi-pie-chart" aria-hidden="true"></i><span><small>{{ __('Net profit margin') }}</small><strong @class(['text-negative' => $s->isLoss()])>{{ $s->marginLabel() }}</strong></span></div>
+        <div><i class="bi bi-wallet2" aria-hidden="true"></i><span><small>{{ __('Net booking revenue') }}</small><strong>{{ Rupiah::short($s->netRevenue) }}</strong></span></div>
+    </div>
+
+    {{-- Grafik --}}
+    <div class="row g-3 mb-3">
+        <div class="col-xl-8">
+            <x-ui.card :title="__('Performa keuangan')" :subtitle="$filters['month'] ? __('6 bulan terakhir hingga :period', ['period' => $periodLabel]) : __('Per bulan, :period', ['period' => $periodLabel])">
+                <div x-data="chart({ type: 'bar', height: 320, labels: @js($series->pluck('label')->values()), series: [
+                        { name: @js(__('Gross income')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->gross))->values()) },
+                        { name: @js(__('Management fee')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->managementFee))->values()) },
+                        { name: @js(__('Pengeluaran')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->expenses))->values()) },
+                        { name: @js(__('Net profit')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->netProfit))->values()) } ],
+                        colors: ['#aac29b', '#c2a572', '#d9c5ab', '#285b49'] })">
+                    <div x-show="loading"><x-ui.skeleton height="300px" /></div>
+                    <x-ui.empty-state x-show="empty" x-cloak :title="__('Belum ada transaksi')" :text="__('Grafik muncul setelah pemasukan atau pengeluaran tercatat.')" />
+                    <div x-ref="chart"></div>
+                </div>
+            </x-ui.card>
+        </div>
+        <div class="col-xl-4 d-grid gap-3">
+            <x-ui.card :title="__('Pemasukan per platform')">
+                <div x-data="chart({ type: 'donut', height: 320, labels: @js($byPlatform->pluck('name')), series: @js($byPlatform->map(fn ($p) => F::toFloat($p->gross))), colors: @js($byPlatform->pluck('color')) })">
+                    <div x-show="loading"><x-ui.skeleton height="210px" /></div>
+                    <p x-show="empty" x-cloak class="text-muted fs-sm text-center py-4 mb-0">{{ __('Belum ada pemasukan.') }}</p>
+                    <div x-ref="chart"></div>
+                </div>
+            </x-ui.card>
         </div>
     </div>
 
     @if ($isManager)
-        {{-- Widget kerja Manager --}}
+        <div class="pm-section-heading"><div><h2>{{ __('Operasional hari ini') }}</h2><p>{{ __('Detail kecil untuk pelayanan yang lebih baik.') }}</p></div></div>
         <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <x-ui.card :title="__('Nota menunggu pemeriksaan')" flush>
@@ -96,33 +135,6 @@
             </div>
         </div>
     @endif
-
-    {{-- Grafik --}}
-    <div class="row g-3 mb-3">
-        <div class="col-xl-8">
-            <x-ui.card :title="__('Pemasukan vs management fee vs pengeluaran vs laba')" :subtitle="$filters['month'] ? __('6 bulan terakhir hingga :period', ['period' => $periodLabel]) : __('Per bulan, :period', ['period' => $periodLabel])">
-                <div x-data="chart({ type: 'bar', height: 320, labels: @js($series->pluck('label')->values()), series: [
-                        { name: @js(__('Gross income')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->gross))->values()) },
-                        { name: @js(__('Management fee')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->managementFee))->values()) },
-                        { name: @js(__('Pengeluaran')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->expenses))->values()) },
-                        { name: @js(__('Net profit')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->netProfit))->values()) } ],
-                        colors: ['#2F5FD0', '#F0A30A', '#B42318', '#157F3D'] })">
-                    <div x-show="loading"><x-ui.skeleton height="300px" /></div>
-                    <x-ui.empty-state x-show="empty" x-cloak :title="__('Belum ada transaksi')" :text="__('Grafik muncul setelah pemasukan atau pengeluaran tercatat.')" />
-                    <div x-ref="chart"></div>
-                </div>
-            </x-ui.card>
-        </div>
-        <div class="col-xl-4 d-grid gap-3">
-            <x-ui.card :title="__('Pemasukan per platform')">
-                <div x-data="chart({ type: 'donut', height: 230, labels: @js($byPlatform->pluck('name')), series: @js($byPlatform->map(fn ($p) => F::toFloat($p->gross))), colors: @js($byPlatform->pluck('color')) })">
-                    <div x-show="loading"><x-ui.skeleton height="210px" /></div>
-                    <p x-show="empty" x-cloak class="text-muted fs-sm text-center py-4 mb-0">{{ __('Belum ada pemasukan.') }}</p>
-                    <div x-ref="chart"></div>
-                </div>
-            </x-ui.card>
-        </div>
-    </div>
 
     <div class="row g-3">
         <div class="col-xl-4">

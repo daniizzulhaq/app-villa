@@ -14,10 +14,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#1d3b30">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ? $title.' · ' : '' }}{{ config('app.name') }}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232f5fd0'/><text x='16' y='22' font-family='Arial' font-size='15' font-weight='800' text-anchor='middle' fill='white'>PM</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/propertyme-mark.svg') }}">
     @include('layouts.partials.i18n')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
@@ -28,10 +28,12 @@
 {{-- ============ Sidebar (desktop) ============ --}}
 <aside class="pm-sidebar" aria-label="{{ __('Menu utama') }}">
     <a href="{{ $user->homeUrl() }}" class="pm-brand">
-        <span class="pm-brand__mark" aria-hidden="true">PM</span>
-        <span class="pm-brand__name">PropertyMe<span class="pm-brand__sub">Villa Financial Management</span></span>
+        <x-ui.brand-mark />
+        <span class="pm-brand__name">PropertyMe<span class="pm-brand__sub">VILLA MANAGEMENT</span></span>
     </a>
+    <div class="pm-workspace"><span class="pm-workspace__icon"><i class="bi bi-buildings" aria-hidden="true"></i></span><span><strong>{{ __('Ruang kerja villa') }}</strong><small>{{ __('Operasional & keuangan') }}</small></span></div>
     @include('layouts.partials.nav-list', ['groups' => $sidebar])
+    <a class="pm-sidebar__note" href="{{ route('profile.edit') }}"><i class="bi bi-person-gear" aria-hidden="true"></i><span>{{ __('Ruang kerja Anda') }}<small>{{ __('Kelola profil & preferensi') }}</small></span><i class="bi bi-arrow-up-right ms-auto" aria-hidden="true"></i></a>
     <div class="pm-sidebar__user">
         <x-ui.avatar :user="$user" />
         <div class="min-w-0 flex-grow-1">
@@ -51,9 +53,10 @@
     {{-- ============ Top bar ============ --}}
     <header class="pm-topbar">
         <a href="{{ $user->homeUrl() }}" class="pm-brand p-0 d-lg-none" aria-label="{{ __('Beranda PropertyMe') }}">
-            <span class="pm-brand__mark" aria-hidden="true">PM</span>
+            <x-ui.brand-mark />
         </a>
-        <h1 class="pm-topbar__title d-lg-none">{{ $title ?? config('app.name') }}</h1>
+        <span class="pm-topbar__title d-lg-none">{{ $title ?? config('app.name') }}</span>
+        <div class="pm-breadcrumb d-none d-xl-flex" aria-label="{{ __('Lokasi halaman') }}"><i class="bi bi-house-door" aria-hidden="true"></i><span>/</span><strong>{{ $title ?? __('Dashboard') }}</strong></div>
 
         {{-- Pencarian global (desktop: kolom; HP: ikon). Tekan "/" untuk fokus. --}}
         <form method="GET" action="{{ route('search') }}" class="pm-topsearch d-none d-lg-block" role="search" data-no-lock
@@ -121,6 +124,7 @@
     <main id="main" class="pm-content" tabindex="-1">
         {{ $slot }}
     </main>
+    <footer class="pm-footer"><span>© {{ date('Y') }} PropertyMe</span><span>{{ __('Dikelola dengan tenang. Tumbuh dengan terarah.') }} <i class="bi bi-flower2" aria-hidden="true"></i></span></footer>
 </div>
 
 {{-- ============ Bottom navigation (HP) ============ --}}

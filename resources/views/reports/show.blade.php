@@ -169,7 +169,7 @@
                         { name: @js(__('Management fee')), data: @js($series->map(fn ($r) => \App\Services\Finance\FinanceCalculator::toFloat($r['summary']->managementFee))->values()) },
                         { name: @js(__('Pengeluaran')), data: @js($series->map(fn ($r) => \App\Services\Finance\FinanceCalculator::toFloat($r['summary']->expenses))->values()) },
                         { name: @js(__('Net profit')), data: @js($series->map(fn ($r) => \App\Services\Finance\FinanceCalculator::toFloat($r['summary']->netProfit))->values()) } ],
-                        colors: ['#2F5FD0', '#F0A30A', '#B42318', '#157F3D'] })">
+                        colors: ['#aac29b', '#c2a572', '#d9c5ab', '#285b49'] })">
                     <div x-show="loading"><x-ui.skeleton height="280px" /></div>
                     <p x-show="empty" x-cloak class="text-muted text-center py-5 mb-0">{{ __('Belum ada data.') }}</p>
                     <div x-ref="chart"></div>

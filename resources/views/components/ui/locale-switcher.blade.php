@@ -20,7 +20,7 @@
         <noscript><button type="submit" class="btn btn-light btn-sm mt-2">OK</button></noscript>
     </form>
 @else
-    <div class="dropdown" {{ $attributes }}>
+    <div {{ $attributes->class('dropdown') }}>
         <button class="btn btn-ghost px-2 d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false"
                 aria-label="{{ __('Bahasa') }}: {{ $locales[$current] ?? $current }}">
             <i class="bi bi-translate" aria-hidden="true"></i>

@@ -5,8 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#1d3b30">
     <title>{{ $title ? $title.' · ' : '' }}{{ config('app.name') }}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232f5fd0'/><text x='16' y='22' font-family='Arial' font-size='15' font-weight='800' text-anchor='middle' fill='white'>PM</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/propertyme-mark.svg') }}">
     @include('layouts.partials.i18n')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

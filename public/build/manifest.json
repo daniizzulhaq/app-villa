@@ -80,12 +80,12 @@
     "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-D5kpes5T.css",
+    "file": "assets/app-Dnir3rvK.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-CjextC_Y.js",
+    "file": "assets/app-CiYbNoPK.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

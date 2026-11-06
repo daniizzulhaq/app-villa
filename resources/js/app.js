@@ -357,10 +357,10 @@ Alpine.data('chart', (config) => ({
         const base = {
             chart: { type: config.type, height: config.height || 300, fontFamily: 'Inter Variable, Inter, sans-serif', toolbar: { show: false }, animations: { speed: 300 } },
             series,
-            colors: config.colors || ['#2F5FD0', '#F0A30A', '#B42318', '#157F3D', '#1E40AF', '#7C6F9B'],
+            colors: config.colors || ['#285b49', '#b3935e', '#92ad85', '#d3c3a5', '#607d87', '#9c8e9d'],
             dataLabels: { enabled: false },
             legend: { position: 'bottom', fontSize: '13px', markers: { size: 6 } },
-            grid: { borderColor: '#E3E8EF', strokeDashArray: 4 },
+            grid: { borderColor: '#e7e9e2', strokeDashArray: 4 },
             tooltip: { y: { formatter: (v) => (config.percent ? `${v}%` : rupiahFull(v)) } },
             noData: { text: t('Belum ada data') },
         };
@@ -374,7 +374,7 @@ Alpine.data('chart', (config) => ({
             Object.assign(base, {
                 xaxis: { categories: config.labels, labels: { style: { colors: '#5B6779', fontSize: '12px' } }, axisBorder: { show: false } },
                 yaxis: { labels: { formatter: (v) => (config.percent ? `${v}%` : rupiahShort(v)), style: { colors: '#5B6779' } } },
-                plotOptions: { bar: { borderRadius: 4, columnWidth: '58%', horizontal: !!config.horizontal } },
+                plotOptions: { bar: { borderRadius: 3, columnWidth: '48%', horizontal: !!config.horizontal } },
                 stroke: config.type === 'line' ? { width: 3, curve: 'smooth' } : { width: 0 },
                 markers: config.type === 'line' ? { size: 4 } : {},
             });
