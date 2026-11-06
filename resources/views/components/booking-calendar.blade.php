@@ -4,16 +4,16 @@
 --}}
 @props(['villas', 'platforms', 'selected' => null, 'initialDate' => null, 'showDetailLink' => false])
 <div x-data="bookingCalendar({ eventsUrl: @js(route('bookings.events')), villa: @js($selected), initialDate: @js($initialDate) })" {{ $attributes }}>
-    <div class="pm-toolbar border-0 px-0 pt-0">
-        <label for="calVilla" class="visually-hidden">{{ __('Filter villa') }}</label>
-        <select id="calVilla" class="form-select" x-model="villa" style="flex: 1 1 220px">
+    <div class="pm-calendar-filters">
+        <div class="pm-filter-field"><label for="calVilla">{{ __('Filter villa') }}</label>
+        <select id="calVilla" class="form-select" x-model="villa">
             <option value="">{{ __('Semua villa') }}</option>
             @foreach ($villas as $id => $name)
                 <option value="{{ $id }}">{{ $name }}</option>
             @endforeach
-        </select>
-        <label for="calDate" class="visually-hidden">{{ __('Lompat ke tanggal') }}</label>
-        <input id="calDate" type="date" class="form-control" style="flex: 0 1 180px" @change="gotoDate($event.target.value)" aria-label="{{ __('Lompat ke tanggal') }}">
+        </select></div>
+        <div class="pm-filter-field"><label for="calDate">{{ __('Lompat ke tanggal') }}</label>
+        <input id="calDate" type="date" class="form-control" @change="gotoDate($event.target.value)"></div>
     </div>
 
     <div class="pm-legend mb-3" aria-label="{{ __('Keterangan warna') }}">

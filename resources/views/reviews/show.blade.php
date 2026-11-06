@@ -1,6 +1,6 @@
 <x-layouts.app :title="__('Periksa Nota')">
     @php $images = $expense->receipts->reject(fn ($r) => str_ends_with($r->path, '.pdf'))->values(); @endphp
-    <x-ui.page-header :title="__('Periksa Nota')" :subtitle="$position ? __('Nota :position dari :total yang menunggu', ['position' => $position, 'total' => $pendingTotal]) : __('Status: :status', ['status' => $expense->status->label()])"
+    <x-ui.page-header icon="bi-patch-check" :title="__('Periksa Nota')" :subtitle="$position ? __('Nota :position dari :total yang menunggu', ['position' => $position, 'total' => $pendingTotal]) : __('Status: :status', ['status' => $expense->status->label()])"
                       :back="route('reviews.index')" :back-label="__('Antrean nota')">
         <x-slot:actions>
             @if ($nextId && $nextId !== $expense->id)
@@ -16,6 +16,11 @@
                 <template x-if="urls.length"><img :src="urls[i]" alt="{{ __('Foto nota') }}"></template>
                 <template x-if="!urls.length"><div class="text-center text-white-50 p-5"><i class="bi bi-image fs-1 d-block mb-2" aria-hidden="true"></i>{{ __('Tidak ada foto nota') }}</div></template>
                 <a x-show="urls.length" :href="urls[i]" target="_blank" rel="noopener" class="btn btn-light btn-sm position-absolute" style="top:12px; right:12px"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i> {{ __('Buka asli') }}</a>
+                <div class="pm-receipt-controls" x-show="urls.length > 1" x-cloak>
+                    <button type="button" @click="i = (i + urls.length - 1) % urls.length" class="btn btn-light btn-icon" aria-label="{{ __('Foto sebelumnya') }}"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                    <span x-text="(i + 1) + ' / ' + urls.length" aria-live="polite"></span>
+                    <button type="button" @click="i = (i + 1) % urls.length" class="btn btn-light btn-icon" aria-label="{{ __('Foto berikutnya') }}"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                </div>
             </div>
             <div class="pm-review__thumbs" x-show="urls.length > 1">
                 <template x-for="(u, k) in urls" :key="k">
@@ -54,14 +59,14 @@
                 <div class="alert alert-info mb-0"><i class="bi bi-lock" aria-hidden="true"></i> {{ __('Bulan nota ini sudah Final. Buka kunci laporan untuk mengubah status.') }}</div>
             @else
                 <x-ui.card :title="__('Keputusan')" x-data="{ mode: '{{ $errors->has('return_reason') ? 'return' : 'idle' }}' }">
-                    <div x-show="mode !== 'return'" class="d-grid gap-2">
+                    <div x-show.important="mode !== 'return'" class="d-grid gap-2">
                         <form method="POST" action="{{ route('reviews.approve', $expense) }}">
                             @csrf
                             <button type="submit" class="btn btn-primary btn-lg w-100" style="background: var(--pm-success); border-color: var(--pm-success)" data-loading-text="{{ __('Menyimpan…') }}">
-                                <i class="bi bi-check-circle" aria-hidden="true"></i> {{ __('Valid') }}
+                                <i class="bi bi-check-circle" aria-hidden="true"></i> {{ __('Tandai Valid') }}
                             </button>
                         </form>
-                        <button type="button" class="btn btn-danger-soft btn-lg" @click="mode = 'return'; $nextTick(() => $refs.reason.focus())">
+                        <button type="button" class="btn btn-danger-soft btn-lg" @click="mode = 'return'; $nextTick(() => requestAnimationFrame(() => $refs.reason.focus()))">
                             <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> {{ __('Kembalikan ke Staff') }}
                         </button>
                     </div>

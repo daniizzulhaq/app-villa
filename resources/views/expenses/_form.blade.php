@@ -25,9 +25,10 @@
 
     <div class="row g-3 justify-content-center">
         <div class="col-xl-8 col-xxl-7">
+            <x-ui.form-navigation :steps="['expense-photo' => __('Foto nota'), 'expense-details' => __('Nominal & kategori')]" />
             <div class="pm-card">
                 {{-- 1. Foto --}}
-                <section class="pm-form-section" x-data="receiptPicker({ max: {{ $maxFiles }}, existing: {{ $existingReceipts->count() }} })">
+                <section class="pm-form-section" id="expense-photo" x-data="receiptPicker({ max: {{ $maxFiles }}, existing: {{ $existingReceipts->count() }} })">
                     <h2 class="pm-form-section__title mb-3"><span class="text-muted">1.</span> {{ __('Foto nota') }}</h2>
 
                     @if ($existingReceipts->isNotEmpty())
@@ -84,7 +85,7 @@
                 </section>
 
                 {{-- 2. Data --}}
-                <section class="pm-form-section">
+                <section class="pm-form-section" id="expense-details">
                     <h2 class="pm-form-section__title mb-3"><span class="text-muted">2.</span> {{ __('Nominal & kategori') }}</h2>
                     <x-form.money name="amount" :label="__('Nominal')" :value="$expense->amount" required class="fs-5" />
 
@@ -113,8 +114,8 @@
                         <div class="col-sm-5"><x-form.input type="date" name="expense_date" :label="__('Tanggal')" :value="$expense->expense_date?->format('Y-m-d')" required :max="today()->addDay()->format('Y-m-d')" /></div>
                     </div>
 
-                    <details @if($showMore) open @endif class="mt-1">
-                        <summary class="fw-semibold text-primary mb-3" style="cursor:pointer; min-height: 32px">{{ __('Detail lainnya (keterangan, vendor, metode bayar)') }}</summary>
+                    <details @if($showMore) open @endif class="pm-form-details mt-1">
+                        <summary class="mb-3">{{ __('Detail lainnya (keterangan, vendor, metode bayar)') }}</summary>
                         <x-form.input name="description" :label="__('Keterangan')" :value="$expense->description" maxlength="255" :placeholder="__('Kosongkan = nama kategori')" />
                         <div class="row">
                             <div class="col-sm-6"><x-form.input name="vendor" :label="__('Vendor / toko')" :value="$expense->vendor" maxlength="150" :placeholder="__('mis. Toko Bangunan Jaya')" /></div>

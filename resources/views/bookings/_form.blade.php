@@ -8,6 +8,8 @@
     @csrf
     @if ($isEdit) @method('PUT') @endif
 
+    <x-ui.form-navigation :steps="['booking-stay' => __('Villa & tanggal'), 'booking-guest' => __('Data tamu')]" />
+
     @if ($errors->has('check_in') && str_contains($errors->first('check_in'), 'bentrok'))
         <div class="alert alert-danger d-flex gap-2" role="alert"><i class="bi bi-calendar-x" aria-hidden="true"></i><div>{{ $errors->first('check_in') }}</div></div>
     @elseif ($errors->any())
@@ -15,7 +17,7 @@
     @endif
 
     <div class="pm-card">
-        <section class="pm-form-section">
+        <section class="pm-form-section" id="booking-stay">
             <div class="row g-4">
                 <div class="col-lg-4">
                     <h2 class="pm-form-section__title">{{ __('1. Villa & tanggal') }}</h2>
@@ -44,7 +46,7 @@
             </div>
         </section>
 
-        <section class="pm-form-section">
+        <section class="pm-form-section" id="booking-guest">
             <div class="row g-4">
                 <div class="col-lg-4">
                     <h2 class="pm-form-section__title">{{ __('2. Data tamu') }}</h2>

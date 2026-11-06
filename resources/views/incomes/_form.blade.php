@@ -22,6 +22,8 @@
     @csrf
     @if ($isEdit) @method('PUT') @endif
 
+    <x-ui.form-navigation :steps="['income-booking' => __('Reservasi & villa'), 'income-amount' => __('Nominal'), 'income-proof' => __('Catatan & bukti bayar')]" />
+
     @if ($errors->any())
         <div class="alert alert-danger d-flex gap-2" role="alert"><i class="bi bi-exclamation-octagon" aria-hidden="true"></i><div>{{ __('Ada :count isian yang perlu diperbaiki.', ['count' => $errors->count()]) }}</div></div>
     @endif
@@ -29,7 +31,7 @@
     <div class="row g-3">
         <div class="col-xl-8">
             <div class="pm-card">
-                <section class="pm-form-section">
+                <section class="pm-form-section" id="income-booking">
                     <h2 class="pm-form-section__title mb-3">{{ __('1. Reservasi & villa') }}</h2>
                     <x-form.select name="booking_id" :label="__('Terhubung ke reservasi')" :options="$bookings" :value="$income->booking_id"
                                    :placeholder="__('— Tanpa reservasi (pemasukan lain) —')"
@@ -54,7 +56,7 @@
                     </div>
                 </section>
 
-                <section class="pm-form-section">
+                <section class="pm-form-section" id="income-amount">
                     <h2 class="pm-form-section__title mb-3">{{ __('2. Nominal') }}</h2>
                     <x-form.money name="gross_amount" :label="__('Gross booking income')" :value="$income->gross_amount" required :help="__('Total yang dibayar tamu.')" />
                     <div class="mb-3">
@@ -77,7 +79,7 @@
                     </div>
                 </section>
 
-                <section class="pm-form-section">
+                <section class="pm-form-section" id="income-proof">
                     <h2 class="pm-form-section__title mb-3">{{ __('3. Catatan & bukti bayar') }}</h2>
                     <x-form.textarea name="notes" :label="__('Catatan')" :value="$income->notes" rows="2" maxlength="3000" />
                     @if ($isEdit && $income->attachments->isNotEmpty())
@@ -109,7 +111,8 @@
 
         {{-- Pratinjau perhitungan --}}
         <div class="col-xl-4">
-            <div class="pm-card pm-card__body position-sticky" style="top: calc(var(--pm-topbar-h) + 16px)">
+            <div class="pm-card pm-card__body pm-form-preview position-sticky" style="top: calc(var(--pm-topbar-h) + 16px)">
+                <span class="pm-form-preview__icon" aria-hidden="true"><i class="bi bi-calculator"></i></span>
                 <h2 class="pm-card__title mb-1">{{ __('Pratinjau perhitungan') }}</h2>
                 <p class="fs-sm text-muted mb-3">{{ __('Angka final dihitung ulang memakai % fee yang berlaku pada tanggal bayar.') }}</p>
                 <table class="pm-ledger" aria-live="polite">
@@ -121,6 +124,7 @@
                     <tr class="total"><td>{{ __('Revenue after fee') }}</td><td :class="after < 0 ? 'text-negative' : 'text-positive'" x-text="rp(after)"></td></tr>
                 </table>
                 <p class="fs-xs text-muted mt-3 mb-0" x-show="fee" x-cloak>{{ __('Basis fee:') }} <span x-text="rp(feeBase)"></span></p>
+                <div class="pm-form-help"><i class="bi bi-info-circle" aria-hidden="true"></i><span>{{ __('Periksa ringkasan sebelum menyimpan pemasukan.') }}</span></div>
             </div>
         </div>
     </div>

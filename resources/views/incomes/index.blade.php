@@ -1,5 +1,5 @@
 <x-layouts.app :title="__('Pemasukan')">
-    <x-ui.page-header :title="__('Pemasukan')" :subtitle="__('Periode :period', ['period' => \Illuminate\Support\Carbon::parse($filters['from'])->translatedFormat('d M Y').' – '.\Illuminate\Support\Carbon::parse($filters['to'])->translatedFormat('d M Y')])">
+    <x-ui.page-header icon="bi-wallet2" :title="__('Pemasukan')" :subtitle="__('Periode :period', ['period' => \Illuminate\Support\Carbon::parse($filters['from'])->translatedFormat('d M Y').' – '.\Illuminate\Support\Carbon::parse($filters['to'])->translatedFormat('d M Y')])">
         <x-slot:actions>
             @can('import', \App\Models\Income::class)
                 <a href="{{ route('imports.create') }}" class="btn btn-light"><i class="bi bi-upload" aria-hidden="true"></i> {{ __('Import Payout') }}</a>
@@ -18,24 +18,16 @@
     </div>
 
     <x-ui.card flush>
-        <form method="GET" class="pm-toolbar" role="search" data-no-lock>
-            <div class="pm-search">
-                <i class="bi bi-search" aria-hidden="true"></i>
-                <label class="visually-hidden" for="q">{{ __('Cari') }}</label>
-                <input type="search" id="q" name="q" value="{{ $filters['q'] ?? '' }}" class="form-control" placeholder="{{ __('Cari kode booking, tamu, catatan…') }}">
-            </div>
-            <select name="villa" class="form-select" aria-label="{{ __('Villa') }}" onchange="this.form.submit()">
-                <option value="">{{ __('Semua villa') }}</option>
-                @foreach ($villas as $id => $n)<option value="{{ $id }}" @selected((string) ($filters['villa'] ?? '') === (string) $id)>{{ $n }}</option>@endforeach
-            </select>
-            <select name="platform" class="form-select" aria-label="{{ __('Sumber') }}" onchange="this.form.submit()">
-                <option value="">{{ __('Semua sumber') }}</option>
-                @foreach ($platforms as $p)<option value="{{ $p->id }}" @selected((string) ($filters['platform'] ?? '') === (string) $p->id)>{{ $p->name }}</option>@endforeach
-            </select>
-            <input type="date" name="from" value="{{ $filters['from'] }}" class="form-control" style="flex:0 1 160px" aria-label="{{ __('Dari tanggal') }}">
-            <input type="date" name="to" value="{{ $filters['to'] }}" class="form-control" style="flex:0 1 160px" aria-label="{{ __('Sampai tanggal') }}">
-            <button type="submit" class="btn btn-light"><i class="bi bi-funnel" aria-hidden="true"></i> {{ __('Terapkan') }}</button>
-        </form>
+        <x-ui.filters :reset="route('incomes.index')" :advanced-keys="['platform', 'from', 'to']">
+            <div class="pm-filter-field pm-filter-field--search"><label for="q">{{ __('Cari') }}</label><div class="pm-filter-search"><i class="bi bi-search" aria-hidden="true"></i><input type="search" id="q" name="q" value="{{ $filters['q'] ?? '' }}" class="form-control" placeholder="{{ __('Cari kode booking, tamu, catatan…') }}"></div></div>
+            <x-form.select name="villa" :label="__('Villa')" :options="$villas" :value="$filters['villa'] ?? null" :placeholder="__('Semua villa')" class="pm-filter-field" />
+            <x-slot:advanced>
+                <x-form.select name="platform" :label="__('Sumber')" :options="$platforms->pluck('name', 'id')" :value="$filters['platform'] ?? null" :placeholder="__('Semua sumber')" class="pm-filter-field" />
+                <x-form.input type="date" name="from" :label="__('Dari tanggal')" :value="$filters['from']" class="pm-filter-field" />
+                <x-form.input type="date" name="to" :label="__('Sampai tanggal')" :value="$filters['to']" class="pm-filter-field" />
+            </x-slot:advanced>
+        </x-ui.filters>
+        <div class="pm-list-heading"><span><i class="bi bi-list-ul" aria-hidden="true"></i>{{ __('Pemasukan') }}<span class="pm-badge pm-badge--neutral pm-badge--plain">{{ $incomes->total() }}</span></span><small>{{ __('Ketuk Detail untuk melihat transaksi.') }}</small></div>
 
         @if ($incomes->isEmpty())
             <x-ui.empty-state :title="__('Belum ada pemasukan di periode ini')" :text="__('Catat pembayaran dari reservasi atau import file payout Airbnb/Booking.com.')">
@@ -46,7 +38,7 @@
         @else
             <div class="table-responsive">
                 <table class="table pm-table pm-table--stack">
-                    <thead><tr><th>{{ __('Tanggal bayar') }}</th><th>{{ __('Villa & tamu') }}</th><th>{{ __('Sumber') }}</th><th class="num">{{ __('Gross') }}</th><th class="num">{{ __('Komisi+potongan') }}</th><th class="num">{{ __('Fee') }}</th><th class="num">{{ __('Net setelah fee') }}</th></tr></thead>
+                    <thead><tr><th>{{ __('Tanggal bayar') }}</th><th>{{ __('Villa & tamu') }}</th><th>{{ __('Sumber') }}</th><th class="num">{{ __('Gross') }}</th><th class="num">{{ __('Komisi+potongan') }}</th><th class="num">{{ __('Fee') }}</th><th class="num">{{ __('Net setelah fee') }}</th><th><span class="visually-hidden">{{ __('Aksi') }}</span></th></tr></thead>
                     <tbody>
                     @foreach ($incomes as $i)
                         @php $deduct = \App\Services\Finance\FinanceCalculator::sum([$i->is_net_of_platform ? 0 : $i->platform_fee, $i->other_deduction]); @endphp
@@ -61,12 +53,14 @@
                             <td data-label="{{ __('Komisi+potongan') }}" class="num text-muted">@rupiah($deduct)</td>
                             <td data-label="{{ __('Fee') }}" class="num">@rupiah($i->fee_amount)<div class="cell-sub">{{ \App\Support\Rupiah::percent($i->fee_percentage) }}</div></td>
                             <td data-label="{{ __('Net setelah fee') }}" class="num fw-semibold text-ink">@rupiah(\Brick\Math\BigDecimal::of($i->net_revenue)->minus($i->fee_amount))</td>
+                            <td class="text-end stack-actions"><a href="{{ route('incomes.show', $i) }}" class="btn btn-sm btn-light">{{ __('Detail') }}<i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></td>
                         </tr>
                     @endforeach
                     </tbody>
                 </table>
             </div>
-            @if ($incomes->hasPages())<div class="p-3 border-top">{{ $incomes->onEachSide(1)->links() }}</div>@endif
+
         @endif
+        <x-ui.results-footer :items="$incomes" />
     </x-ui.card>
 </x-layouts.app>

@@ -1,5 +1,5 @@
 <x-layouts.app :title="__('Kalender Reservasi')">
-    <x-ui.page-header :title="__('Reservasi & Kalender')" :subtitle="__('Check-in & check-out semua platform dalam satu kalender.')">
+    <x-ui.page-header icon="bi-calendar2-week" :title="__('Reservasi & Kalender')" :subtitle="__('Check-in & check-out semua platform dalam satu kalender.')">
         <x-slot:actions>
             @can('create', \App\Models\Booking::class)
                 <a href="{{ route('sync.index') }}" class="btn btn-light"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> {{ __('Status Sinkron') }}</a>

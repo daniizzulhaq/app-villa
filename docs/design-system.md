@@ -2,6 +2,31 @@
 
 Sumber kode: `resources/css/app.css` (token & komponen), `resources/views/components/**` (Blade components).
 
+Tampilan terkini memakai tema hijau hutan dan warna pasir. Nilai CSS di kode menjadi
+acuan utama; sketsa awal di bawah menunjukkan struktur dan peran halaman.
+
+## Halaman fitur
+
+- Reservasi dan pengeluaran memakai tab status yang mempertahankan pencarian dan
+  pilihan villa. Mengganti status selalu kembali ke halaman pertama hasil.
+- Komponen `<x-ui.filters>` memisahkan pencarian utama dari filter tambahan.
+  Pengguna mengatur beberapa isian, lalu menekan **Terapkan** sekali. Filter tambahan
+  terbuka otomatis jika parameter terkait sudah terisi. **Reset** membuka daftar awal.
+- Label filter selalu terlihat, termasuk tanggal awal/akhir serta batas nominal.
+  Hasil kosong karena filter menyertakan jalan untuk mengatur ulang pencarian.
+- `<x-ui.results-footer>` menampilkan rentang dan jumlah seluruh hasil terfilter,
+  bukan jumlah data pada halaman saat ini saja.
+- `<x-ui.form-navigation>` berisi tautan ke bagian form yang tetap berada dalam satu
+  halaman. Semua isian dan validasi tetap tersedia tanpa harus melewati wizard.
+- Laporan ditampilkan per villa dengan 12 pilihan bulan. Owner hanya mendapat tautan
+  laporan Final; bulan yang belum tersedia ditampilkan tanpa tombol yang bisa ditekan.
+- Antrean pemeriksaan memperjelas nominal dan informasi pengunggah. Pilihan massal
+  tetap meminta konfirmasi, dan checkbox menampilkan kondisi pilihan sebagian.
+- Foto nota dapat ditelusuri dengan thumbnail atau tombol sebelumnya/berikutnya.
+  Pratinjau pemasukan tetap dihitung dari isian dan diperiksa kembali oleh server.
+- Teks baru tersedia dalam sembilan bahasa. Aset hasil build di `public/build` harus
+  ikut commit bersama source dan manifest agar tampilan tersedia di hosting.
+
 ## 1. Warna
 
 | Token | Hex | Pemakaian | Kontras di putih |

@@ -1,5 +1,5 @@
 <x-layouts.app :title="__('Pemeriksaan Nota')">
-    <x-ui.page-header :title="__('Pemeriksaan Nota')" :subtitle="__(':count nota menunggu pemeriksaan. Hanya nota Valid yang masuk perhitungan keuangan.', ['count' => $queue->total()])">
+    <x-ui.page-header icon="bi-patch-check" :title="__('Pemeriksaan Nota')" :subtitle="__(':count nota menunggu pemeriksaan. Hanya nota Valid yang masuk perhitungan keuangan.', ['count' => $queue->total()])">
         <x-slot:actions>
             @if ($queue->isNotEmpty())
                 <a href="{{ route('reviews.show', $queue->first()) }}" class="btn btn-primary"><i class="bi bi-play-fill" aria-hidden="true"></i> {{ __('Mulai Periksa') }}</a>
@@ -23,9 +23,9 @@
                     <form method="POST" action="{{ route('reviews.bulk') }}" x-data="{ ids: [], get all() { return this.ids.length === {{ $queue->count() }} } }"
                           data-confirm="{{ __('Tandai nota terpilih sebagai Valid?') }}" data-confirm-text="{{ __('Pastikan foto & nominal sudah dicek. Nota Valid langsung masuk laporan.') }}" data-confirm-button="{{ __('Ya, tandai Valid') }}">
                         @csrf
-                        <div class="d-flex align-items-center gap-3 px-4 py-2 border-bottom bg-light">
+                        <div class="pm-review-selection">
                             <label class="d-flex align-items-center gap-2 mb-0 fs-sm fw-semibold">
-                                <input type="checkbox" class="form-check-input mt-0" :checked="all"
+                                <input type="checkbox" class="form-check-input mt-0" :checked="all" x-effect="$el.indeterminate = ids.length > 0 && !all"
                                        @change="ids = $event.target.checked ? @js($queue->pluck('id')->map(fn ($i) => (string) $i)) : []"> {{ __('Pilih semua') }}
                             </label>
                             <button type="submit" class="btn btn-sm btn-primary ms-auto" :disabled="!ids.length">
@@ -33,9 +33,9 @@
                             </button>
                         </div>
                         @foreach ($queue as $e)
-                            <div class="d-flex gap-3 align-items-center px-4 py-3 border-bottom">
+                            <div class="pm-review-row">
                                 <input type="checkbox" name="ids[]" value="{{ $e->id }}" x-model="ids" class="form-check-input mt-0 flex-shrink-0" aria-label="{{ __('Pilih nota :description', ['description' => $e->description]) }}">
-                                <a href="{{ route('reviews.show', $e) }}" class="d-flex gap-3 align-items-center text-decoration-none flex-grow-1 min-w-0">
+                                <a href="{{ route('reviews.show', $e) }}">
                                     @php $first = $e->receipts->first(); @endphp
                                     @if ($first && ! str_ends_with($first->path, '.pdf'))
                                         <img src="{{ route('files.receipt', $first) }}" alt="" class="pm-villa-thumb" loading="lazy">
@@ -44,18 +44,19 @@
                                     @endif
                                     <span class="min-w-0 flex-grow-1">
                                         <span class="d-block fw-semibold text-ink text-truncate">{{ $e->description }}</span>
-                                        <span class="d-block fs-sm text-muted text-truncate">{{ $e->villa->name }} · {{ __($e->category->name) }} · {{ $e->creator?->name }} · {{ $e->expense_date->translatedFormat('d M') }}</span>
+                                        <span class="pm-review-row__meta">{{ $e->villa->name }} · {{ __($e->category->name) }}<br>{{ $e->creator?->name }} · {{ $e->expense_date->translatedFormat('d M') }}</span>
                                     </span>
                                     <span class="text-end flex-shrink-0">
-                                        <span class="d-block fw-semibold text-ink num">@rupiah($e->amount)</span>
+                                        <span class="pm-review-row__amount num">@rupiah($e->amount)</span>
                                         <span class="d-block fs-xs text-muted">{{ __(':count foto · :diffforhumans', ['count' => $e->receipts->count(), 'diffforhumans' => $e->created_at->diffForHumans()]) }}</span>
+                                        <span class="pm-review-row__action">{{ __('Periksa Nota') }}<i class="bi bi-arrow-up-right" aria-hidden="true"></i></span>
                                     </span>
                                 </a>
                             </div>
                         @endforeach
                     </form>
-                    @if ($queue->hasPages())<div class="p-3">{{ $queue->links() }}</div>@endif
                 @endif
+                <x-ui.results-footer :items="$queue" />
             </x-ui.card>
         </div>
         <div class="col-xl-4">
@@ -70,6 +71,14 @@
                     <p class="p-4 text-muted fs-sm mb-0">{{ __('Belum ada.') }}</p>
                 @endforelse
             </x-ui.card>
+            <aside class="pm-review-tip">
+                <h2>{{ __('Sebelum menandai Valid') }}</h2>
+                <ul>
+                    <li><i class="bi bi-check2-circle" aria-hidden="true"></i>{{ __('Foto nota terbaca') }}</li>
+                    <li><i class="bi bi-check2-circle" aria-hidden="true"></i>{{ __('Nominal sesuai nota') }}</li>
+                    <li><i class="bi bi-check2-circle" aria-hidden="true"></i>{{ __('Kategori & tanggal sesuai') }}</li>
+                </ul>
+            </aside>
         </div>
     </div>
 </x-layouts.app>

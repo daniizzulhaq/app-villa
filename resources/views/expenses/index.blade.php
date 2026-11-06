@@ -1,6 +1,6 @@
 <x-layouts.app :title="auth()->user()->isOwner() ? __('Pengeluaran & Nota') : __('Pengeluaran')">
     @php $user = auth()->user(); @endphp
-    <x-ui.page-header :title="$user->isOwner() ? __('Pengeluaran & Nota') : __('Pengeluaran')"
+    <x-ui.page-header icon="bi-receipt" :title="$user->isOwner() ? __('Pengeluaran & Nota') : __('Pengeluaran')"
                       :subtitle="$user->isOwner() ? __('Pengeluaran operasional yang sudah diperiksa Manager, lengkap dengan bukti nota.') : __('Semua pengeluaran operasional villa beserta status pemeriksaan nota.')">
         <x-slot:actions>
             @unless ($user->isStaff())
@@ -13,48 +13,32 @@
     </x-ui.page-header>
 
     <x-ui.card flush>
-        <form method="GET" class="pm-toolbar" role="search" data-no-lock>
-            <div class="pm-search">
-                <i class="bi bi-search" aria-hidden="true"></i>
-                <label class="visually-hidden" for="q">{{ __('Cari') }}</label>
-                <input type="search" id="q" name="q" value="{{ $filters['q'] ?? '' }}" class="form-control" placeholder="{{ __('Cari keterangan atau vendor…') }}">
-            </div>
-            <select name="villa" class="form-select" aria-label="{{ __('Villa') }}" onchange="this.form.submit()">
-                <option value="">{{ __('Semua villa') }}</option>
-                @foreach ($villas as $id => $n)<option value="{{ $id }}" @selected((string) ($filters['villa'] ?? '') === (string) $id)>{{ $n }}</option>@endforeach
-            </select>
-            <select name="category" class="form-select" aria-label="{{ __('Kategori') }}" onchange="this.form.submit()">
-                <option value="">{{ __('Semua kategori') }}</option>
-                @foreach ($categories as $id => $n)<option value="{{ $id }}" @selected((string) ($filters['category'] ?? '') === (string) $id)>{{ $n }}</option>@endforeach
-            </select>
-            @unless ($user->isOwner())
-                <select name="status" class="form-select" aria-label="{{ __('Status') }}" onchange="this.form.submit()">
-                    <option value="">{{ __('Semua status') }}</option>
-                    @foreach (\App\Enums\ExpenseStatus::cases() as $s)<option value="{{ $s->value }}" @selected(($filters['status'] ?? '') === $s->value)>{{ $s->label() }}</option>@endforeach
-                </select>
-            @endunless
-            <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="form-control" style="flex:0 1 150px" aria-label="{{ __('Dari tanggal') }}">
-            <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="form-control" style="flex:0 1 150px" aria-label="{{ __('Sampai tanggal') }}">
-            <input type="number" name="min" value="{{ $filters['min'] ?? '' }}" class="form-control" style="flex:0 1 130px" placeholder="{{ __('Min Rp') }}" aria-label="{{ __('Nominal minimum') }}" inputmode="numeric">
-            <input type="number" name="max" value="{{ $filters['max'] ?? '' }}" class="form-control" style="flex:0 1 130px" placeholder="{{ __('Maks Rp') }}" aria-label="{{ __('Nominal maksimum') }}" inputmode="numeric">
-            <button type="submit" class="btn btn-light"><i class="bi bi-funnel" aria-hidden="true"></i> {{ __('Terapkan') }}</button>
-            @if (array_filter($filters))<a href="{{ route('expenses.index') }}" class="btn btn-ghost">{{ __('Reset') }}</a>@endif
-        </form>
+        <x-ui.filters :reset="route('expenses.index')" :advanced-keys="['category', 'from', 'to', 'min', 'max']">
+            @if(!$user->isOwner() && request()->filled('status'))<input type="hidden" name="status" value="{{ $filters['status'] }}">@endif
+            <div class="pm-filter-field pm-filter-field--search"><label for="q">{{ __('Cari') }}</label><div class="pm-filter-search"><i class="bi bi-search" aria-hidden="true"></i><input type="search" id="q" name="q" value="{{ $filters['q'] ?? '' }}" class="form-control" placeholder="{{ __('Cari keterangan atau vendor…') }}"></div></div>
+            <x-form.select name="villa" :label="__('Villa')" :options="$villas" :value="$filters['villa'] ?? null" :placeholder="__('Semua villa')" class="pm-filter-field" />
+            <x-slot:advanced>
+                <x-form.select name="category" :label="__('Kategori')" :options="$categories->map(fn ($name) => __($name))" :value="$filters['category'] ?? null" :placeholder="__('Semua kategori')" class="pm-filter-field" />
+                <x-form.input type="date" name="from" :label="__('Dari tanggal')" :value="$filters['from'] ?? null" class="pm-filter-field" />
+                <x-form.input type="date" name="to" :label="__('Sampai tanggal')" :value="$filters['to'] ?? null" class="pm-filter-field" />
+                <x-form.input type="number" name="min" :label="__('Nominal minimum')" :value="$filters['min'] ?? null" :placeholder="__('Min Rp')" min="0" inputmode="numeric" class="pm-filter-field" />
+                <x-form.input type="number" name="max" :label="__('Nominal maksimum')" :value="$filters['max'] ?? null" :placeholder="__('Maks Rp')" min="0" inputmode="numeric" class="pm-filter-field" />
+            </x-slot:advanced>
+        </x-ui.filters>
+        @unless($user->isOwner())<x-ui.status-tabs :statuses="\App\Enums\ExpenseStatus::cases()" />@endunless
+        <div class="pm-list-heading"><span><i class="bi bi-receipt" aria-hidden="true"></i>{{ __(':total pengeluaran', ['total' => $expenses->total()]) }}</span><span><small>{{ __('Total sesuai filter') }}</small><strong class="num text-ink">@rupiah($total)</strong></span></div>
 
         @if ($expenses->isEmpty())
-            <x-ui.empty-state :title="__('Belum ada pengeluaran')" :text="array_filter($filters) ? __('Tidak ada yang cocok dengan filter.') : __('Pengeluaran yang diunggah Staff akan muncul di sini.')">
+            <x-ui.empty-state :title="array_filter($filters) ? __('Tidak ada hasil yang cocok') : __('Belum ada pengeluaran')" :text="array_filter($filters) ? __('Tidak ada yang cocok dengan filter.') : __('Pengeluaran yang diunggah Staff akan muncul di sini.')">
+                @if(array_filter($filters))<a href="{{ route('expenses.index') }}" class="btn btn-light">{{ __('Reset filter') }}</a>@endif
                 @can('create', \App\Models\Expense::class)
                     <a href="{{ route('expenses.create') }}" class="btn btn-primary"><i class="bi bi-camera" aria-hidden="true"></i> {{ __('Upload Nota') }}</a>
                 @endcan
             </x-ui.empty-state>
         @else
-            <div class="px-4 py-2 border-bottom d-flex justify-content-between fs-sm bg-light">
-                <span class="text-muted">{{ __(':total pengeluaran', ['total' => $expenses->total()]) }}</span>
-                <span>{{ __('Total:') }} <strong class="text-ink num">@rupiah($total)</strong></span>
-            </div>
             <div class="table-responsive">
                 <table class="table pm-table pm-table--stack">
-                    <thead><tr><th>{{ __('Tanggal') }}</th><th>{{ __('Keterangan') }}</th><th>{{ __('Villa') }}</th><th>{{ __('Kategori') }}</th><th class="num">{{ __('Nominal') }}</th><th>{{ __('Status') }}</th><th>{{ __('Nota') }}</th></tr></thead>
+                    <thead><tr><th>{{ __('Tanggal') }}</th><th>{{ __('Keterangan') }}</th><th>{{ __('Villa') }}</th><th>{{ __('Kategori') }}</th><th class="num">{{ __('Nominal') }}</th><th>{{ __('Status') }}</th><th>{{ __('Nota') }}</th><th><span class="visually-hidden">{{ __('Aksi') }}</span></th></tr></thead>
                     <tbody>
                     @foreach ($expenses as $e)
                         <tr>
@@ -66,12 +50,14 @@
                             <td data-label="{{ __('Nominal') }}" class="num fw-semibold text-ink">@rupiah($e->amount)</td>
                             <td data-label="{{ __('Status') }}"><x-ui.badge :status="$e->status" /></td>
                             <td data-label="{{ __('Nota') }}"><span class="fs-sm"><i class="bi bi-image" aria-hidden="true"></i> {{ $e->receipts->count() }}</span></td>
+                            <td class="text-end stack-actions"><a href="{{ route('expenses.show', $e) }}" class="btn btn-sm btn-light">{{ __('Detail') }}<i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></td>
                         </tr>
                     @endforeach
                     </tbody>
                 </table>
             </div>
-            @if ($expenses->hasPages())<div class="p-3 border-top">{{ $expenses->onEachSide(1)->links() }}</div>@endif
+
         @endif
+        <x-ui.results-footer :items="$expenses" />
     </x-ui.card>
 </x-layouts.app>
