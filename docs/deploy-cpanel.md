@@ -11,6 +11,12 @@ npm ci && npm run build          # menghasilkan public/build
 
 Kompres seluruh folder proyek **kecuali** `node_modules`, `.env`, `storage/logs/*`, dan `tests`.
 
+Folder `public/build` **wajib ikut diunggah**, termasuk `manifest.json`, seluruh CSS,
+JavaScript, dan font di `assets/`. Sertakan juga `public/images` untuk foto dan logo.
+Jangan unggah `public/hot`: file ini hanya untuk Vite saat development.
+Jika deploy lewat Git, pastikan file baru di `public/build/assets` ikut di-commit;
+aturan `.gitignore` hanya mengabaikan `/build` di akar proyek, bukan `public/build`.
+
 ## 2. Ekstensi PHP yang wajib aktif (cPanel → Select PHP Version → Extensions)
 
 `bcmath`, `gd`, `intl`, `mbstring`, `pdo_mysql`, `zip`, `fileinfo`, `curl`, `openssl`, `xml`, `dom`.
@@ -32,7 +38,11 @@ Letakkan aplikasi **di luar** `public_html` agar `.env` & `storage` tidak bisa d
 ```php
 require __DIR__.'/../propertyme/vendor/autoload.php';
 $app = require_once __DIR__.'/../propertyme/bootstrap/app.php';
+$app->usePublicPath(__DIR__);
 ```
+
+Letakkan `build/` dan `images/` langsung di `public_html/`, sejajar dengan `index.php`.
+`usePublicPath` memastikan Laravel membaca manifest dari folder publik yang sama.
 
 ## 4. Database
 
@@ -143,3 +153,23 @@ php artisan up
 - [ ] Buat akun Staff, upload satu nota dari HP (kamera terbuka)
 - [ ] Notifikasi email masuk ke Manager
 - [ ] `APP_DEBUG=false` dan https aktif
+
+## 12. CSS atau JavaScript tidak termuat setelah update
+
+1. Unggah `public/build` **secara utuh dari build yang sama**. Manifest baru dengan
+   file CSS/JS lama menyebabkan halaman kehilangan tampilan. Untuk deploy lewat Git,
+   sertakan file CSS dan JS baru di commit, bukan hanya `manifest.json`.
+2. Pastikan folder `build/` berada di document root yang melayani `index.php`:
+   `propertyme/public/build/` untuk Opsi A atau `public_html/build/` untuk Opsi B.
+   Pada Opsi B, gunakan `$app->usePublicPath(__DIR__);` seperti contoh di atas.
+3. Pastikan `public/hot` tidak ada di server; file ini membuat `@vite` memakai alamat
+   server development. Pada Opsi B, periksa juga `public_html/hot`.
+4. Atur `APP_URL` ke URL HTTPS hosting. Jika ada `ASSET_URL`, pastikan nilainya adalah
+   alamat publik tempat folder `build/` berada; kosongkan jika tidak memakai CDN.
+5. Jalankan `php artisan optimize:clear`, kemudian muat ulang dengan **Ctrl + F5**.
+6. Buka URL CSS yang tercantum di source HTML. Respons harus berstatus **200** dan
+   berisi CSS, bukan halaman login/404. Jika gagal, periksa lokasi upload dan document root.
+
+Untuk pembaruan aset melalui File Manager, ZIP aset dapat berisi `build/` dan
+`images/` di tingkat teratas. Ekstrak ZIP langsung ke document root, bukan membuat
+folder `public/` tambahan di dalam `public_html/`.
