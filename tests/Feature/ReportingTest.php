@@ -178,6 +178,54 @@ class ReportingTest extends TestCase
         $this->actingAs($this->owner)->get(route('imports.create'))->assertForbidden();
     }
 
+    public function test_import_fills_reservation_price_by_code_and_by_dates(): void
+    {
+        $airbnb = BookingPlatform::where('slug', 'airbnb')->value('id');
+        $bcom = BookingPlatform::where('slug', 'booking-com')->value('id') ?? BookingPlatform::where('slug', '!=', 'airbnb')->value('id');
+        $bcomName = BookingPlatform::find($bcom)->name;
+        $mk = fn ($attrs) => \App\Models\Booking::create($attrs + ['villa_id' => $this->villa->id, 'source' => 'ical', 'status' => 'needs_completion']);
+
+        $hm = $mk(['platform_id' => $airbnb, 'ical_uid' => 'a', 'booking_ref' => 'HMPRICE1', 'check_in' => '2026-11-10', 'check_out' => '2026-11-13']);
+        $bk = $mk(['platform_id' => $bcom, 'ical_uid' => 'b', 'check_in' => '2026-11-20', 'check_out' => '2026-11-22']);
+        $manual = $mk(['platform_id' => $airbnb, 'ical_uid' => 'c', 'booking_ref' => 'HMMANUAL', 'check_in' => '2026-11-25', 'check_out' => '2026-11-27',
+            'total_price' => 1000000, 'price_source' => 'manual']);
+
+        // Export Airbnb: kode booking + tanggal bayar
+        $csv = "Date,Type,Confirmation Code,Start Date,Nights,Guest,Listing,Amount,Host Fee,Gross Earnings\n"
+            ."11/14/2026,Reservation,HMPRICE1,11/10/2026,3,John Smith,{$this->villa->name},5100000,900000,6000000\n"
+            ."11/28/2026,Reservation,HMMANUAL,11/25/2026,2,Ann,{$this->villa->name},1700000,300000,2000000\n";
+        $res = $this->actingAs($this->manager)->post(route('imports.preview'), [
+            'file' => UploadedFile::fake()->createWithContent('airbnb.csv', $csv), 'platform_id' => $airbnb, 'date_format' => 'm/d/Y',
+        ])->assertOk()->assertSee('harga diisi');
+        $this->assertSame(1, $res->viewData('preview')['prices'], 'Harga manual tidak ikut dihitung');
+        $this->actingAs($this->manager)->post(route('imports.store'), ['token' => $res->viewData('token')])
+            ->assertSessionHas('success', fn ($m) => str_contains($m, '1 harga reservasi diperbarui'));
+
+        $hm->refresh();
+        $this->assertSame('6000000.00', $hm->total_price);
+        $this->assertSame('import', $hm->price_source);
+        $this->assertSame('John Smith', $hm->guest_name);
+        $this->assertSame($hm->id, Income::where('booking_ref', 'HMPRICE1')->value('booking_id'));
+        $this->assertSame('1000000.00', $manual->fresh()->total_price, 'Harga manual tidak ditimpa');
+
+        // Export reservasi Booking.com: tanpa kode di iCal → dicocokkan lewat tanggal; tanpa tanggal bayar → pakai check-out
+        $csv = "Book number,Booked by,Guest name(s),Check-in,Check-out,Status,Price,Commission amount\n"
+            ."4012345678,Ayu,Ayu Lestari,20/11/2026,22/11/2026,ok,3.500.000 IDR,525.000 IDR\n";
+        $res = $this->actingAs($this->manager)->post(route('imports.preview'), [
+            'file' => UploadedFile::fake()->createWithContent('bcom.csv', $csv), 'villa_id' => $this->villa->id, 'platform_id' => $bcom, 'date_format' => 'd/m/Y',
+        ])->assertOk();
+        $this->assertSame('ok', $res->viewData('preview')['rows'][0]['status'], $bcomName.': '.implode(';', $res->viewData('preview')['rows'][0]['errors']));
+        $this->actingAs($this->manager)->post(route('imports.store'), ['token' => $res->viewData('token')]);
+
+        $bk->refresh();
+        $this->assertSame('3500000.00', $bk->total_price);
+        $this->assertSame('4012345678', $bk->booking_ref);
+        $this->assertSame('Ayu Lestari', $bk->guest_name);
+        $income = Income::where('booking_ref', '4012345678')->firstOrFail();
+        $this->assertSame($bk->id, $income->booking_id);
+        $this->assertSame('2026-11-22', $income->payment_date->toDateString());
+    }
+
     public function test_global_search_respects_roles(): void
     {
         $this->actingAs($this->manager)->get(route('search', ['q' => 'HMX']))->assertOk()->assertSee('Rp 80.000.000');

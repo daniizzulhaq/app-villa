@@ -161,8 +161,8 @@ class IcalSyncService
                 if (! $booking->booking_ref && $ev['ref']) {
                     $changes['booking_ref'] = $ev['ref'];
                 }
-                // Harga dari feed hanya menimpa harga hasil sinkron, bukan yang diisi manual.
-                if (isset($ev['price']) && $booking->price_source !== 'manual') {
+                // Harga dari feed hanya menimpa harga hasil sinkron, bukan yang diisi manual / dari import payout.
+                if (isset($ev['price']) && in_array($booking->price_source, [null, 'ical'], true)) {
                     $changes['total_price'] = $ev['price'];
                     $changes['price_source'] = 'ical';
                 }

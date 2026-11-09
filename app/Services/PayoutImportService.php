@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\BookingStatus;
 use App\Enums\FeeBasis;
 use App\Imports\HeadingImport;
 use App\Models\Booking;
@@ -24,6 +25,10 @@ use Throwable;
  * Import payout CSV/Excel (template PropertyMe, export Airbnb, atau Booking.com).
  * Alur: unggah → pratinjau (baris OK / DUPLIKAT / ERROR) → konfirmasi → simpan.
  * Duplikat = villa + platform + kode booking sudah ada (di database atau dua kali di file).
+ *
+ * Tiap baris dicocokkan ke reservasi (kode booking, atau villa + platform + tanggal check-in/out —
+ * penting untuk Booking.com yang iCal-nya tanpa kode). Reservasi yang cocok ikut dilengkapi:
+ * harga reservasi (gross), kode booking, dan nama tamu. Harga yang diisi manual tidak ditimpa.
  */
 class PayoutImportService
 {
@@ -31,14 +36,17 @@ class PayoutImportService
     private const ALIASES = [
         'villa' => ['villa', 'nama_villa', 'listing', 'property', 'properti', 'property_name'],
         'platform' => ['platform', 'sumber', 'source', 'channel'],
-        'booking_ref' => ['kode_booking', 'booking_ref', 'confirmation_code', 'reservation_number', 'booking_number', 'kode', 'reference', 'reservation_id'],
+        'booking_ref' => ['kode_booking', 'booking_ref', 'confirmation_code', 'reservation_number', 'booking_number', 'book_number', 'kode', 'reference', 'reservation_id'],
         'payment_date' => ['tanggal_bayar', 'payment_date', 'payout_date', 'tanggal', 'date', 'paid_out_date', 'payment_date_utc'],
         'gross' => ['gross', 'gross_amount', 'gross_earnings', 'gross_booking_income', 'total', 'price', 'original_amount'],
         'platform_fee' => ['komisi', 'komisi_platform', 'platform_fee', 'service_fee', 'host_fee', 'commission', 'commission_amount'],
         'other' => ['potongan_lain', 'other_deduction', 'potongan', 'pajak', 'tax', 'occupancy_taxes'],
         'amount' => ['amount', 'paid_out', 'payout', 'net_amount', 'nominal'],
         'is_net' => ['sudah_net', 'is_net', 'is_net_of_platform'],
-        'guest' => ['nama_tamu', 'guest', 'guest_name', 'booker_name'],
+        'guest' => ['nama_tamu', 'guest', 'guest_name', 'guest_names', 'booker_name', 'booked_by'],
+        'check_in' => ['check_in', 'tanggal_check_in', 'checkin', 'start_date', 'arrival'],
+        'check_out' => ['check_out', 'tanggal_check_out', 'checkout', 'end_date', 'departure'],
+        'nights' => ['nights', 'malam', 'jumlah_malam'],
         'type' => ['type', 'jenis'],
         'notes' => ['catatan', 'notes', 'keterangan', 'details'],
     ];
@@ -56,6 +64,8 @@ class PayoutImportService
         $villas = Villa::query()->when($allowedVillaIds !== null, fn ($q) => $q->whereIn('id', $allowedVillaIds ?: [0]))
             ->get(['id', 'name', 'fee_basis']);
         $platforms = BookingPlatform::all(['id', 'name', 'slug']);
+        // Export reservasi Booking.com tidak punya kolom tanggal bayar → pakai tanggal check-out.
+        $dateFromCheckout = ! isset($map['payment_date']) && (isset($map['check_out']) || isset($map['check_in'], $map['nights']));
         $seen = [];
         $rows = [];
 
@@ -73,7 +83,12 @@ class PayoutImportService
             $errors = [];
             $villa = $this->matchVilla($get('villa'), $villas) ?? ($defaultVillaId ? $villas->firstWhere('id', $defaultVillaId) : null);
             $platform = $this->matchPlatform($get('platform'), $platforms) ?? ($defaultPlatformId ? $platforms->firstWhere('id', $defaultPlatformId) : null);
-            $date = $this->parseDate($get('payment_date'), $dateFormat);
+            $checkIn = $this->parseDate($get('check_in'), $dateFormat);
+            $checkOut = $this->parseDate($get('check_out'), $dateFormat);
+            if (! $checkOut && $checkIn && (int) $get('nights') > 0) {
+                $checkOut = Carbon::parse($checkIn)->addDays((int) $get('nights'))->toDateString();
+            }
+            $date = $this->parseDate($get('payment_date'), $dateFormat) ?? ($dateFromCheckout ? $checkOut : null);
             $gross = $this->parseMoney($get('gross'));
             $isNet = $this->parseBool($get('is_net'));
             if ($gross === null && ($amount = $this->parseMoney($get('amount'))) !== null) {
@@ -106,6 +121,8 @@ class PayoutImportService
                 $errors[] = __('Bulan sudah Final (terkunci)');
             }
 
+            $booking = $villa ? $this->findBooking($villa->id, $platform?->id, $ref, $checkIn, $checkOut) : null;
+
             $status = $errors ? 'error' : 'ok';
             $dupReason = null;
             if (! $errors && $ref) {
@@ -137,6 +154,11 @@ class PayoutImportService
                 'is_net_of_platform' => $isNet,
                 'guest' => trim((string) $get('guest')) ?: null,
                 'notes' => trim((string) $get('notes')) ?: null,
+                'check_in' => $checkIn,
+                'check_out' => $checkOut,
+                'booking_id' => $booking?->id,
+                'booking_label' => $booking ? ($booking->guest_name ?: __('Tamu belum diisi')).' · '.$booking->check_in->translatedFormat('d M').' – '.$booking->check_out->translatedFormat('d M Y') : null,
+                'sets_price' => $booking && ! $errors && $this->priceChanges($booking, $gross, $isNet),
             ];
         }
 
@@ -145,10 +167,11 @@ class PayoutImportService
             'columns' => $columns,
             'mapped' => $map,
             'counts' => collect($rows)->countBy('status')->all() + ['ok' => 0, 'duplicate' => 0, 'error' => 0],
+            'prices' => collect($rows)->where('sets_price', true)->unique('booking_id')->count(),
         ];
     }
 
-    /** Simpan baris OK. Baris duplikat & error dilewati. */
+    /** Simpan baris OK. Baris duplikat & error dilewati (duplikat tetap boleh melengkapi data reservasi). */
     public function import(array $preview, string $fileName, User $actor): ImportBatch
     {
         return DB::transaction(function () use ($preview, $fileName, $actor) {
@@ -158,8 +181,16 @@ class PayoutImportService
                 'created_by' => $actor->id,
             ]);
             $imported = 0;
+            $priced = [];
 
             foreach ($preview['rows'] as $r) {
+                if ($r['status'] === 'error') {
+                    continue;
+                }
+                $booking = ! empty($r['booking_id']) ? Booking::find($r['booking_id']) : null;
+                if ($booking && $this->completeBooking($booking, $r)) {
+                    $priced[$booking->id] = true;
+                }
                 if ($r['status'] !== 'ok') {
                     continue;
                 }
@@ -169,13 +200,6 @@ class PayoutImportService
 
                     continue;
                 }
-                $booking = $r['booking_ref']
-                    ? Booking::where('villa_id', $r['villa_id'])->where('booking_ref', $r['booking_ref'])->first()
-                    : null;
-                if ($booking && $r['guest'] && ! $booking->guest_name) {
-                    $booking->update(['guest_name' => $r['guest']]);
-                }
-
                 $this->incomes->create([
                     'booking_id' => $booking?->id,
                     'villa_id' => $r['villa_id'],
@@ -193,9 +217,63 @@ class PayoutImportService
             }
 
             $batch->update(['rows_imported' => $imported]);
+            $batch->setAttribute('bookings_priced', count($priced)); // hanya untuk pesan sukses
 
             return $batch;
         });
+    }
+
+    /** Cari reservasi untuk baris payout: kode booking dulu, lalu villa + platform + tanggal menginap. */
+    public function findBooking(int $villaId, ?int $platformId, ?string $ref, ?string $checkIn, ?string $checkOut): ?Booking
+    {
+        if ($ref && ($byRef = Booking::where('villa_id', $villaId)->where('booking_ref', $ref)->first())) {
+            return $byRef;
+        }
+        if (! $checkIn) {
+            return null;
+        }
+
+        $candidates = Booking::query()
+            ->where('villa_id', $villaId)
+            ->when($platformId, fn ($q) => $q->where('platform_id', $platformId))
+            ->whereDate('check_in', $checkIn)
+            ->when($checkOut, fn ($q) => $q->whereDate('check_out', $checkOut))
+            // Jangan sampai menempel ke reservasi yang sudah punya kode booking lain.
+            ->where(fn ($q) => $q->whereNull('booking_ref')->orWhere('booking_ref', ''))
+            ->where('status', '!=', BookingStatus::Cancelled->value)
+            ->limit(2)->get();
+
+        return $candidates->count() === 1 ? $candidates->first() : null; // >1 kandidat → tidak ditebak
+    }
+
+    /** Apakah baris ini akan mengisi/mengubah harga reservasi? Harga manual tidak ditimpa; payout net bukan harga tamu. */
+    private function priceChanges(Booking $booking, ?string $gross, bool $isNet): bool
+    {
+        return $gross !== null && ! $isNet && bccomp($gross, '0', 2) > 0
+            && $booking->price_source !== 'manual'
+            && ($booking->total_price === null || bccomp((string) $booking->total_price, $gross, 2) !== 0);
+    }
+
+    /** Lengkapi reservasi dari baris payout. @return bool true bila harga reservasi diisi/diperbarui */
+    private function completeBooking(Booking $booking, array $r): bool
+    {
+        $changes = [];
+        if ($r['guest'] && ! $booking->guest_name) {
+            $changes['guest_name'] = Str::limit($r['guest'], 150, '');
+        }
+        if ($r['booking_ref'] && ! $booking->booking_ref) {
+            $changes['booking_ref'] = $r['booking_ref'];
+        }
+        $setsPrice = $this->priceChanges($booking, $r['gross_amount'], (bool) $r['is_net_of_platform']);
+        if ($setsPrice) {
+            $changes['total_price'] = $r['gross_amount'];
+            $changes['price_source'] = 'import';
+        }
+        if ($changes) {
+            $booking->update($changes);
+        }
+
+        return $setsPrice;
     }
 
     /* ---------------- Parsing ---------------- */

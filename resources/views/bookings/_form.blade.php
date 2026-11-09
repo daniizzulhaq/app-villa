@@ -62,7 +62,7 @@
                         <div class="col-6"><x-form.input type="time" name="arrival_time" :label="__('Perkiraan jam datang')" :value="$booking->arrival_time ? substr($booking->arrival_time, 0, 5) : null" /></div>
                     </div>
                     <x-form.money name="total_price" :label="__('Harga reservasi')" :value="$booking->total_price"
-                                  :help="$booking->price_source === 'ical' ? __('Terisi otomatis dari iCal. Jika diubah di sini, sinkron berikutnya tidak akan menimpanya.') : __('Total yang dibayar tamu. Airbnb & Booking.com tidak mengirim harga lewat iCal, jadi isi manual.')" />
+                                  :help="in_array($booking->price_source, ['ical', 'import'], true) ? __('Terisi otomatis dari iCal / import payout. Jika diubah di sini, tidak akan ditimpa otomatis lagi.') : __('Total yang dibayar tamu. Airbnb & Booking.com tidak mengirim harga lewat iCal — isi manual atau lewat Import Payout.')" />
                     <x-form.textarea name="notes" :label="__('Catatan untuk Staff')" :value="$booking->notes" rows="3" maxlength="3000" :placeholder="__('mis. minta extra bed, alergi, honeymoon decoration')" />
                     <x-form.select name="status" :label="__('Status')" :options="$statuses" :value="$statusValue" required class="mb-0" />
                 </div>

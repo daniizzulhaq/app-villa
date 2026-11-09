@@ -79,7 +79,8 @@ class ImportController extends Controller
         $batch = $this->importer->import($preview, $preview['file_name'], $request->user());
 
         return redirect()->route('imports.create')->with('success',
-            __('Import selesai: :imported pemasukan disimpan, :duplicate duplikat dilewati, :failed baris error dilewati.', ['imported' => $batch->rows_imported, 'duplicate' => $batch->rows_duplicate, 'failed' => $batch->rows_failed]));
+            __('Import selesai: :imported pemasukan disimpan, :duplicate duplikat dilewati, :failed baris error dilewati.', ['imported' => $batch->rows_imported, 'duplicate' => $batch->rows_duplicate, 'failed' => $batch->rows_failed])
+            .($batch->bookings_priced ? ' '.__(':count harga reservasi diperbarui.', ['count' => $batch->bookings_priced]) : ''));
     }
 
     public function template(): BinaryFileResponse

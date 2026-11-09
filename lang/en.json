@@ -1399,7 +1399,15 @@
     "/ malam": "/ night",
     "· dari pemasukan tercatat": "· from recorded income",
     "Belum diisi": "Not filled in yet",
-    "iCal :name tidak menyertakan harga — isi lewat tombol Edit.": "The :name iCal feed does not include prices — fill it in via Edit.",
-    "Terisi otomatis dari iCal. Jika diubah di sini, sinkron berikutnya tidak akan menimpanya.": "Filled automatically from iCal. If you change it here, the next sync will not overwrite it.",
-    "Total yang dibayar tamu. Airbnb & Booking.com tidak mengirim harga lewat iCal, jadi isi manual.": "Total paid by the guest. Airbnb & Booking.com do not send prices via iCal, so enter it manually."
+    "· dari import payout": "· from payout import",
+    "iCal :name tidak menyertakan harga — isi lewat tombol Edit atau Import Payout.": "The :name iCal feed does not include prices — fill it in via Edit or Payout Import.",
+    "Terisi otomatis dari iCal / import payout. Jika diubah di sini, tidak akan ditimpa otomatis lagi.": "Filled automatically from iCal / payout import. If you change it here, it will no longer be overwritten automatically.",
+    "Total yang dibayar tamu. Airbnb & Booking.com tidak mengirim harga lewat iCal — isi manual atau lewat Import Payout.": "Total paid by the guest. Airbnb & Booking.com do not send prices via iCal — enter it manually or via Payout Import.",
+    ":count harga reservasi diperbarui.": ":count reservation prices updated.",
+    ":count reservasi akan diisi harga reservasinya (dari kolom gross). Harga yang diisi manual tidak ditimpa.": ":count reservations will get their price filled in (from the gross column). Manually entered prices are not overwritten.",
+    "harga diisi": "price filled",
+    "tidak ditemukan": "not found",
+    "Tamu belum diisi": "Guest not filled in",
+    "Check-in / out": "Check-in / out",
+    "check-in, check-out, start date, nights — untuk mencocokkan reservasi tanpa kode booking (Booking.com)": "check-in, check-out, start date, nights — to match reservations without a booking code (Booking.com)"
 }

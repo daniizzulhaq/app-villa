@@ -30,13 +30,13 @@
                     <dd>
                         @if ($booking->total_price !== null)
                             <span class="num">@rupiah($booking->total_price)</span>
-                            <span class="fs-xs text-muted">{{ $booking->price_source === 'ical' ? __('· dari iCal') : __('· diisi manual') }}</span>
+                            <span class="fs-xs text-muted">{{ match($booking->price_source) { 'ical' => __('· dari iCal'), 'import' => __('· dari import payout'), default => __('· diisi manual') } }}</span>
                             @if ($booking->nights() > 0)<div class="fs-xs text-muted fw-normal">@rupiah($booking->total_price / $booking->nights()) {{ __('/ malam') }}</div>@endif
                         @elseif ($grossPaid > 0)
                             <span class="num">@rupiah($grossPaid)</span> <span class="fs-xs text-muted">{{ __('· dari pemasukan tercatat') }}</span>
                         @else
                             <span class="text-muted fw-normal">{{ __('Belum diisi') }}</span>
-                            @if ($booking->isFromPlatformSync())<div class="fs-xs text-muted fw-normal">{{ __('iCal :name tidak menyertakan harga — isi lewat tombol Edit.', ['name' => $booking->platform->name]) }}</div>@endif
+                            @if ($booking->isFromPlatformSync())<div class="fs-xs text-muted fw-normal">{{ __('iCal :name tidak menyertakan harga — isi lewat tombol Edit atau Import Payout.', ['name' => $booking->platform->name]) }}</div>@endif
                         @endif
                     </dd>
                     <dt>{{ __('Kode booking') }}</dt><dd>{{ $booking->booking_ref ?: '—' }}</dd>

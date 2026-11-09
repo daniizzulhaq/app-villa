@@ -43,6 +43,7 @@
                     <dt>{{ __('Gross') }}</dt><dd class="fw-normal">{{ __('gross, gross earnings, total, price') }}</dd>
                     <dt>{{ __('Komisi') }}</dt><dd class="fw-normal">{{ __('komisi, service fee, commission') }}</dd>
                     <dt>{{ __('Potongan lain') }}</dt><dd class="fw-normal">{{ __('potongan_lain, tax') }}</dd>
+                    <dt>{{ __('Check-in / out') }}</dt><dd class="fw-normal">{{ __('check-in, check-out, start date, nights — untuk mencocokkan reservasi tanpa kode booking (Booking.com)') }}</dd>
                     <dt>{{ __('Payout net') }}</dt><dd class="fw-normal">{{ __('amount, paid out — dipakai jika gross tidak ada (otomatis ditandai sudah net)') }}</dd>
                 </dl>
             </x-ui.card>

@@ -14,6 +14,11 @@
             <div class="fs-sm">{{ __('Kolom tidak ditemukan:') }} <strong>{{ implode(', ', $missing) }}</strong>{{ __('. Kolom di file: :columns. Gunakan template bila perlu.', ['columns' => implode(', ', $preview['columns'])]) }}</div></div>
     @endif
 
+    @if ($preview['prices'] ?? 0)
+        <div class="alert alert-info d-flex gap-2"><i class="bi bi-tag" aria-hidden="true"></i>
+            <div class="fs-sm">{{ __(':count reservasi akan diisi harga reservasinya (dari kolom gross). Harga yang diisi manual tidak ditimpa.', ['count' => $preview['prices']]) }}</div></div>
+    @endif
+
     <x-ui.card flush x-data="{ show: 'all' }">
         <nav class="pm-tabs" aria-label="{{ __('Filter baris') }}">
             <a href="#" @click.prevent="show = 'all'" :class="show === 'all' && 'active'">{{ __('Semua') }} <span class="count">{{ count($preview['rows']) }}</span></a>
@@ -23,7 +28,7 @@
         </nav>
         <div class="table-responsive" style="max-height: 60vh">
             <table class="table pm-table pm-table--stack fs-sm">
-                <thead><tr><th>{{ __('Baris') }}</th><th>{{ __('Status') }}</th><th>{{ __('Villa') }}</th><th>{{ __('Platform') }}</th><th>{{ __('Kode') }}</th><th>{{ __('Tanggal') }}</th><th class="num">{{ __('Gross') }}</th><th class="num">{{ __('Komisi') }}</th><th class="num">{{ __('Potongan') }}</th></tr></thead>
+                <thead><tr><th>{{ __('Baris') }}</th><th>{{ __('Status') }}</th><th>{{ __('Villa') }}</th><th>{{ __('Platform') }}</th><th>{{ __('Kode') }}</th><th>{{ __('Tanggal') }}</th><th class="num">{{ __('Gross') }}</th><th class="num">{{ __('Komisi') }}</th><th class="num">{{ __('Potongan') }}</th><th>{{ __('Reservasi') }}</th></tr></thead>
                 <tbody>
                 @foreach ($preview['rows'] as $r)
                     <tr x-show="show === 'all' || show === @js($r['status'])" style="{{ $r['status'] === 'duplicate' ? 'background: var(--pm-warning-soft)' : ($r['status'] === 'error' ? 'background: var(--pm-danger-soft)' : '') }}">
@@ -41,6 +46,14 @@
                         <td data-label="{{ __('Gross') }}" class="num">{{ $r['gross_amount'] !== null ? \App\Support\Rupiah::format($r['gross_amount']) : '—' }}@if($r['is_net_of_platform'])<div class="cell-sub">{{ __('sudah net') }}</div>@endif</td>
                         <td data-label="{{ __('Komisi') }}" class="num">@rupiah($r['platform_fee'])</td>
                         <td data-label="{{ __('Potongan') }}" class="num">@rupiah($r['other_deduction'])</td>
+                        <td data-label="{{ __('Reservasi') }}">
+                            @if (! empty($r['booking_id']))
+                                <a href="{{ route('bookings.show', $r['booking_id']) }}" target="_blank" rel="noopener">{{ $r['booking_label'] }}</a>
+                                @if ($r['sets_price'])<div class="cell-sub text-success">{{ __('harga diisi') }}</div>@endif
+                            @else
+                                <span class="text-muted">{{ __('tidak ditemukan') }}</span>
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
                 </tbody>
