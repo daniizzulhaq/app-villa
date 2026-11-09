@@ -178,6 +178,30 @@ class BookingTest extends TestCase
         $this->assertNotNull($channel->fresh()->last_error);
     }
 
+    public function test_ical_reads_airbnb_phone_last_4_digits(): void
+    {
+        $villa = $this->makeVilla();
+        $channel = VillaChannel::create(['villa_id' => $villa->id, 'platform_id' => $this->platform('airbnb'), 'ical_url' => 'https://x.test/ph.ics']);
+        $in = today()->addDays(3)->format('Ymd');
+        $out = today()->addDays(5)->format('Ymd');
+        $desc = 'Reservation URL: https://www.airbnb.com/hosting/reservations/details/HMPHONE123\\nPhone Number (Last 4 Digits): ';
+        Http::fakeSequence()
+            ->push($this->ics([['ph@x', $in, $out, 'Reserved', $desc.'1234'], ['np@x', $in, $out, 'Reserved', '']]))
+            ->push($this->ics([['ph@x', $in, $out, 'Reserved', $desc.'5678'], ['np@x', $in, $out, 'Reserved', '']]));
+
+        $sync = app(IcalSyncService::class);
+        $sync->syncChannel($channel);
+        $b = Booking::where('ical_uid', 'ph@x')->first();
+        $this->assertSame('1234', $b->phone_last4);
+        $this->assertSame('HMPHONE123', $b->booking_ref);
+        $this->assertNull(Booking::where('ical_uid', 'np@x')->value('phone_last4'));
+
+        $sync->syncChannel($channel->fresh());
+        $this->assertSame('5678', $b->fresh()->phone_last4, 'Nomor ikut diperbarui');
+
+        $this->actingAs($this->makeUser(UserRole::Master))->get(route('bookings.show', $b))->assertOk()->assertSee('5678');
+    }
+
     public function test_ical_price_is_parsed_and_manual_price_is_not_overwritten(): void
     {
         $sync = app(IcalSyncService::class);

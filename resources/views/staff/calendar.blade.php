@@ -41,7 +41,7 @@
                                             <div class="pm-agenda__title">{{ __('Check-in · :name', ['name' => $b->villa->name]) }}</div>
                                             <div class="pm-agenda__meta">
                                                 {{ $b->guest_name ?: __('Nama tamu belum ada') }}
-                                                @if ($b->guest_count) {{ __('· :guest_count tamu', ['guest_count' => $b->guest_count]) }} @endif
+                                                @if ($b->guest_count) {{ __('· :guest_count tamu', ['guest_count' => $b->guest_count]) }} @endif @if ($b->phone_last4) {{ __('· HP ••:digits', ['digits' => $b->phone_last4]) }} @endif
                                                 @if ($b->arrival_time) · <strong class="text-ink">{{ __('jam :arrival_time', ['arrival_time' => substr($b->arrival_time, 0, 5)]) }}</strong> @endif
                                                 {{ __('· :nights malam', ['nights' => $b->nights()]) }}
                                             </div>

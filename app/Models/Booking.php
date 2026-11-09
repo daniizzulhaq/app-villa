@@ -15,7 +15,7 @@ class Booking extends Model implements AuditableContract
     use SoftDeletes, Auditable;
 
     protected $fillable = [
-        'villa_id', 'platform_id', 'source', 'ical_uid', 'booking_ref', 'guest_name', 'guest_count',
+        'villa_id', 'platform_id', 'source', 'ical_uid', 'booking_ref', 'guest_name', 'guest_count', 'phone_last4',
         'check_in', 'check_out', 'arrival_time', 'total_price', 'price_source', 'status', 'cancelled_at', 'notes', 'created_by',
     ];
 

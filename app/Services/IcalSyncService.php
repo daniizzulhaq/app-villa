@@ -74,7 +74,7 @@ class IcalSyncService
         return $result;
     }
 
-    /** @return array<int, array{uid:string, check_in:string, check_out:string, ref:?string, summary:string, price:?string}> */
+    /** @return array<int, array{uid:string, check_in:string, check_out:string, ref:?string, summary:string, price:?string, phone_last4:?string}> */
     public function fetchEvents(VillaChannel $channel): array
     {
         // Ulangi hanya untuk gangguan koneksi; 4xx (link salah) tidak perlu dicoba ulang.
@@ -112,12 +112,15 @@ class IcalSyncService
                 continue;
             }
             preg_match('~details/([A-Z0-9]{6,})~', (string) $e->description, $m);
+            // Airbnb: "Phone Number (Last 4 Digits): 1234"
+            preg_match('~last\s*4\s*digits\)?\s*:?\s*(\d{4})\b~i', (string) $e->description, $phone);
 
             $out[] = [
                 'uid' => mb_substr((string) $e->uid, 0, 250),
                 'check_in' => $in,
                 'check_out' => $outDate,
                 'ref' => $m[1] ?? null,
+                'phone_last4' => $phone[1] ?? null,
                 'summary' => $summary,
                 'price' => $this->priceOf($summary."\n".(string) $e->description),
             ];
@@ -142,6 +145,7 @@ class IcalSyncService
                         'platform_id' => $channel->platform_id,
                         'source' => 'ical',
                         'booking_ref' => $ev['ref'],
+                        'phone_last4' => $ev['phone_last4'] ?? null,
                         'check_in' => $ev['check_in'],
                         'check_out' => $ev['check_out'],
                         'total_price' => $ev['price'] ?? null,
@@ -160,6 +164,9 @@ class IcalSyncService
                 $changes = ['check_in' => $ev['check_in'], 'check_out' => $ev['check_out']];
                 if (! $booking->booking_ref && $ev['ref']) {
                     $changes['booking_ref'] = $ev['ref'];
+                }
+                if (! empty($ev['phone_last4'])) {
+                    $changes['phone_last4'] = $ev['phone_last4']; // ikut berubah bila tamu ganti nomor
                 }
                 // Harga dari feed hanya menimpa harga hasil sinkron, bukan yang diisi manual / dari import payout.
                 if (isset($ev['price']) && in_array($booking->price_source, [null, 'ical'], true)) {

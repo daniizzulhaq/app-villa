@@ -25,6 +25,9 @@
                     <dt>{{ __('Check-out') }}</dt><dd>{{ $booking->check_out->translatedFormat('l, d F Y') }}</dd>
                     <dt>{{ __('Lama menginap') }}</dt><dd>{{ __(':nights malam', ['nights' => $booking->nights()]) }}</dd>
                     <dt>{{ __('Jumlah tamu') }}</dt><dd>{{ $booking->guest_count ? $booking->guest_count.' orang' : '—' }}</dd>
+                    @if ($booking->phone_last4)
+                        <dt>{{ __('No. HP tamu') }}</dt><dd><span class="num">••••&nbsp;{{ $booking->phone_last4 }}</span> <span class="fs-xs text-muted fw-normal">{{ __('· 4 digit terakhir, dari iCal :name', ['name' => $booking->platform->name]) }}</span></dd>
+                    @endif
                     @php $grossPaid = $booking->incomes->sum('gross_amount'); @endphp
                     <dt>{{ __('Harga reservasi') }}</dt>
                     <dd>

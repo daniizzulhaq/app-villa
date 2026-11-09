@@ -1409,5 +1409,8 @@
     "tidak ditemukan": "not found",
     "Tamu belum diisi": "Guest not filled in",
     "Check-in / out": "Check-in / out",
-    "check-in, check-out, start date, nights — untuk mencocokkan reservasi tanpa kode booking (Booking.com)": "check-in, check-out, start date, nights — to match reservations without a booking code (Booking.com)"
+    "check-in, check-out, start date, nights — untuk mencocokkan reservasi tanpa kode booking (Booking.com)": "check-in, check-out, start date, nights — to match reservations without a booking code (Booking.com)",
+    "No. HP tamu": "Guest phone",
+    "· 4 digit terakhir, dari iCal :name": "· last 4 digits, from :name iCal",
+    "· HP ••:digits": "· phone ••:digits"
 }
