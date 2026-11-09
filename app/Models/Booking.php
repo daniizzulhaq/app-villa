@@ -16,7 +16,7 @@ class Booking extends Model implements AuditableContract
 
     protected $fillable = [
         'villa_id', 'platform_id', 'source', 'ical_uid', 'booking_ref', 'guest_name', 'guest_count',
-        'check_in', 'check_out', 'arrival_time', 'status', 'cancelled_at', 'notes', 'created_by',
+        'check_in', 'check_out', 'arrival_time', 'total_price', 'price_source', 'status', 'cancelled_at', 'notes', 'created_by',
     ];
 
     protected function casts(): array
@@ -27,6 +27,7 @@ class Booking extends Model implements AuditableContract
             'cancelled_at' => 'datetime',
             'status' => BookingStatus::class,
             'guest_count' => 'integer',
+            'total_price' => 'decimal:2',
         ];
     }
 

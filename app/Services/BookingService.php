@@ -59,6 +59,7 @@ class BookingService
 
             return Booking::create(Arr::only($data, (new Booking)->getFillable()) + [
                 'source' => 'manual',
+                'price_source' => isset($data['total_price']) ? 'manual' : null,
                 'created_by' => $actor->id,
                 'cancelled_at' => $data['status'] === BookingStatus::Cancelled->value ? now() : null,
             ]);
@@ -73,7 +74,11 @@ class BookingService
                 $data = Arr::except($data, ['villa_id', 'platform_id', 'check_in', 'check_out']);
             }
 
-            $booking->fill(Arr::only($data, ['villa_id', 'platform_id', 'booking_ref', 'guest_name', 'guest_count', 'check_in', 'check_out', 'arrival_time', 'status', 'notes']));
+            $booking->fill(Arr::only($data, ['villa_id', 'platform_id', 'booking_ref', 'guest_name', 'guest_count', 'check_in', 'check_out', 'arrival_time', 'total_price', 'status', 'notes']));
+            if ($booking->isDirty('total_price')) {
+                // Harga diubah manual → sinkron iCal tidak akan menimpanya lagi.
+                $booking->price_source = $booking->total_price === null ? null : 'manual';
+            }
 
             if (in_array($booking->status->value, BookingStatus::occupying(), true)
                 && ($booking->isDirty(['check_in', 'check_out', 'villa_id', 'status']))) {

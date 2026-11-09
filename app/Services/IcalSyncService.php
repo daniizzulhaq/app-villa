@@ -18,6 +18,8 @@ use Throwable;
 /**
  * Sinkron iCal Airbnb / Booking.com.
  * - Booking baru → status "Perlu dilengkapi" (iCal hanya berisi tanggal).
+ * - Harga: Airbnb & Booking.com TIDAK menyertakan harga di iCal. Bila feed lain (channel manager,
+ *   iCal kustom) menuliskan harga di SUMMARY/DESCRIPTION, harga ikut tersimpan otomatis.
  * - Booking yang hilang dari feed (dan belum lewat) → "Cancelled".
  * - Feed kosong padahal ada booking mendatang → pembatalan DITAHAN (cegah salah batal massal).
  */
@@ -72,7 +74,7 @@ class IcalSyncService
         return $result;
     }
 
-    /** @return array<int, array{uid:string, check_in:string, check_out:string, ref:?string, summary:string}> */
+    /** @return array<int, array{uid:string, check_in:string, check_out:string, ref:?string, summary:string, price:?string}> */
     public function fetchEvents(VillaChannel $channel): array
     {
         // Ulangi hanya untuk gangguan koneksi; 4xx (link salah) tidak perlu dicoba ulang.
@@ -117,6 +119,7 @@ class IcalSyncService
                 'check_out' => $outDate,
                 'ref' => $m[1] ?? null,
                 'summary' => $summary,
+                'price' => $this->priceOf($summary."\n".(string) $e->description),
             ];
         }
 
@@ -141,6 +144,8 @@ class IcalSyncService
                         'booking_ref' => $ev['ref'],
                         'check_in' => $ev['check_in'],
                         'check_out' => $ev['check_out'],
+                        'total_price' => $ev['price'] ?? null,
+                        'price_source' => isset($ev['price']) ? 'ical' : null,
                         'status' => BookingStatus::NeedsCompletion,
                     ])->save();
                     $created[] = $booking->id;
@@ -155,6 +160,11 @@ class IcalSyncService
                 $changes = ['check_in' => $ev['check_in'], 'check_out' => $ev['check_out']];
                 if (! $booking->booking_ref && $ev['ref']) {
                     $changes['booking_ref'] = $ev['ref'];
+                }
+                // Harga dari feed hanya menimpa harga hasil sinkron, bukan yang diisi manual.
+                if (isset($ev['price']) && $booking->price_source !== 'manual') {
+                    $changes['total_price'] = $ev['price'];
+                    $changes['price_source'] = 'ical';
                 }
                 if ($booking->status === BookingStatus::Cancelled) {
                     // Muncul lagi di feed → aktif kembali
@@ -192,6 +202,47 @@ class IcalSyncService
 
             return [$created, $updated, $cancelled, $warning];
         });
+    }
+
+    /**
+     * Cari harga di teks event, mis. "Total: Rp 2.500.000", "Price: IDR 1,250,000.00", "Harga 3500000".
+     * Hanya Rupiah (atau tanpa mata uang) yang diambil — mata uang lain diabaikan agar laporan tidak salah.
+     */
+    public function priceOf(string $text): ?string
+    {
+        $label = '(?:total(?:\s*(?:price|amount|harga))?|price|harga|amount|payout|revenue|tarif|rate)';
+        if (! preg_match('/\b'.$label.'\b\s*[:=]?\s*(IDR|Rp\.?|[A-Z]{3}|[$€£])?\s*([\d][\d.,]*)/iu', $text, $m)) {
+            return null;
+        }
+        $currency = strtoupper(rtrim($m[1] ?? '', '.'));
+        if ($currency !== '' && ! in_array($currency, ['IDR', 'RP'], true)) {
+            return null;
+        }
+
+        $amount = $this->normalizeAmount($m[2]);
+
+        return $amount !== null && (float) $amount > 0 ? $amount : null;
+    }
+
+    private function normalizeAmount(string $raw): ?string
+    {
+        $raw = rtrim($raw, '.,');
+        $lastDot = strrpos($raw, '.');
+        $lastComma = strrpos($raw, ',');
+
+        if ($lastDot !== false && $lastComma !== false) {
+            // Pemisah yang terakhir adalah desimal: "1.250.000,50" atau "1,250,000.50"
+            $dec = $lastDot > $lastComma ? '.' : ',';
+            $thousand = $dec === '.' ? ',' : '.';
+            $raw = str_replace([$thousand, $dec], ['', '.'], $raw);
+        } elseif ($lastDot !== false || $lastComma !== false) {
+            $sep = $lastDot !== false ? '.' : ',';
+            $parts = explode($sep, $raw);
+            $isThousands = count($parts) > 2 || strlen(end($parts)) === 3;
+            $raw = $isThousands ? implode('', $parts) : implode('.', $parts);
+        }
+
+        return is_numeric($raw) ? number_format((float) $raw, 2, '.', '') : null;
     }
 
     private function dateOf(?string $raw): ?string

@@ -21,6 +21,12 @@ class BookingRequest extends FormRequest
         return $allowed && (! $this->filled('villa_id') || $this->user()->canAccessVilla((int) $this->input('villa_id')));
     }
 
+    protected function prepareForValidation(): void
+    {
+        $price = $this->input('total_price');
+        $this->merge(['total_price' => $price === null || $price === '' ? null : preg_replace('/[^\d.]/', '', (string) $price)]);
+    }
+
     public function rules(): array
     {
         /** @var Booking|null $booking */
@@ -36,6 +42,7 @@ class BookingRequest extends FormRequest
             'guest_name' => ['nullable', 'string', 'max:150'],
             'guest_count' => ['nullable', 'integer', 'min:1', 'max:99'],
             'arrival_time' => ['nullable', 'date_format:H:i'],
+            'total_price' => ['nullable', 'numeric', 'min:0', 'max:9999999999999'],
             'status' => ['required', Rule::enum(BookingStatus::class)],
             'notes' => ['nullable', 'string', 'max:3000'],
         ];
@@ -46,7 +53,7 @@ class BookingRequest extends FormRequest
         return [
             'villa_id' => 'villa', 'platform_id' => __('sumber booking'), 'check_in' => 'tanggal check-in',
             'check_out' => 'tanggal check-out', 'booking_ref' => __('kode booking'), 'guest_name' => __('nama tamu'),
-            'guest_count' => __('jumlah tamu'), 'arrival_time' => __('jam datang'),
+            'guest_count' => __('jumlah tamu'), 'arrival_time' => __('jam datang'), 'total_price' => __('harga reservasi'),
         ];
     }
 

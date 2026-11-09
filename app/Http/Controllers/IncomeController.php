@@ -67,6 +67,7 @@ class IncomeController extends Controller
             'villa_id' => $booking?->villa_id ?? ($request->integer('villa') ?: null),
             'platform_id' => $booking?->platform_id,
             'booking_ref' => $booking?->booking_ref,
+            'gross_amount' => $booking?->total_price,
             'payment_date' => today(),
             'platform_fee' => 0,
             'other_deduction' => 0,

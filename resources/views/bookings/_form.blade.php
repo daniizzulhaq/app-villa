@@ -61,6 +61,8 @@
                         <div class="col-6"><x-form.input type="number" name="guest_count" :label="__('Jumlah tamu')" :value="$booking->guest_count" min="1" max="99" inputmode="numeric" /></div>
                         <div class="col-6"><x-form.input type="time" name="arrival_time" :label="__('Perkiraan jam datang')" :value="$booking->arrival_time ? substr($booking->arrival_time, 0, 5) : null" /></div>
                     </div>
+                    <x-form.money name="total_price" :label="__('Harga reservasi')" :value="$booking->total_price"
+                                  :help="$booking->price_source === 'ical' ? __('Terisi otomatis dari iCal. Jika diubah di sini, sinkron berikutnya tidak akan menimpanya.') : __('Total yang dibayar tamu. Airbnb & Booking.com tidak mengirim harga lewat iCal, jadi isi manual.')" />
                     <x-form.textarea name="notes" :label="__('Catatan untuk Staff')" :value="$booking->notes" rows="3" maxlength="3000" :placeholder="__('mis. minta extra bed, alergi, honeymoon decoration')" />
                     <x-form.select name="status" :label="__('Status')" :options="$statuses" :value="$statusValue" required class="mb-0" />
                 </div>

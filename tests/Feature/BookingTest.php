@@ -178,6 +178,37 @@ class BookingTest extends TestCase
         $this->assertNotNull($channel->fresh()->last_error);
     }
 
+    public function test_ical_price_is_parsed_and_manual_price_is_not_overwritten(): void
+    {
+        $sync = app(IcalSyncService::class);
+        $this->assertSame('2500000.00', $sync->priceOf('Total: Rp 2.500.000'));
+        $this->assertSame('1250000.50', $sync->priceOf("Guest: Budi\nPrice: IDR 1,250,000.50"));
+        $this->assertSame('3500000.00', $sync->priceOf('Harga 3500000'));
+        $this->assertNull($sync->priceOf('Total: USD 250'), 'Mata uang selain Rupiah diabaikan');
+        $this->assertNull($sync->priceOf('Reservation URL: https://www.airbnb.com/hosting/reservations/details/HMABCDE123'));
+
+        $villa = $this->makeVilla();
+        $channel = VillaChannel::create(['villa_id' => $villa->id, 'platform_id' => $this->platform('airbnb'), 'ical_url' => 'https://x.test/p.ics']);
+        $in = today()->addDays(3)->format('Ymd');
+        $out = today()->addDays(5)->format('Ymd');
+        Http::fakeSequence()
+            ->push($this->ics([['p1@x', $in, $out, 'Reserved', 'Total: Rp 2.000.000']]))
+            ->push($this->ics([['p1@x', $in, $out, 'Reserved', 'Total: Rp 2.200.000']]))
+            ->push($this->ics([['p1@x', $in, $out, 'Reserved', 'Total: Rp 9.900.000']]));
+
+        $sync->syncChannel($channel);
+        $b = Booking::where('ical_uid', 'p1@x')->first();
+        $this->assertSame('2000000.00', $b->total_price);
+        $this->assertSame('ical', $b->price_source);
+
+        $sync->syncChannel($channel->fresh());
+        $this->assertSame('2200000.00', $b->fresh()->total_price, 'Harga dari iCal ikut diperbarui');
+
+        $b->fresh()->update(['total_price' => 2100000, 'price_source' => 'manual']);
+        $sync->syncChannel($channel->fresh());
+        $this->assertSame('2100000.00', $b->fresh()->total_price, 'Harga manual tidak ditimpa sinkron');
+    }
+
     public function test_empty_feed_with_many_future_bookings_does_not_mass_cancel(): void
     {
         $villa = $this->makeVilla();
