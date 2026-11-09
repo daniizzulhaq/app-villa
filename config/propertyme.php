@@ -1,6 +1,9 @@
 <?php
 
 return [
+    // Jumlah villa per akun; Master tetap mengakses seluruh villa.
+    'villa_limits' => ['owner' => 20, 'staff' => 20, 'manager' => 20],
+
     // Akun Manager pertama (dipakai ManagerSeeder). Kosongkan password → dibuat acak & ditampilkan sekali.
     'manager' => [
         'name' => env('MANAGER_NAME', 'Manager PropertyMe'),

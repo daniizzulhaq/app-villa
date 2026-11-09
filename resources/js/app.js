@@ -357,10 +357,10 @@ Alpine.data('chart', (config) => ({
         const base = {
             chart: { type: config.type, height: config.height || 300, fontFamily: 'Inter Variable, Inter, sans-serif', toolbar: { show: false }, animations: { speed: 300 } },
             series,
-            colors: config.colors || ['#285b49', '#b3935e', '#92ad85', '#d3c3a5', '#607d87', '#9c8e9d'],
+            colors: config.colors || ['#a77c25', '#d5b363', '#e8cf94', '#eadfc9', '#8c8271', '#b8a991'],
             dataLabels: { enabled: false },
             legend: { position: 'bottom', fontSize: '13px', markers: { size: 6 } },
-            grid: { borderColor: '#e7e9e2', strokeDashArray: 4 },
+            grid: { borderColor: '#ece9e3', strokeDashArray: 4 },
             tooltip: { y: { formatter: (v) => (config.percent ? `${v}%` : rupiahFull(v)) } },
             noData: { text: t('Belum ada data') },
         };

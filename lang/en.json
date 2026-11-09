@@ -1,4 +1,6 @@
 {
+    "Total maksimal :limit villa per akun.": "A maximum of :limit villas per account.",
+    ":role :name maksimal :limit villa per akun. Penugasan ini menjadi :count villa.": ":role :name can have a maximum of :limit villas per account. This assignment would result in :count villas.",
     "(and :count more error)": "(and :count more error)",
     "(and :count more errors)": "(and :count more error)|(and :count more errors)|(and :count more errors)",
     "A decryption key is required.": "A decryption key is required.",

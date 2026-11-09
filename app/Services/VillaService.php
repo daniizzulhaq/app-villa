@@ -19,6 +19,7 @@ class VillaService
     public function create(array $data, User $actor): Villa
     {
         return DB::transaction(function () use ($data, $actor) {
+            app(VillaAssignmentLimits::class)->forVilla(null, $data);
             $villa = new Villa(Arr::only($data, (new Villa)->getFillable()));
 
             if (($data['photo'] ?? null) instanceof UploadedFile) {
@@ -45,6 +46,7 @@ class VillaService
     public function update(Villa $villa, array $data, User $actor): Villa
     {
         return DB::transaction(function () use ($villa, $data, $actor) {
+            app(VillaAssignmentLimits::class)->forVilla($villa, $data);
             $oldPct = (string) $villa->fee_percentage;
             $oldBasis = $villa->fee_basis;
             $oldNote = $villa->fee_basis_note;

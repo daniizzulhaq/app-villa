@@ -5,7 +5,7 @@
         </x-slot:actions>
     </x-ui.page-header>
 
-    <div class="pm-collection-intro"><p>{{ __('Ruang istimewa. Potensi tak terbatas.') }}<small>{{ __('Kelola data villa, owner, management fee, link iCal, dan penugasan staff.') }}</small></p><i class="bi bi-houses" aria-hidden="true"></i></div>
+    <div class="pm-collection-intro" style="--pm-villa-image: url('{{ asset('images/villas/bg2.jpg') }}')"><p>{{ __('Ruang istimewa. Potensi tak terbatas.') }}<small>{{ __('Kelola data villa, owner, management fee, link iCal, dan penugasan staff.') }}</small></p><i class="bi bi-houses" aria-hidden="true"></i></div>
     <div x-data="{ view: 'grid' }">
         {{-- Filter selalu terlihat di atas daftar --}}
         <form method="GET" class="pm-toolbar pm-collection-toolbar" role="search" data-no-lock>

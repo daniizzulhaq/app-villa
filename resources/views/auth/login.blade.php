@@ -1,10 +1,15 @@
 <x-layouts.guest :title="__('Masuk')">
     <div class="pm-auth">
         {{-- Panel brand (desktop) --}}
-        <aside class="pm-auth__aside" style="--pm-villa-image: url('{{ asset('images/villa-retreat.jpg') }}')">
+        <aside class="pm-auth__aside" style="--pm-villa-image: url('{{ asset('images/villas/bg3.jpg') }}')">
+            <div class="pm-auth__photos" aria-hidden="true">
+                @foreach ([3, 2, 1, 4, 5, 6] as $photo)
+                    <div class="pm-auth__photo" style="--slide: {{ $loop->index }}; background-image: url('{{ asset('images/villas/bg'.$photo.'.jpg') }}')"></div>
+                @endforeach
+            </div>
             <div class="pm-auth__brand">
-                <x-ui.brand-mark />
-                <span>PropertyMe<small>VILLA MANAGEMENT</small></span>
+                <x-ui.brand-mark light />
+                <small>VILLA MANAGEMENT</small>
             </div>
             <div class="pm-auth__story">
                 <span class="pm-eyebrow"><span></span> {{ __('Ruang untuk berkembang') }}</span>
@@ -23,9 +28,9 @@
             {{-- Pilih bahasa sebelum login --}}
             <x-ui.locale-switcher class="position-absolute top-0 end-0 m-3" />
             <div class="pm-auth__form">
-                <div class="d-flex align-items-center gap-2 mb-4 d-lg-none">
+                <div class="pm-auth__mobile-brand d-lg-none">
                     <x-ui.brand-mark />
-                    <span class="pm-brand__name">PropertyMe<span class="pm-brand__sub">VILLA MANAGEMENT</span></span>
+                    <span class="pm-brand__sub">VILLA MANAGEMENT</span>
                 </div>
 
                 <div class="pm-auth__welcome"><i class="bi bi-flower2" aria-hidden="true"></i></div>

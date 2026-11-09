@@ -79,13 +79,17 @@
     "file": "assets/bootstrap-icons-DJdhg9lH.woff2",
     "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2"
   },
+  "public/images/villas/bg5.jpg": {
+    "file": "assets/bg5-DWbt3UdU.jpg",
+    "src": "public/images/villas/bg5.jpg"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-CofLTab9.css",
+    "file": "assets/app-BR3Iv8Ie.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-CiYbNoPK.js",
+    "file": "assets/app-DlgwxAZU.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

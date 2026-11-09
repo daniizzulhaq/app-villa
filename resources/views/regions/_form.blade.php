@@ -71,7 +71,7 @@
             <div class="row g-4">
                 <div class="col-lg-4">
                     <h2 class="pm-form-section__title">{{ __('3. Manager wilayah') }}</h2>
-                    <p class="pm-form-section__desc">{{ __('Manager yang dicentang bisa melihat & mengurus semua villa di wilayah ini, termasuk laba bersihnya. Satu manager boleh memegang beberapa wilayah.') }}</p>
+                    <p class="pm-form-section__desc">{{ __('Manager yang dicentang bisa melihat & mengurus semua villa di wilayah ini, termasuk laba bersihnya. Satu manager boleh memegang beberapa wilayah.') }} {{ __('Total maksimal :limit villa per akun.', ['limit' => config('propertyme.villa_limits.manager')]) }}</p>
                 </div>
                 <div class="col-lg-8">
                     @if ($managers->isEmpty())
@@ -100,6 +100,7 @@
             </div>
         </section>
 
+        @error('manager_ids')<div class="invalid-feedback d-block px-4 pb-3">{{ $message }}</div>@enderror
         <x-form.actions :cancel="route('regions.index')" :submit="$isEdit ? __('Simpan Perubahan') : __('Simpan Wilayah')" icon="bi-check-lg" />
     </div>
 </form>

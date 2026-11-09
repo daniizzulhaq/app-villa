@@ -14,10 +14,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#1d3b30">
+    <meta name="theme-color" content="#ffffff">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ? $title.' · ' : '' }}{{ config('app.name') }}</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/propertyme-mark.svg') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/propertyme-logo.png') }}">
     @include('layouts.partials.i18n')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
@@ -27,9 +27,9 @@
 
 {{-- ============ Sidebar (desktop) ============ --}}
 <aside class="pm-sidebar" aria-label="{{ __('Menu utama') }}">
-    <a href="{{ $user->homeUrl() }}" class="pm-brand">
+    <a href="{{ $user->homeUrl() }}" class="pm-brand" aria-label="{{ __('Beranda PropertyMe') }}">
         <x-ui.brand-mark />
-        <span class="pm-brand__name">PropertyMe<span class="pm-brand__sub">VILLA MANAGEMENT</span></span>
+        <span class="pm-brand__sub">VILLA MANAGEMENT</span>
     </a>
     <div class="pm-workspace"><span class="pm-workspace__icon"><i class="bi bi-buildings" aria-hidden="true"></i></span><span><strong>{{ __('Ruang kerja villa') }}</strong><small>{{ __('Operasional & keuangan') }}</small></span></div>
     @include('layouts.partials.nav-list', ['groups' => $sidebar])

@@ -16,7 +16,7 @@
         </x-slot:actions>
     </x-ui.page-header>
 
-    <section class="pm-dashboard-hero" aria-label="{{ __('Selamat datang di PropertyMe') }}" style="--pm-villa-image: url('{{ asset('images/villa-retreat.jpg') }}')">
+    <section class="pm-dashboard-hero" aria-label="{{ __('Selamat datang di PropertyMe') }}" style="--pm-villa-image: url('{{ asset('images/villas/dashboard-pool.jpg') }}')">
         <div class="pm-dashboard-hero__content">
             <span class="pm-eyebrow"><span></span> {{ __('Villa Anda. Semua terarah.') }}</span>
             <h2>{{ __('Kelola dengan tenang,') }}<br><em>{{ __('bertumbuh lebih jauh.') }}</em></h2>
@@ -81,7 +81,7 @@
                         { name: @js(__('Management fee')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->managementFee))->values()) },
                         { name: @js(__('Pengeluaran')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->expenses))->values()) },
                         { name: @js(__('Net profit')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->netProfit))->values()) } ],
-                        colors: ['#aac29b', '#c2a572', '#d9c5ab', '#285b49'] })">
+                        colors: ['#d5b363', '#b88b2b', '#eadfc9', '#a77c25'] })">
                     <div x-show="loading"><x-ui.skeleton height="300px" /></div>
                     <x-ui.empty-state x-show="empty" x-cloak :title="__('Belum ada transaksi')" :text="__('Grafik muncul setelah pemasukan atau pengeluaran tercatat.')" />
                     <div x-ref="chart"></div>

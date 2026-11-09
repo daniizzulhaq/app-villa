@@ -97,7 +97,7 @@
                 <div class="row g-4">
                     <div class="col-lg-4">
                         <h2 class="pm-form-section__title">{{ __('3. Wilayah yang dipegang') }}</h2>
-                        <p class="pm-form-section__desc">{{ __('Manager hanya melihat & mengurus villa di wilayah yang dicentang, termasuk laba bersihnya. Boleh lebih dari satu wilayah.') }}</p>
+                        <p class="pm-form-section__desc">{{ __('Manager hanya melihat & mengurus villa di wilayah yang dicentang, termasuk laba bersihnya. Boleh lebih dari satu wilayah.') }} {{ __('Total maksimal :limit villa per akun.', ['limit' => config('propertyme.villa_limits.manager')]) }}</p>
                     </div>
                     <div class="col-lg-8">
                         @if ($regions->isEmpty())
@@ -119,6 +119,7 @@
                                     </div>
                                 @endforeach
                             </div>
+                            @error('region_ids')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                             @error('region_ids.*')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         @endif
                     </div>
@@ -131,8 +132,8 @@
             <div class="row g-4">
                 <div class="col-lg-4">
                     <h2 class="pm-form-section__title">{{ __('3. Akses villa') }}</h2>
-                    <p class="pm-form-section__desc" x-show="role === 'staff'">{{ __('Staff hanya melihat kalender & mengunggah nota untuk villa yang dicentang. Boleh lebih dari satu.') }}</p>
-                    <p class="pm-form-section__desc" x-show="role === 'owner'">{{ __('Owner hanya melihat data keuangan villa yang dicentang. Jika villa sudah punya owner lain, owner-nya akan diganti.') }}</p>
+                    <p class="pm-form-section__desc" x-show="role === 'staff'">{{ __('Staff hanya melihat kalender & mengunggah nota untuk villa yang dicentang. Boleh lebih dari satu.') }} {{ __('Total maksimal :limit villa per akun.', ['limit' => config('propertyme.villa_limits.staff')]) }}</p>
+                    <p class="pm-form-section__desc" x-show="role === 'owner'">{{ __('Owner hanya melihat data keuangan villa yang dicentang. Jika villa sudah punya owner lain, owner-nya akan diganti.') }} {{ __('Total maksimal :limit villa per akun.', ['limit' => config('propertyme.villa_limits.owner')]) }}</p>
                 </div>
                 <div class="col-lg-8">
                     @if ($villas->isEmpty())

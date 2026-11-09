@@ -2,7 +2,7 @@
 @props(['title', 'text' => null, 'art' => 'folder'])
 <div {{ $attributes->class('pm-empty') }}>
     <svg class="pm-empty__art" viewBox="0 0 120 96" fill="none" aria-hidden="true">
-        <rect x="8" y="16" width="104" height="72" rx="14" fill="#EAF0FD"/>
+        <rect x="8" y="16" width="104" height="72" rx="14" fill="#FBF1D9"/>
         @switch($art)
             @case('villa')
                 <path d="M34 60 60 38l26 22" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>

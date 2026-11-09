@@ -8,6 +8,7 @@ use App\Http\Requests\UserRequest;
 use App\Models\Region;
 use App\Models\User;
 use App\Models\Villa;
+use App\Services\VillaAssignmentLimits;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +72,7 @@ class UserController extends Controller
                 'is_active' => $data['is_active'],
             ]);
             $user->forceFill(['email_verified_at' => now()])->saveQuietly();
+            app(VillaAssignmentLimits::class)->forUser($user, UserRole::from($data['role']), $data['villa_ids'] ?? [], $data['region_ids'] ?? [], request()->user());
             $user->syncRoles([$data['role']]);
             $this->syncVillaAccess($user, UserRole::from($data['role']), $data['villa_ids'] ?? [], request()->user());
             $this->syncRegions($user, UserRole::from($data['role']), $data['region_ids'] ?? [], request()->user());
@@ -99,6 +101,7 @@ class UserController extends Controller
         $data = $request->validated();
 
         DB::transaction(function () use ($user, $data) {
+            app(VillaAssignmentLimits::class)->forUser($user, UserRole::from($data['role']), $data['villa_ids'] ?? [], $data['region_ids'] ?? [], request()->user());
             $user->fill([
                 'name' => $data['name'],
                 'username' => $data['username'] ?? null,

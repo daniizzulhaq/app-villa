@@ -72,7 +72,7 @@
                 { name: @js(__('Management fee')), data: @js($rows->map(fn ($r) => F::toFloat($r['summary']->managementFee))->values()) },
                 { name: @js(__('Pengeluaran')), data: @js($rows->map(fn ($r) => F::toFloat($r['summary']->expenses))->values()) },
                 { name: @js(__('Net profit')), data: @js($rows->map(fn ($r) => F::toFloat($r['summary']->netProfit))->values()) } ],
-                colors: ['#aac29b', '#c2a572', '#d9c5ab', '#285b49'] })">
+                colors: ['#d5b363', '#b88b2b', '#eadfc9', '#a77c25'] })">
             <div x-show="loading"><x-ui.skeleton height="300px" /></div>
             <x-ui.empty-state x-show="empty" x-cloak :title="__('Belum ada data di periode ini')" />
             <div x-ref="chart"></div>
@@ -114,7 +114,7 @@
                 <div x-data="chart({ type: 'line', height: 280, labels: @js($trendSeries->pluck('label')->values()), series: [
                         { name: @js(__('Net profit')), data: @js($trendSeries->map(fn ($r) => F::toFloat($r['summary']->netProfit))->values()) },
                         { name: @js(__('Gross income')), data: @js($trendSeries->map(fn ($r) => F::toFloat($r['summary']->gross))->values()) } ],
-                        colors: ['#285b49', '#b3935e'] })">
+                        colors: ['#a77c25', '#d5b363'] })">
                     <div x-show="loading"><x-ui.skeleton height="260px" /></div>
                     <x-ui.empty-state x-show="empty" x-cloak :title="__('Belum ada data')" />
                     <div x-ref="chart"></div>

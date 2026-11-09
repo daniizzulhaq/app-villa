@@ -83,7 +83,7 @@
             <div class="row g-4">
                 <div class="col-lg-4">
                     <h2 class="pm-form-section__title">{{ __('2. Pemilik & wilayah') }}</h2>
-                    <p class="pm-form-section__desc">{{ __('Owner hanya dapat melihat villa yang terhubung dengan akunnya. Wilayah menentukan Manager yang mengurus villa ini.') }}</p>
+                    <p class="pm-form-section__desc">{{ __('Owner hanya dapat melihat villa yang terhubung dengan akunnya. Wilayah menentukan Manager yang mengurus villa ini.') }} {{ __('Total maksimal :limit villa per akun.', ['limit' => config('propertyme.villa_limits.owner')]) }}</p>
                 </div>
                 <div class="col-lg-8">
                     @if (! $isMaster)
@@ -205,7 +205,7 @@
             <div class="row g-4">
                 <div class="col-lg-4">
                     <h2 class="pm-form-section__title">{{ __('5. Staff yang bertugas') }}</h2>
-                    <p class="pm-form-section__desc">{{ __('Staff hanya melihat kalender dan dapat mengunggah nota untuk villa yang dicentang. Satu staff boleh menangani beberapa villa.') }}</p>
+                    <p class="pm-form-section__desc">{{ __('Staff hanya melihat kalender dan dapat mengunggah nota untuk villa yang dicentang. Satu staff boleh menangani beberapa villa.') }} {{ __('Total maksimal :limit villa per akun.', ['limit' => config('propertyme.villa_limits.staff')]) }}</p>
                 </div>
                 <div class="col-lg-8">
                     @if ($staffUsers->isEmpty())
@@ -228,6 +228,7 @@
                                 </div>
                             @endforeach
                         </div>
+                        @error('staff_ids')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         @error('staff_ids.*')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     @endif
                 </div>

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Region;
 use App\Models\User;
 use App\Models\Villa;
+use App\Services\VillaAssignmentLimits;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -98,6 +99,7 @@ class RegionController extends Controller
     private function syncMembers(Region $region, array $data): void
     {
         $villaIds = array_map('intval', $data['villa_ids'] ?? []);
+        app(VillaAssignmentLimits::class)->forRegion($region, $villaIds, $data['manager_ids'] ?? []);
 
         // Per model agar perpindahan wilayah tercatat di audit log.
         $region->villas()->whereNotIn('id', $villaIds ?: [0])->get()->each(fn (Villa $v) => $v->update(['region_id' => null]));
