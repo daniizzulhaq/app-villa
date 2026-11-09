@@ -1412,5 +1412,12 @@
     "check-in, check-out, start date, nights — untuk mencocokkan reservasi tanpa kode booking (Booking.com)": "check-in, check-out, start date, nights — to match reservations without a booking code (Booking.com)",
     "No. HP tamu": "Guest phone",
     "· 4 digit terakhir, dari iCal :name": "· last 4 digits, from :name iCal",
-    "· HP ••:digits": "· phone ••:digits"
+    "· HP ••:digits": "· phone ••:digits",
+    "Isi email atau username — salah satu wajib untuk login.": "Fill in an email or username — one of them is required to log in.",
+    "Isi username atau email — salah satu wajib untuk login.": "Fill in a username or email — one of them is required to log in.",
+    "Login bisa memakai username atau email. Email opsional — hanya dipakai untuk menerima notifikasi lewat email.": "Log in with a username or email. Email is optional — it is only used to receive email notifications.",
+    "Username": "Username",
+    "Dipakai untuk login. Huruf kecil, tanpa spasi. Wajib jika email dikosongkan.": "Used to log in. Lowercase, no spaces. Required if email is left empty.",
+    "Email (opsional)": "Email (optional)",
+    "Login: :username": "Login: :username"
 }

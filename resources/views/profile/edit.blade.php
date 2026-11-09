@@ -44,7 +44,7 @@
                     @csrf @method('PUT')
                     <x-form.input name="name" :label="__('Nama lengkap')" :value="$user->name" required maxlength="120" autocomplete="name" />
                     <div class="row">
-                        <div class="col-sm-6"><x-form.input type="email" name="email" label="Email" :value="$user->email" required autocomplete="email" inputmode="email" /></div>
+                        <div class="col-sm-6"><x-form.input type="email" name="email" :label="$user->username ? __('Email (opsional)') : 'Email'" :value="$user->email" :required="! $user->username" autocomplete="email" inputmode="email" :help="$user->username ? __('Login: :username', ['username' => $user->username]) : null" /></div>
                         <div class="col-sm-6"><x-form.input type="tel" name="phone" :label="__('Nomor HP / WhatsApp')" :value="$user->phone" inputmode="tel" autocomplete="tel" /></div>
                     </div>
                     <div class="d-flex justify-content-end">

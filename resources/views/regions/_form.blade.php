@@ -89,7 +89,7 @@
                                             <span class="pm-choice__title d-block text-truncate">{{ $m->name }}
                                                 @unless ($m->is_active)<span class="fs-xs text-muted fw-normal">{{ __('(nonaktif)') }}</span>@endunless
                                             </span>
-                                            <span class="pm-choice__desc d-block text-truncate">{{ $m->email }}</span>
+                                            <span class="pm-choice__desc d-block text-truncate">{{ $m->email ?: '@'.$m->username }}</span>
                                         </span>
                                     </label>
                                 </div>

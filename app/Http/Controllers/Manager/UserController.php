@@ -32,7 +32,7 @@ class UserController extends Controller
             ->tap(fn ($q) => $this->scopeManageable($q, $actor))
             ->when($filters['role'] ?? null, fn ($q, $r) => $q->role($r))
             ->when($filters['q'] ?? null, fn ($q, $s) => $q->where(fn ($w) => $w
-                ->where('name', 'like', "%{$s}%")->orWhere('email', 'like', "%{$s}%")->orWhere('phone', 'like', "%{$s}%")))
+                ->where('name', 'like', "%{$s}%")->orWhere('email', 'like', "%{$s}%")->orWhere('username', 'like', "%{$s}%")->orWhere('phone', 'like', "%{$s}%")))
             ->when(($filters['status'] ?? null) === 'active', fn ($q) => $q->where('is_active', true))
             ->when(($filters['status'] ?? null) === 'inactive', fn ($q) => $q->where('is_active', false))
             ->orderByDesc('is_active')->orderBy('name')

@@ -66,7 +66,7 @@
                                     <x-ui.avatar :user="$u" />
                                     <div class="min-w-0">
                                         <div class="cell-title text-truncate">{{ $u->name }} @if($u->is(auth()->user()))<span class="fs-xs text-muted fw-normal">{{ __('(Anda)') }}</span>@endif</div>
-                                        <div class="cell-sub text-truncate">{{ $u->email }}@if($u->phone) · {{ $u->phone }}@endif</div>
+                                        <div class="cell-sub text-truncate">{{ $u->email ?: '@'.$u->username }}@if($u->phone) · {{ $u->phone }}@endif</div>
                                     </div>
                                 </div>
                             </td>

@@ -37,8 +37,11 @@ final class Notify
         }
     }
 
-    public static function channels(): array
+    public static function channels(?object $notifiable = null): array
     {
-        return config('propertyme.notify_by_email') ? ['database', 'mail'] : ['database'];
+        // Akun tanpa email (login pakai username) cukup notifikasi di aplikasi.
+        $hasEmail = $notifiable === null || filled($notifiable->email ?? null);
+
+        return config('propertyme.notify_by_email') && $hasEmail ? ['database', 'mail'] : ['database'];
     }
 }

@@ -34,6 +34,39 @@ class UserManagementTest extends TestCase
         $this->assertEqualsCanonicalizing([$v1->id, $v2->id], $staff->accessibleVillaIds());
     }
 
+    public function test_account_can_be_created_without_email_and_logs_in_with_username(): void
+    {
+        $manager = $this->makeUser(UserRole::Master);
+        $villa = $this->makeVilla();
+        $base = ['role' => 'staff', 'password' => 'rahasia123', 'password_confirmation' => 'rahasia123', 'is_active' => '1', 'villa_ids' => [$villa->id]];
+
+        // Email & username dua-duanya kosong → ditolak
+        $this->actingAs($manager)->post(route('users.store'), $base + ['name' => 'Tanpa Login', 'email' => '', 'username' => ''])
+            ->assertSessionHasErrors(['email', 'username']);
+
+        // Hanya username → boleh
+        $this->actingAs($manager)->post(route('users.store'), $base + ['name' => 'Ketut', 'email' => '', 'username' => 'Ketut'])
+            ->assertRedirect(route('users.index'));
+        $ketut = User::where('username', 'ketut')->firstOrFail();
+        $this->assertNull($ketut->email);
+
+        // Akun kedua tanpa email juga boleh (unique tidak bentrok untuk NULL)
+        $this->actingAs($manager)->post(route('users.store'), $base + ['name' => 'Wayan', 'username' => 'wayan'])->assertRedirect();
+        $this->actingAs($manager)->get(route('users.index'))->assertOk()->assertSee('@ketut');
+
+        // Notifikasi ke akun tanpa email: hanya di aplikasi, tidak mencoba kirim email
+        config(['propertyme.notify_by_email' => true]);
+        $this->assertSame(['database'], \App\Support\Notify::channels($ketut));
+        $this->assertSame(['database', 'mail'], \App\Support\Notify::channels($manager));
+
+        auth()->logout();
+        $this->post(route('login'), ['email' => 'ketut', 'password' => 'rahasia123'])->assertRedirect();
+        $this->assertAuthenticatedAs($ketut);
+
+        // Profil: akun dengan username boleh mengosongkan email
+        $this->actingAs($ketut)->get(route('profile.edit'))->assertOk();
+    }
+
     public function test_manager_creates_owner_and_owner_takes_villa_ownership(): void
     {
         $manager = $this->makeUser(UserRole::Master);

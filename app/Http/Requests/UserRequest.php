@@ -22,7 +22,7 @@ class UserRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'email' => mb_strtolower(trim((string) $this->input('email'))),
+            'email' => ($e = mb_strtolower(trim((string) $this->input('email')))) === '' ? null : $e,
             'username' => ($u = mb_strtolower(trim((string) $this->input('username')))) === '' ? null : $u,
             'is_active' => $this->boolean('is_active'),
             'villa_ids' => array_values(array_filter((array) $this->input('villa_ids', []))),
@@ -37,8 +37,9 @@ class UserRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:190', Rule::unique('users', 'email')->ignore($editing?->id)],
-            'username' => ['nullable', 'string', 'min:3', 'max:50', 'regex:/^[a-z0-9._-]+$/', Rule::unique('users', 'username')->ignore($editing?->id)],
+            // Email opsional — tapi minimal salah satu (email / username) harus ada untuk login.
+            'email' => ['nullable', 'required_without:username', 'email', 'max:190', Rule::unique('users', 'email')->ignore($editing?->id)],
+            'username' => ['nullable', 'required_without:email', 'string', 'min:3', 'max:50', 'regex:/^[a-z0-9._-]+$/', Rule::unique('users', 'username')->ignore($editing?->id)],
             'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{6,30}$/'],
             'role' => ['required', Rule::enum(UserRole::class)],
             'password' => [$editing ? 'nullable' : 'required', 'confirmed', Password::min(8)->letters()->numbers()],
@@ -96,6 +97,8 @@ class UserRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'email.required_without' => __('Isi email atau username — salah satu wajib untuk login.'),
+            'username.required_without' => __('Isi username atau email — salah satu wajib untuk login.'),
             'username.regex' => __('Username hanya boleh huruf kecil, angka, titik, strip, atau garis bawah (tanpa spasi).'),
             'phone.regex' => __('Nomor HP hanya boleh berisi angka, spasi, +, -, atau tanda kurung.'),
         ];

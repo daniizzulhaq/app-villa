@@ -57,15 +57,15 @@
             <div class="row g-4">
                 <div class="col-lg-4">
                     <h2 class="pm-form-section__title">{{ __('2. Data akun') }}</h2>
-                    <p class="pm-form-section__desc">{{ __('Email dipakai untuk login dan menerima notifikasi.') }}</p>
+                    <p class="pm-form-section__desc">{{ __('Login bisa memakai username atau email. Email opsional — hanya dipakai untuk menerima notifikasi lewat email.') }}</p>
                 </div>
                 <div class="col-lg-8">
                     <x-form.input name="name" :label="__('Nama lengkap')" :value="$user->name" required maxlength="120" autocomplete="off" />
-                    <x-form.input name="username" :label="__('Username (opsional)')" :value="$user->username" maxlength="50" autocomplete="off"
-                                  autocapitalize="none" spellcheck="false" :placeholder="__('mis. made')" :help="__('Bisa dipakai login selain email. Huruf kecil, tanpa spasi.')" />
+                    <x-form.input name="username" :label="__('Username')" :value="$user->username" maxlength="50" autocomplete="off"
+                                  autocapitalize="none" spellcheck="false" :placeholder="__('mis. made')" :help="__('Dipakai untuk login. Huruf kecil, tanpa spasi. Wajib jika email dikosongkan.')" />
                     <div class="row">
                         <div class="col-sm-6">
-                            <x-form.input type="email" name="email" label="Email" :value="$user->email" required maxlength="190" inputmode="email" autocomplete="off" />
+                            <x-form.input type="email" name="email" :label="__('Email (opsional)')" :value="$user->email" maxlength="190" inputmode="email" autocomplete="off" />
                         </div>
                         <div class="col-sm-6">
                             <x-form.input type="tel" name="phone" :label="__('Nomor HP / WhatsApp')" :value="$user->phone" maxlength="30" inputmode="tel" :placeholder="__('08xx xxxx xxxx')" />

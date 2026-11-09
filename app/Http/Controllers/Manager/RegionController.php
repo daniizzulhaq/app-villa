@@ -116,7 +116,7 @@ class RegionController extends Controller
         return [
             'region' => $region,
             'villas' => Villa::with('region:id,name')->orderByDesc('is_active')->orderBy('name')->get(['id', 'name', 'location', 'region_id', 'is_active']),
-            'managers' => User::role(UserRole::Manager->value)->orderByDesc('is_active')->orderBy('name')->get(['id', 'name', 'email', 'is_active']),
+            'managers' => User::role(UserRole::Manager->value)->orderByDesc('is_active')->orderBy('name')->get(['id', 'name', 'username', 'email', 'is_active']),
             'selectedVillaIds' => array_map('intval', old('villa_ids', $region->villas->pluck('id')->all())),
             'selectedManagerIds' => array_map('intval', old('manager_ids', $region->managers->pluck('id')->all())),
         ];

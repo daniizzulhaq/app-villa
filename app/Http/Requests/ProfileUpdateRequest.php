@@ -14,14 +14,15 @@ class ProfileUpdateRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge(['email' => mb_strtolower(trim((string) $this->input('email')))]);
+        $this->merge(['email' => ($e = mb_strtolower(trim((string) $this->input('email')))) === '' ? null : $e]);
     }
 
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:190', Rule::unique('users', 'email')->ignore($this->user()->id)],
+            // Akun tanpa username wajib punya email (agar tetap bisa login).
+            'email' => [$this->user()->username ? 'nullable' : 'required', 'email', 'max:190', Rule::unique('users', 'email')->ignore($this->user()->id)],
             'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]{6,30}$/'],
         ];
     }
