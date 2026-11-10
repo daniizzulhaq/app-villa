@@ -9,7 +9,7 @@ class SyncIcalCommand extends Command
 {
     protected $signature = 'propertyme:sync-ical {--villa= : Hanya villa tertentu (ID)}';
 
-    protected $description = 'Sinkron reservasi dari link iCal Airbnb / Booking.com';
+    protected $description = 'Sinkron reservasi dari link iCal Airbnb / Booking.com / platform lainnya';
 
     public function handle(IcalSyncService $sync): int
     {

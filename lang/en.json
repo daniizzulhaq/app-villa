@@ -1,4 +1,9 @@
 {
+    "Pilih villa, foto nota, lalu isi detail pengeluaran.": "Choose the villa, take a receipt photo, then enter the expense details.",
+    "Link iCal lainnya": "Other iCal link",
+    "Opsional: satu link ekspor iCal dari platform lain, misalnya Traveloka, Agoda, atau Trip.com, jika tersedia.": "Optional: one iCal export link from another platform, such as Traveloka, Agoda, or Trip.com, if available.",
+    "Reservasi dari Airbnb, Booking.com, dan platform lain masuk otomatis tiap 30 menit melalui iCal. Kosongkan link yang tidak digunakan.": "Bookings from Airbnb, Booking.com, and other platforms come in automatically every 30 minutes via iCal. Leave unused links empty.",
+    "Reservasi Airbnb, Booking.com, dan platform lain diambil otomatis setiap 30 menit lewat iCal.": "Bookings from Airbnb, Booking.com, and other platforms are fetched automatically every 30 minutes via iCal.",
     "Total maksimal :limit villa per akun.": "A maximum of :limit villas per account.",
     ":role :name maksimal :limit villa per akun. Penugasan ini menjadi :count villa.": ":role :name can have a maximum of :limit villas per account. This assignment would result in :count villas.",
     "(and :count more error)": "(and :count more error)",

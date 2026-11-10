@@ -1,4 +1,9 @@
 {
+    "Pilih villa, foto nota, lalu isi detail pengeluaran.": "ヴィラを選択し、領収書を撮影してから経費の詳細を入力してください。",
+    "Link iCal lainnya": "その他の iCal リンク",
+    "Opsional: satu link ekspor iCal dari platform lain, misalnya Traveloka, Agoda, atau Trip.com, jika tersedia.": "任意：Traveloka、Agoda、Trip.com など、他のプラットフォームが提供する iCal エクスポートリンクを1つ入力してください。",
+    "Reservasi dari Airbnb, Booking.com, dan platform lain masuk otomatis tiap 30 menit melalui iCal. Kosongkan link yang tidak digunakan.": "Airbnb、Booking.com、その他のプラットフォームの予約を iCal 経由で30分ごとに自動取得します。使用しないリンクは空欄にしてください。",
+    "Reservasi Airbnb, Booking.com, dan platform lain diambil otomatis setiap 30 menit lewat iCal.": "Airbnb、Booking.com、その他のプラットフォームの予約は iCal 経由で30分ごとに自動取得されます。",
     "(and :count more error)": "(その他、:countエラーあり)",
     "(and :count more errors)": "(その他、:countエラーあり)",
     "A decryption key is required.": "復号キーは必須です。",

@@ -202,6 +202,51 @@ class BookingTest extends TestCase
         $this->actingAs($this->makeUser(UserRole::Master))->get(route('bookings.show', $b))->assertOk()->assertSee('5678');
     }
 
+    public function test_other_ical_is_included_in_scheduled_sync_and_only_cancels_its_own_imports(): void
+    {
+        Notification::fake();
+        $villa = $this->makeVilla();
+        $platformId = $this->platform(BookingPlatform::OTHER);
+        $channel = $villa->channels()->create([
+            'platform_id' => $platformId,
+            'ical_url' => 'https://calendar.example.com/villa.ics',
+        ]);
+        $in = today()->addDays(3)->format('Ymd');
+        $out = today()->addDays(5)->format('Ymd');
+        $otherBooking = Booking::create([
+            'villa_id' => $villa->id, 'platform_id' => $platformId, 'source' => 'manual',
+            'check_in' => today()->addDays(7), 'check_out' => today()->addDays(9), 'status' => 'confirmed',
+        ]);
+        $airbnbBooking = Booking::create([
+            'villa_id' => $villa->id, 'platform_id' => $this->platform('airbnb'), 'source' => 'ical', 'ical_uid' => 'existing@airbnb',
+            'check_in' => today()->addDays(10), 'check_out' => today()->addDays(12), 'status' => 'confirmed',
+        ]);
+        $feed = str_replace('Airbnb Inc', 'Other Platform', $this->ics([
+            ['other-1@example.com', $in, $out, 'Reserved', ''],
+        ]));
+        Http::preventStrayRequests();
+        Http::fakeSequence($channel->ical_url)
+            ->push($feed)
+            ->push(str_replace($out, today()->addDays(6)->format('Ymd'), $feed))
+            ->push($this->ics([]));
+
+        $this->artisan('propertyme:sync-ical')->expectsOutputToContain('1 channel diproses.')->assertSuccessful();
+        $booking = Booking::where('ical_uid', 'other-1@example.com')->firstOrFail();
+        $this->assertSame($platformId, $booking->platform_id);
+        $this->assertSame('ical', $booking->source);
+        $this->assertSame(BookingStatus::NeedsCompletion, $booking->status);
+        $this->assertNotNull($channel->fresh()->last_success_at);
+
+        $this->artisan('propertyme:sync-ical')->assertSuccessful();
+        $this->assertSame(today()->addDays(6)->toDateString(), $booking->fresh()->check_out->toDateString());
+
+        $this->artisan('propertyme:sync-ical')->assertSuccessful();
+        $this->assertSame(BookingStatus::Cancelled, $booking->fresh()->status);
+        $this->assertSame(BookingStatus::Confirmed, $otherBooking->fresh()->status);
+        $this->assertSame(BookingStatus::Confirmed, $airbnbBooking->fresh()->status);
+        Http::assertSentCount(3);
+    }
+
     public function test_ical_price_is_parsed_and_manual_price_is_not_overwritten(): void
     {
         $sync = app(IcalSyncService::class);

@@ -184,17 +184,23 @@
             <div class="row g-4">
                 <div class="col-lg-4">
                     <h2 class="pm-form-section__title">{{ __('4. Link iCal platform') }}</h2>
-                    <p class="pm-form-section__desc">{{ __('Reservasi dari Airbnb & Booking.com masuk otomatis tiap 30 menit. Kosongkan jika villa tidak terdaftar di platform tersebut.') }}</p>
+                    <p class="pm-form-section__desc">{{ __('Reservasi dari Airbnb, Booking.com, dan platform lain masuk otomatis tiap 30 menit melalui iCal. Kosongkan link yang tidak digunakan.') }}</p>
                 </div>
                 <div class="col-lg-8">
                     @foreach ($icalPlatforms as $platform)
                         @php $channel = $isEdit ? $villa->channels->firstWhere('platform_id', $platform->id) : null; @endphp
-                        <x-form.input type="url" name="channels[{{ $platform->slug }}]" :label="__('Link iCal :platform', ['platform' => $platform->name])"
+                        <x-form.input type="url" name="channels[{{ $platform->slug }}]" :label="$platform->slug === 'lainnya' ? __('Link iCal lainnya') : __('Link iCal :platform', ['platform' => $platform->name])"
                                       :value="$channel?->ical_url" maxlength="2000" inputmode="url"
-                                      :placeholder="$platform->slug === 'airbnb' ? 'https://www.airbnb.com/calendar/ical/....ics' : 'https://admin.booking.com/hotel/hoteladmin/ical.html?t=...'"
-                                      :help="$platform->slug === 'airbnb'
-                                        ? __('Airbnb: Kalender → Ketersediaan → Hubungkan kalender → Ekspor kalender.')
-                                        : __('Booking.com Extranet: Tarif & Ketersediaan → Sinkronisasi kalender → Ekspor.')" />
+                                      :placeholder="match ($platform->slug) {
+                                        'airbnb' => 'https://www.airbnb.com/calendar/ical/....ics',
+                                        'booking-com' => 'https://admin.booking.com/hotel/hoteladmin/ical.html?t=...',
+                                        default => 'https://example.com/calendar.ics',
+                                      }"
+                                      :help="match ($platform->slug) {
+                                        'airbnb' => __('Airbnb: Kalender → Ketersediaan → Hubungkan kalender → Ekspor kalender.'),
+                                        'booking-com' => __('Booking.com Extranet: Tarif & Ketersediaan → Sinkronisasi kalender → Ekspor.'),
+                                        default => __('Opsional: satu link ekspor iCal dari platform lain, misalnya Traveloka, Agoda, atau Trip.com, jika tersedia.'),
+                                      }" />
                     @endforeach
                 </div>
             </div>

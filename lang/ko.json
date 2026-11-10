@@ -1,4 +1,9 @@
 {
+    "Pilih villa, foto nota, lalu isi detail pengeluaran.": "빌라를 선택하고 영수증을 촬영한 후 지출 내역을 입력하세요.",
+    "Link iCal lainnya": "기타 iCal 링크",
+    "Opsional: satu link ekspor iCal dari platform lain, misalnya Traveloka, Agoda, atau Trip.com, jika tersedia.": "선택 사항: Traveloka, Agoda, Trip.com 등 다른 플랫폼에서 제공하는 iCal 내보내기 링크 하나를 입력하세요.",
+    "Reservasi dari Airbnb, Booking.com, dan platform lain masuk otomatis tiap 30 menit melalui iCal. Kosongkan link yang tidak digunakan.": "Airbnb, Booking.com 및 기타 플랫폼의 예약을 iCal로 30분마다 자동으로 가져옵니다. 사용하지 않는 링크는 비워 두세요.",
+    "Reservasi Airbnb, Booking.com, dan platform lain diambil otomatis setiap 30 menit lewat iCal.": "Airbnb, Booking.com 및 기타 플랫폼의 예약을 iCal로 30분마다 자동으로 가져옵니다.",
     "(and :count more error)": "(그리고 :count개 이상의 오류)",
     "(and :count more errors)": "(그리고 :count개 이상의 오류)|(그리고 :count개 이상의 오류)|(그리고 :count개 이상의 오류)",
     "A decryption key is required.": "복호화 키가 필요합니다.",

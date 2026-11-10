@@ -1,13 +1,13 @@
 {{--
   Form nota mobile-first, urutan mengikuti kerja di lapangan:
-  1) Foto nota (kamera langsung terbuka)  2) Nominal + kategori  3) Kirim.
-  Villa terakhir & tanggal hari ini sudah terisi; vendor/metode/catatan disembunyikan di "Detail lainnya".
+  Villa → Foto nota → Nominal → Catatan → Kategori → Tanggal.
+  Keterangan tambahan, vendor & metode bayar tersedia di "Detail lainnya".
 --}}
 @php
     $isEdit = $expense->exists;
     $existingReceipts = $isEdit ? $expense->receipts : collect();
     $selectedCat = (string) old('category_id', $expense->category_id);
-    $showMore = $errors->hasAny(['vendor', 'payment_method', 'notes', 'description']) || ($isEdit && ($expense->vendor || $expense->notes));
+    $showMore = $errors->hasAny(['vendor', 'payment_method', 'description']) || ($isEdit && $expense->vendor);
 @endphp
 <form method="POST" enctype="multipart/form-data" data-validate novalidate
       action="{{ $isEdit ? route('expenses.update', $expense) : route('expenses.store') }}">
@@ -25,11 +25,22 @@
 
     <div class="row g-3 justify-content-center">
         <div class="col-xl-8 col-xxl-7">
-            <x-ui.form-navigation :steps="['expense-photo' => __('Foto nota'), 'expense-details' => __('Nominal & kategori')]" />
+            <x-ui.form-navigation :steps="['expense-villa' => __('Villa'), 'expense-photo' => __('Foto nota'), 'expense-details' => __('Nominal & kategori')]" />
             <div class="pm-card">
-                {{-- 1. Foto --}}
+                {{-- 1. Villa --}}
+                <section class="pm-form-section" id="expense-villa">
+                    <h2 class="pm-form-section__title mb-3"><span class="text-muted">1.</span> {{ __('Villa') }}</h2>
+                    @if ($villas->count() === 1 && ! $isEdit)
+                        <input type="hidden" name="villa_id" value="{{ $villas->first()->id }}">
+                        <div class="mb-3"><span class="form-label d-block">{{ __('Villa') }}</span><div class="form-control bg-light d-flex align-items-center">{{ $villas->first()->name }}</div></div>
+                    @else
+                        <x-form.select name="villa_id" :label="__('Villa')" :options="$villas->pluck('name', 'id')" :value="$expense->villa_id" :placeholder="__('Pilih villa')" required />
+                    @endif
+                </section>
+
+                {{-- 2. Foto --}}
                 <section class="pm-form-section" id="expense-photo" x-data="receiptPicker({ max: {{ $maxFiles }}, existing: {{ $existingReceipts->count() }} })">
-                    <h2 class="pm-form-section__title mb-3"><span class="text-muted">1.</span> {{ __('Foto nota') }}</h2>
+                    <h2 class="pm-form-section__title mb-3"><span class="text-muted">2.</span> {{ __('Foto nota') }}</h2>
 
                     @if ($existingReceipts->isNotEmpty())
                         <div class="pm-gallery mb-3" style="grid-template-columns: repeat(auto-fill, minmax(96px, 1fr))">
@@ -84,10 +95,11 @@
                     @error('receipts.*')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </section>
 
-                {{-- 2. Data --}}
+                {{-- 3. Data --}}
                 <section class="pm-form-section" id="expense-details">
-                    <h2 class="pm-form-section__title mb-3"><span class="text-muted">2.</span> {{ __('Nominal & kategori') }}</h2>
+                    <h2 class="pm-form-section__title mb-3"><span class="text-muted">3.</span> {{ __('Nominal & kategori') }}</h2>
                     <x-form.money name="amount" :label="__('Nominal')" :value="$expense->amount" required class="fs-5" />
+                    <x-form.textarea name="notes" :label="__('Catatan')" :value="$expense->notes" rows="2" maxlength="3000" />
 
                     <fieldset class="mb-3">
                         <legend class="form-label">{{ __('Kategori') }}<span class="req" aria-hidden="true">*</span></legend>
@@ -102,17 +114,7 @@
                         @error('category_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </fieldset>
 
-                    <div class="row">
-                        <div class="col-sm-7">
-                            @if ($villas->count() === 1 && ! $isEdit)
-                                <input type="hidden" name="villa_id" value="{{ $villas->first()->id }}">
-                                <div class="mb-3"><span class="form-label d-block">{{ __('Villa') }}</span><div class="form-control bg-light d-flex align-items-center">{{ $villas->first()->name }}</div></div>
-                            @else
-                                <x-form.select name="villa_id" :label="__('Villa')" :options="$villas->pluck('name', 'id')" :value="$expense->villa_id" :placeholder="__('Pilih villa')" required />
-                            @endif
-                        </div>
-                        <div class="col-sm-5"><x-form.input type="date" name="expense_date" :label="__('Tanggal')" :value="$expense->expense_date?->format('Y-m-d')" required :max="today()->addDay()->format('Y-m-d')" /></div>
-                    </div>
+                    <x-form.input type="date" name="expense_date" :label="__('Tanggal')" :value="$expense->expense_date?->format('Y-m-d')" required :max="today()->addDay()->format('Y-m-d')" />
 
                     <details @if($showMore) open @endif class="pm-form-details mt-1">
                         <summary class="mb-3">{{ __('Detail lainnya (keterangan, vendor, metode bayar)') }}</summary>
@@ -121,7 +123,6 @@
                             <div class="col-sm-6"><x-form.input name="vendor" :label="__('Vendor / toko')" :value="$expense->vendor" maxlength="150" :placeholder="__('mis. Toko Bangunan Jaya')" /></div>
                             <div class="col-sm-6"><x-form.select name="payment_method" :label="__('Metode bayar')" :options="$methods" :value="$expense->payment_method" placeholder="—" /></div>
                         </div>
-                        <x-form.textarea name="notes" :label="__('Catatan')" :value="$expense->notes" rows="2" maxlength="3000" class="mb-0" />
                     </details>
                 </section>
 

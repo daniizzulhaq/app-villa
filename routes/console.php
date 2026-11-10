@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schedule;
 |   * * * * * cd /home/USER/propertyme && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1
 */
 
-// Sinkron iCal Airbnb & Booking.com tiap 30 menit
+// Sinkron iCal semua platform yang terhubung tiap 30 menit
 Schedule::command('propertyme:sync-ical')->everyThirtyMinutes()->withoutOverlapping(25);
 
 // Status booking mengikuti tanggal (Checked-in / Checked-out)

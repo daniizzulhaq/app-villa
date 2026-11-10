@@ -1,4 +1,9 @@
 {
+    "Pilih villa, foto nota, lalu isi detail pengeluaran.": "Выберите виллу, сфотографируйте чек и укажите данные расхода.",
+    "Link iCal lainnya": "Другая ссылка iCal",
+    "Opsional: satu link ekspor iCal dari platform lain, misalnya Traveloka, Agoda, atau Trip.com, jika tersedia.": "Необязательно: одна ссылка экспорта iCal с другой платформы, например Traveloka, Agoda или Trip.com, если доступна.",
+    "Reservasi dari Airbnb, Booking.com, dan platform lain masuk otomatis tiap 30 menit melalui iCal. Kosongkan link yang tidak digunakan.": "Бронирования Airbnb, Booking.com и других платформ автоматически импортируются через iCal каждые 30 минут. Оставьте неиспользуемые ссылки пустыми.",
+    "Reservasi Airbnb, Booking.com, dan platform lain diambil otomatis setiap 30 menit lewat iCal.": "Бронирования Airbnb, Booking.com и других платформ автоматически загружаются через iCal каждые 30 минут.",
     "(and :count more error)": "(и ещё :count ошибка)",
     "(and :count more errors)": "(и ещё :count ошибка)|(и ещё :count ошибки)|(и ещё :count ошибок)",
     "A decryption key is required.": "Ключ дешифровки обязателен.",

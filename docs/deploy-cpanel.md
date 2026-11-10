@@ -58,7 +58,7 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://propertyme.domainanda.com
 APP_TIMEZONE=Asia/Makassar
-APP_LOCALE=id
+APP_LOCALE=en
 
 DB_CONNECTION=mysql
 DB_HOST=localhost
@@ -173,3 +173,43 @@ php artisan up
 Untuk pembaruan aset melalui File Manager, ZIP aset dapat berisi `build/` dan
 `images/` di tingkat teratas. Ekstrak ZIP langsung ke document root, bukan membuat
 folder `public/` tambahan di dalam `public_html/`.
+
+## 13. Update kolom Link iCal lainnya
+
+Kolom opsional ketiga di bawah Booking.com menerima **satu link ekspor iCal** dari
+platform tambahan. Platform harus menyediakan feed iCal; alamat halaman listing
+atau API bukan link kalender. Reservasi yang diimpor dicatat sebagai **Lainnya**
+dan ikut sinkronisasi otomatis setiap 30 menit menggunakan cron yang sudah ada.
+
+Unggah file aplikasi yang berubah, termasuk `resources/views/villas/_form.blade.php`,
+`resources/views/sync/index.blade.php`, `app/Http/Requests/VillaRequest.php`,
+`app/Console/Commands/SyncIcalCommand.php`, `routes/console.php`, seluruh file JSON
+di `lang/`, `database/seeders/BookingPlatformSeeder.php`, dan migration
+`database/migrations/2026_11_10_100001_enable_ical_for_other_booking_platform.php`.
+Kemudian jalankan dari direktori aplikasi di Terminal cPanel:
+
+```bash
+php artisan migrate --force
+php artisan optimize:clear
+```
+
+Jika hanya menggunakan File Manager dan phpMyAdmin, unggah file aplikasi tersebut
+lalu pilih database aplikasi di phpMyAdmin dan jalankan SQL berikut untuk
+mengaktifkan kolom pada platform Lainnya yang sudah ada:
+
+SQL juga tersedia di `docs/sql/enable-other-ical.sql` untuk diimpor langsung.
+
+```sql
+UPDATE `booking_platforms`
+SET `supports_ical` = 1
+WHERE `slug` = 'lainnya';
+```
+
+SQL ini mempertahankan ID platform, reservasi, dan link Airbnb/Booking.com.
+Migration tetap aman dijalankan kemudian jika SQL sudah diterapkan. Bila hosting
+menggunakan cache view, kosongkan cache melalui `php artisan view:clear` atau
+hapus hanya file view terkompilasi `*.php` di `storage/framework/views/` melalui
+File Manager. Biarkan folder dan `.gitignore` tetap ada.
+
+Setelah update, buka Edit Villa, isi Link iCal lainnya, simpan, lalu gunakan
+Sinkron sekarang untuk memeriksa hasil tanpa menunggu jadwal cron.

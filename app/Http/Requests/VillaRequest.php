@@ -96,6 +96,7 @@ class VillaRequest extends FormRequest
             'notes' => 'catatan',
             'channels.airbnb' => __('link iCal Airbnb'),
             'channels.booking-com' => __('link iCal Booking.com'),
+            'channels.lainnya' => __('Link iCal lainnya'),
             'staff_ids.*' => 'staff',
         ];
     }

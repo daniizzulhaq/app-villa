@@ -1,5 +1,5 @@
 <x-layouts.app :title="__('Status Sinkronisasi')">
-    <x-ui.page-header :title="__('Status Sinkronisasi')" :subtitle="__('Reservasi Airbnb & Booking.com diambil otomatis setiap 30 menit lewat iCal.')">
+    <x-ui.page-header :title="__('Status Sinkronisasi')" :subtitle="__('Reservasi Airbnb, Booking.com, dan platform lain diambil otomatis setiap 30 menit lewat iCal.')">
         <x-slot:actions>
             <form method="POST" action="{{ route('sync.run') }}">
                 @csrf

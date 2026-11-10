@@ -290,10 +290,9 @@ Alpine.data('bookingCalendar', ({ eventsUrl, villa = '', initialDate = null, can
             import('@fullcalendar/interaction'),
             import('@fullcalendar/core/locales-all'),
         ]);
-        const mobile = window.matchMedia('(max-width: 767.98px)').matches;
         this.calendar = new Calendar(this.$refs.cal, {
             plugins: [dayGrid.default, list.default, interaction.default],
-            initialView: mobile ? 'listMonth' : 'dayGridMonth',
+            initialView: 'dayGridMonth',
             initialDate: initialDate || undefined,
             locales: allLocales.default,
             locale: LOCALE.toLowerCase().replace('_', '-'),

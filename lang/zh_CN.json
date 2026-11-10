@@ -1,4 +1,9 @@
 {
+    "Pilih villa, foto nota, lalu isi detail pengeluaran.": "选择别墅，拍摄票据照片，然后填写支出明细。",
+    "Link iCal lainnya": "其他 iCal 链接",
+    "Opsional: satu link ekspor iCal dari platform lain, misalnya Traveloka, Agoda, atau Trip.com, jika tersedia.": "可选：填写一个其他平台提供的 iCal 导出链接，例如 Traveloka、Agoda 或 Trip.com（如有）。",
+    "Reservasi dari Airbnb, Booking.com, dan platform lain masuk otomatis tiap 30 menit melalui iCal. Kosongkan link yang tidak digunakan.": "Airbnb、Booking.com 和其他平台的预订每 30 分钟通过 iCal 自动导入。不使用的链接请留空。",
+    "Reservasi Airbnb, Booking.com, dan platform lain diambil otomatis setiap 30 menit lewat iCal.": "Airbnb、Booking.com 和其他平台的预订每 30 分钟通过 iCal 自动获取。",
     "(and :count more error)": "(还有 :count 个错误)",
     "(and :count more errors)": "(还有 :count 个错误)",
     "A decryption key is required.": "需要解密密钥。",

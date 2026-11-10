@@ -1,4 +1,9 @@
 {
+    "Pilih villa, foto nota, lalu isi detail pengeluaran.": "Choisissez la villa, photographiez le justificatif, puis renseignez les détails de la dépense.",
+    "Link iCal lainnya": "Autre lien iCal",
+    "Opsional: satu link ekspor iCal dari platform lain, misalnya Traveloka, Agoda, atau Trip.com, jika tersedia.": "Facultatif : un lien d’export iCal d’une autre plateforme, par exemple Traveloka, Agoda ou Trip.com, si disponible.",
+    "Reservasi dari Airbnb, Booking.com, dan platform lain masuk otomatis tiap 30 menit melalui iCal. Kosongkan link yang tidak digunakan.": "Les réservations Airbnb, Booking.com et d’autres plateformes arrivent automatiquement toutes les 30 minutes via iCal. Laissez les liens inutilisés vides.",
+    "Reservasi Airbnb, Booking.com, dan platform lain diambil otomatis setiap 30 menit lewat iCal.": "Les réservations Airbnb, Booking.com et d’autres plateformes sont récupérées automatiquement toutes les 30 minutes via iCal.",
     "(and :count more error)": "(et :count erreur en plus)",
     "(and :count more errors)": "(et :count erreur en plus)|(et :count erreurs en plus)|(et :count erreurs en plus)",
     "A decryption key is required.": "Une clé de déchiffrement est requise.",
