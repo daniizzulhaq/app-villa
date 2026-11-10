@@ -1,8 +1,9 @@
 @php
     $isEdit = $booking->exists;
     $synced = $booking->isFromPlatformSync();
+    $hostex = $booking->source === 'hostex';
     // Booking iCal yang baru dilengkapi: sarankan Confirmed
-    $statusValue = old('status', $booking->status === \App\Enums\BookingStatus::NeedsCompletion && $isEdit ? 'confirmed' : $booking->status?->value);
+    $statusValue = $hostex ? $booking->status?->value : old('status', $booking->status === \App\Enums\BookingStatus::NeedsCompletion && $isEdit ? 'confirmed' : $booking->status?->value);
 @endphp
 <form method="POST" data-validate novalidate action="{{ $isEdit ? route('bookings.update', $booking) : route('bookings.store') }}">
     @csrf
@@ -26,7 +27,7 @@
                 <div class="col-lg-8">
                     @if ($synced)
                         <div class="alert alert-info d-flex gap-2"><i class="bi bi-lock" aria-hidden="true"></i>
-                            <div class="fs-sm">{{ __('Villa, sumber, dan tanggal berasal dari kalender :name sehingga tidak bisa diubah di sini. Ubah di platform, PropertyMe ikut menyesuaikan saat sinkron berikutnya.', ['name' => $booking->platform->name]) }}</div></div>
+                            <div class="fs-sm">{{ __('Villa, sumber, dan tanggal berasal dari kalender :name sehingga tidak bisa diubah di sini. Ubah di platform, PropertyMe ikut menyesuaikan saat sinkron berikutnya.', ['name' => $hostex ? 'Hostex' : $booking->platform->name]) }}</div></div>
                         <dl class="pm-dl mb-0">
                             <dt>{{ __('Villa') }}</dt><dd>{{ $booking->villa->name }}</dd>
                             <dt>{{ __('Sumber') }}</dt><dd>{{ $booking->platform->name }}</dd>
@@ -54,17 +55,18 @@
                 </div>
                 <div class="col-lg-8">
                     <div class="row">
-                        <div class="col-sm-7"><x-form.input name="guest_name" :label="__('Nama tamu')" :value="$booking->guest_name" maxlength="150" autocomplete="off" /></div>
-                        <div class="col-sm-5"><x-form.input name="booking_ref" :label="__('Kode booking')" :value="$booking->booking_ref" maxlength="100" :placeholder="__('mis. HMXXXXXXXX')" /></div>
+                        <div class="col-sm-7"><x-form.input name="guest_name" :label="__('Nama tamu')" :value="$booking->guest_name" maxlength="150" autocomplete="off" :readonly="$hostex" /></div>
+                        <div class="col-sm-5"><x-form.input name="booking_ref" :label="__('Kode booking')" :value="$booking->booking_ref" maxlength="100" :placeholder="__('mis. HMXXXXXXXX')" :readonly="$hostex" /></div>
                     </div>
                     <div class="row">
-                        <div class="col-6"><x-form.input type="number" name="guest_count" :label="__('Jumlah tamu')" :value="$booking->guest_count" min="1" max="99" inputmode="numeric" /></div>
-                        <div class="col-6"><x-form.input type="time" name="arrival_time" :label="__('Perkiraan jam datang')" :value="$booking->arrival_time ? substr($booking->arrival_time, 0, 5) : null" /></div>
+                        <div class="col-6"><x-form.input type="number" name="guest_count" :label="__('Jumlah tamu')" :value="$booking->guest_count" min="1" max="99" inputmode="numeric" :readonly="$hostex" /></div>
+                        <div class="col-6"><x-form.input type="time" name="arrival_time" :label="__('Perkiraan jam datang')" :value="$booking->arrival_time ? substr($booking->arrival_time, 0, 5) : null" :readonly="$hostex" /></div>
                     </div>
                     <x-form.money name="total_price" :label="__('Harga reservasi')" :value="$booking->total_price"
-                                  :help="in_array($booking->price_source, ['ical', 'import'], true) ? __('Terisi otomatis dari iCal / import payout. Jika diubah di sini, tidak akan ditimpa otomatis lagi.') : __('Total yang dibayar tamu. Airbnb & Booking.com tidak mengirim harga lewat iCal — isi manual atau lewat Import Payout.')" />
+                                  :help="$hostex ? __('Imported from Hostex in IDR. A manual price will be preserved during synchronization.') : (in_array($booking->price_source, ['ical', 'import'], true) ? __('Terisi otomatis dari iCal / import payout. Jika diubah di sini, tidak akan ditimpa otomatis lagi.') : __('Total yang dibayar tamu. Airbnb & Booking.com tidak mengirim harga lewat iCal — isi manual atau lewat Import Payout.'))" />
                     <x-form.textarea name="notes" :label="__('Catatan untuk Staff')" :value="$booking->notes" rows="3" maxlength="3000" :placeholder="__('mis. minta extra bed, alergi, honeymoon decoration')" />
-                    <x-form.select name="status" :label="__('Status')" :options="$statuses" :value="$statusValue" required class="mb-0" />
+                    @if ($hostex)<input type="hidden" name="status" value="{{ $statusValue }}">@endif
+                    <x-form.select name="status" :label="__('Status')" :options="$statuses" :value="$statusValue" :disabled="$hostex" required class="mb-0" />
                 </div>
             </div>
         </section>

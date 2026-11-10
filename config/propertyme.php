@@ -1,6 +1,9 @@
 <?php
 
 return [
+    // Provider untuk integrasi channel manager eksternal.
+    'channel_manager_provider' => env('CHANNEL_MANAGER_PROVIDER', 'hostex'),
+
     // Jumlah villa per akun; Master tetap mengakses seluruh villa.
     'villa_limits' => ['owner' => 20, 'staff' => 20, 'manager' => 20],
 

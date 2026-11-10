@@ -18,7 +18,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 class Villa extends Model implements AuditableContract
 {
-    use SoftDeletes, Auditable;
+    use Auditable, SoftDeletes;
 
     protected $fillable = [
         'name', 'location', 'photo', 'owner_id', 'region_id', 'fee_percentage', 'fee_basis', 'fee_basis_note',
@@ -36,6 +36,8 @@ class Villa extends Model implements AuditableContract
             'fee_basis' => FeeBasis::class,
             'started_at' => 'date',
             'is_active' => 'boolean',
+            'hostex_last_synced_at' => 'datetime',
+            'hostex_last_success_at' => 'datetime',
         ];
     }
 

@@ -1353,5 +1353,16 @@
     "Atur filter, lalu ketuk Terapkan.": "Atur filter, lalu ketuk Terapkan.",
     "Menampilkan :from–:to dari :total hasil": "Menampilkan :from–:to dari :total hasil",
     "Bagian formulir": "Bagian formulir",
-    "Isian bertanda * wajib diisi.": "Isian bertanda * wajib diisi."
+    "Isian bertanda * wajib diisi.": "Isian bertanda * wajib diisi.",
+    "Bookings are imported from your channel manager.": "Reservasi diambil dari channel manager Anda.",
+    "Sync Hostex now": "Sinkronkan Hostex sekarang",
+    "Import reservations from Hostex or connected iCal calendars.": "Ambil reservasi dari Hostex atau kalender iCal yang terhubung.",
+    "Connected sources": "Sumber terhubung",
+    "Imported from Hostex in IDR. A manual price will be preserved during synchronization.": "Diambil dari Hostex dalam IDR. Harga yang diisi manual tetap dipertahankan saat sinkronisasi.",
+    "This reservation is awaiting confirmation or payment in Hostex.": "Reservasi ini menunggu konfirmasi atau pembayaran di Hostex.",
+    "Last 4 digits from Hostex": "4 digit terakhir dari Hostex",
+    "From Hostex": "Dari Hostex",
+    "Original Hostex price": "Harga asli Hostex",
+    "No automatic currency conversion.": "Tidak ada konversi mata uang otomatis.",
+    "OTA commission from Hostex": "Komisi OTA dari Hostex"
 }

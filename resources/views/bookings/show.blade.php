@@ -13,7 +13,7 @@
 
     @if ($booking->status === \App\Enums\BookingStatus::NeedsCompletion)
         <div class="alert alert-warning d-flex gap-2"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
-            <div>{{ __('Reservasi ini masuk dari iCal dan hanya berisi tanggal. Lengkapi nama tamu & jumlah tamu, lalu catat pemasukannya.') }}</div></div>
+            <div>{{ $booking->source === 'hostex' ? __('This reservation is awaiting confirmation or payment in Hostex.') : __('Reservasi ini masuk dari iCal dan hanya berisi tanggal. Lengkapi nama tamu & jumlah tamu, lalu catat pemasukannya.') }}</div></div>
     @endif
 
     <div class="row g-3">
@@ -26,24 +26,30 @@
                     <dt>{{ __('Lama menginap') }}</dt><dd>{{ __(':nights malam', ['nights' => $booking->nights()]) }}</dd>
                     <dt>{{ __('Jumlah tamu') }}</dt><dd>{{ $booking->guest_count ? $booking->guest_count.' orang' : '—' }}</dd>
                     @if ($booking->phone_last4)
-                        <dt>{{ __('No. HP tamu') }}</dt><dd><span class="num">••••&nbsp;{{ $booking->phone_last4 }}</span> <span class="fs-xs text-muted fw-normal">{{ __('· 4 digit terakhir, dari iCal :name', ['name' => $booking->platform->name]) }}</span></dd>
+                        <dt>{{ __('No. HP tamu') }}</dt><dd><span class="num">••••&nbsp;{{ $booking->phone_last4 }}</span> <span class="fs-xs text-muted fw-normal">{{ $booking->source === 'hostex' ? __('Last 4 digits from Hostex') : __('· 4 digit terakhir, dari iCal :name', ['name' => $booking->platform->name]) }}</span></dd>
                     @endif
                     @php $grossPaid = $booking->incomes->sum('gross_amount'); @endphp
                     <dt>{{ __('Harga reservasi') }}</dt>
                     <dd>
                         @if ($booking->total_price !== null)
                             <span class="num">@rupiah($booking->total_price)</span>
-                            <span class="fs-xs text-muted">{{ match($booking->price_source) { 'ical' => __('· dari iCal'), 'import' => __('· dari import payout'), default => __('· diisi manual') } }}</span>
+                            <span class="fs-xs text-muted">{{ match($booking->price_source) { 'ical' => __('· dari iCal'), 'import' => __('· dari import payout'), 'hostex' => __('From Hostex'), default => __('· diisi manual') } }}</span>
                             @if ($booking->nights() > 0)<div class="fs-xs text-muted fw-normal">@rupiah($booking->total_price / $booking->nights()) {{ __('/ malam') }}</div>@endif
                         @elseif ($grossPaid > 0)
                             <span class="num">@rupiah($grossPaid)</span> <span class="fs-xs text-muted">{{ __('· dari pemasukan tercatat') }}</span>
                         @else
                             <span class="text-muted fw-normal">{{ __('Belum diisi') }}</span>
-                            @if ($booking->isFromPlatformSync())<div class="fs-xs text-muted fw-normal">{{ __('iCal :name tidak menyertakan harga — isi lewat tombol Edit atau Import Payout.', ['name' => $booking->platform->name]) }}</div>@endif
+                            @if ($booking->source === 'ical')<div class="fs-xs text-muted fw-normal">{{ __('iCal :name tidak menyertakan harga — isi lewat tombol Edit atau Import Payout.', ['name' => $booking->platform->name]) }}</div>@endif
                         @endif
                     </dd>
                     <dt>{{ __('Kode booking') }}</dt><dd>{{ $booking->booking_ref ?: '—' }}</dd>
-                    <dt>{{ __('Sumber data') }}</dt><dd>{{ match($booking->source) { 'ical' => __('Sinkron iCal otomatis'), 'import' => __('Import file'), default => __('Dicatat manual').($booking->creator ? ' '.__('oleh :name', ['name' => $booking->creator->name]) : '') } }}</dd>
+                    <dt>{{ __('Sumber data') }}</dt><dd>{{ match($booking->source) { 'ical' => __('Sinkron iCal otomatis'), 'import' => __('Import file'), 'hostex' => 'Hostex API', default => __('Dicatat manual').($booking->creator ? ' '.__('oleh :name', ['name' => $booking->creator->name]) : '') } }}</dd>
+                    @if ($booking->source === 'hostex' && $booking->hostex_rate_amount !== null && $booking->hostex_rate_currency !== 'IDR')
+                        <dt>{{ __('Original Hostex price') }}</dt><dd>{{ $booking->hostex_rate_currency }} {{ number_format((float) $booking->hostex_rate_amount, 2) }}<div class="fs-xs text-muted">{{ __('No automatic currency conversion.') }}</div></dd>
+                    @endif
+                    @if ($booking->source === 'hostex' && $booking->hostex_commission_amount !== null)
+                        <dt>{{ __('OTA commission from Hostex') }}</dt><dd>{{ $booking->hostex_commission_currency }} {{ number_format((float) $booking->hostex_commission_amount, 2) }}</dd>
+                    @endif
                     @if ($booking->cancelled_at)<dt>{{ __('Dibatalkan') }}</dt><dd>{{ $booking->cancelled_at->translatedFormat('d M Y H:i') }}</dd>@endif
                     <dt>{{ __('Catatan') }}</dt><dd class="fw-normal" style="white-space:pre-line">{{ $booking->notes ?: '—' }}</dd>
                 </dl>

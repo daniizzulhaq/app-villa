@@ -125,6 +125,23 @@
             </x-ui.card>
 
             {{-- iCal --}}
+            @if ($villa->hostex_property_id && config('propertyme.channel_manager_provider') === 'hostex')
+            <x-ui.card title="Hostex" :subtitle="__('Bookings are imported from your channel manager.')">
+                @if ($villa->hostex_last_error)
+                    <div class="alert alert-warning fs-sm">{{ $villa->hostex_last_error }}</div>
+                @elseif ($villa->hostex_last_success_at)
+                    <x-ui.badge variant="success">{{ __('Tersinkron') }}</x-ui.badge>
+                @else
+                    <x-ui.badge variant="neutral">{{ __('Menunggu sinkron pertama') }}</x-ui.badge>
+                @endif
+                <div class="fs-sm text-muted mt-2">{{ __('Sinkron terakhir') }}: {{ $villa->hostex_last_success_at?->diffForHumans() ?? __('Belum pernah') }}</div>
+                <a href="{{ route('bookings.index', ['villa' => $villa->id]) }}" class="btn btn-sm btn-light mt-3">{{ __('Daftar reservasi') }}</a>
+                <form method="POST" action="{{ route('sync.run') }}" class="mt-3">
+                    @csrf <input type="hidden" name="villa" value="{{ $villa->id }}">
+                    <button class="btn btn-sm btn-primary w-100" type="submit" data-loading-text="{{ __('Menyinkronkan…') }}"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> {{ __('Sync Hostex now') }}</button>
+                </form>
+            </x-ui.card>
+            @else
             <x-ui.card :title="__('Sinkron iCal')">
                 @forelse ($villa->channels as $c)
                     <div class="py-2 @unless($loop->last) border-bottom @endunless">
@@ -172,6 +189,7 @@
             </x-ui.card>
 
             {{-- Hapus (khusus Master) --}}
+            @endif
             @can('delete', $villa)
             <form method="POST" action="{{ route('villas.destroy', $villa) }}"
                   data-confirm="{{ __('Hapus villa :name?', ['name' => $villa->name]) }}"

@@ -2,6 +2,17 @@
 
 return [
 
+    'hostex' => [
+        'access_token' => env('HOSTEX_ACCESS_TOKEN'),
+        'sync_enabled' => (bool) env('HOSTEX_SYNC_ENABLED', false),
+    ],
+
+    'beds24' => [
+        'invite_code' => env('BEDS24_INVITE_CODE'),
+        'token' => env('BEDS24_TOKEN'),
+        'refresh_token' => env('BEDS24_REFRESH_TOKEN'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

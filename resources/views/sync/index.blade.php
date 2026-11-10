@@ -1,5 +1,5 @@
 <x-layouts.app :title="__('Status Sinkronisasi')">
-    <x-ui.page-header :title="__('Status Sinkronisasi')" :subtitle="__('Reservasi Airbnb, Booking.com, dan platform lain diambil otomatis setiap 30 menit lewat iCal.')">
+    <x-ui.page-header :title="__('Status Sinkronisasi')" :subtitle="__('Import reservations from Hostex or connected iCal calendars.')">
         <x-slot:actions>
             <form method="POST" action="{{ route('sync.run') }}">
                 @csrf
@@ -9,7 +9,7 @@
     </x-ui.page-header>
 
     <div class="row g-3 mb-4">
-        <div class="col-6 col-lg-3"><x-ui.stat :label="__('Link iCal terhubung')" :value="$summary['total']" icon="bi-link-45deg" /></div>
+        <div class="col-6 col-lg-3"><x-ui.stat :label="__('Connected sources')" :value="$summary['total']" icon="bi-link-45deg" /></div>
         <div class="col-6 col-lg-3"><x-ui.stat :label="__('Berjalan normal')" :value="$summary['ok']" icon="bi-check-circle" icon-tone="success" /></div>
         <div class="col-6 col-lg-3"><x-ui.stat :label="__('Bermasalah')" :value="$summary['error']" icon="bi-exclamation-triangle" :icon-tone="$summary['error'] ? 'danger' : 'success'" :tone="$summary['error'] ? 'negative' : null" /></div>
         <div class="col-6 col-lg-3"><x-ui.stat :label="__('Sinkron terakhir')" :value="$summary['last'] ? \Illuminate\Support\Carbon::parse($summary['last'])->diffForHumans() : '—'" icon="bi-clock-history" icon-tone="info" /></div>
@@ -24,6 +24,20 @@
                     <thead><tr><th>{{ __('Villa') }}</th><th>{{ __('Platform') }}</th><th>{{ __('Sinkron terakhir') }}</th><th>{{ __('Status') }}</th><th>{{ __('Perlu dilengkapi') }}</th><th><span class="visually-hidden">{{ __('Aksi') }}</span></th></tr></thead>
                     <tbody>
                     @foreach ($villas as $v)
+                        @if ($v->hostex_property_id && config('propertyme.channel_manager_provider') === 'hostex')
+                            <tr>
+                                <td class="stack-full"><a href="{{ route('villas.show', $v) }}" class="cell-title text-decoration-none">{{ $v->name }}</a></td>
+                                <td data-label="{{ __('Platform') }}">Hostex</td>
+                                <td data-label="{{ __('Sinkron terakhir') }}">{{ $v->hostex_last_synced_at?->diffForHumans() ?? __('Belum pernah') }}</td>
+                                <td data-label="{{ __('Status') }}">
+                                    <x-ui.badge :variant="$v->hostex_last_error ? 'danger' : ($v->hostex_last_success_at ? 'success' : 'neutral')">{{ $v->hostex_last_error ? __('Error') : ($v->hostex_last_success_at ? __('Normal') : __('Menunggu sinkron pertama')) }}</x-ui.badge>
+                                    @if ($v->hostex_last_error)<div class="fs-sm text-negative mt-1">{{ $v->hostex_last_error }}</div>@endif
+                                </td>
+                                <td data-label="{{ __('Perlu dilengkapi') }}">{{ $v->needs_completion_count }}</td>
+                                <td class="text-end stack-actions"><form method="POST" action="{{ route('sync.run') }}">@csrf <input type="hidden" name="villa" value="{{ $v->id }}"><button class="btn btn-sm btn-light" type="submit" data-loading-text="{{ __('Menyinkronkan…') }}">{{ __('Sync Hostex now') }}</button></form></td>
+                            </tr>
+                            @continue
+                        @endif
                         @forelse ($v->channels as $c)
                             <tr>
                                 <td class="stack-full"><a href="{{ route('villas.show', $v) }}" class="cell-title text-decoration-none">{{ $v->name }}</a></td>

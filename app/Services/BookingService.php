@@ -69,6 +69,9 @@ class BookingService
     public function update(Booking $booking, array $data): Booking
     {
         return DB::transaction(function () use ($booking, $data) {
+            if ($booking->source === 'hostex') {
+                $data = Arr::only($data, ['notes', 'total_price']);
+            }
             // Tanggal, villa & platform booking dari iCal milik platform → tidak diubah manual.
             if ($booking->isFromPlatformSync()) {
                 $data = Arr::except($data, ['villa_id', 'platform_id', 'check_in', 'check_out']);

@@ -9,6 +9,7 @@ use App\Models\VillaChannel;
 use App\Notifications\BookingSyncedNotification;
 use App\Support\Notify;
 use ICal\ICal;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -32,7 +33,8 @@ class IcalSyncService
         VillaChannel::query()->with(['villa', 'platform'])
             ->when($villaIds !== null, fn ($q) => $q->whereIn('villa_id', $villaIds ?: [0]))
             ->where('is_active', true)->whereNotNull('ical_url')
-            ->whereHas('villa', fn ($q) => $q->where('is_active', true))
+            ->whereHas('villa', fn ($q) => $q->where('is_active', true)
+                ->when(config('propertyme.channel_manager_provider') === 'hostex', fn ($q) => $q->whereNull('hostex_property_id')))
             ->each(function (VillaChannel $c) use (&$results) {
                 $results[] = $this->syncChannel($c);
             });
@@ -54,6 +56,9 @@ class IcalSyncService
         $channel->loadMissing(['villa', 'platform']);
 
         try {
+            if (config('propertyme.channel_manager_provider') === 'hostex' && $channel->villa?->hostex_property_id) {
+                throw new \RuntimeException('This villa uses Hostex. Use Hostex synchronization instead of iCal.');
+            }
             $events = $this->fetchEvents($channel);
             [$created, $updated, $cancelled, $warning] = $this->apply($channel, $events);
 
@@ -79,7 +84,7 @@ class IcalSyncService
     {
         // Ulangi hanya untuk gangguan koneksi; 4xx (link salah) tidak perlu dicoba ulang.
         $response = Http::timeout(25)
-            ->retry(2, 1500, fn ($e) => $e instanceof \Illuminate\Http\Client\ConnectionException, throw: false)
+            ->retry(2, 1500, fn ($e) => $e instanceof ConnectionException, throw: false)
             ->withUserAgent('PropertyMe/1.0 (+calendar sync)')
             ->get($channel->ical_url);
 

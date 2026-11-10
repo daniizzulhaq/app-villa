@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Schedule;
 // Sinkron iCal semua platform yang terhubung tiap 30 menit
 Schedule::command('propertyme:sync-ical')->everyThirtyMinutes()->withoutOverlapping(25);
 
+// Hostex reporting pull; enable only after credentials and villa mappings are verified.
+Schedule::command('propertyme:hostex-sync')->everyFiveMinutes()->withoutOverlapping(10)
+    ->when(fn () => config('propertyme.channel_manager_provider') === 'hostex' && config('services.hostex.sync_enabled'));
+
 // Status booking mengikuti tanggal (Checked-in / Checked-out)
 Schedule::command('propertyme:advance-bookings')->hourly();
 

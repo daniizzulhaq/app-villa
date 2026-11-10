@@ -12,7 +12,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 class Booking extends Model implements AuditableContract
 {
-    use SoftDeletes, Auditable;
+    use Auditable, SoftDeletes;
 
     protected $fillable = [
         'villa_id', 'platform_id', 'source', 'ical_uid', 'booking_ref', 'guest_name', 'guest_count', 'phone_last4',
@@ -28,6 +28,8 @@ class Booking extends Model implements AuditableContract
             'status' => BookingStatus::class,
             'guest_count' => 'integer',
             'total_price' => 'decimal:2',
+            'hostex_rate_amount' => 'decimal:2',
+            'hostex_commission_amount' => 'decimal:2',
         ];
     }
 
@@ -51,10 +53,10 @@ class Booking extends Model implements AuditableContract
         return $this->hasMany(Income::class);
     }
 
-    /** Booking hasil sinkron iCal: tanggalnya milik platform, tidak boleh diubah manual. */
+    /** Dates on externally synchronized bookings belong to the source platform. */
     public function isFromPlatformSync(): bool
     {
-        return $this->source === 'ical';
+        return in_array($this->source, ['ical', 'hostex'], true);
     }
 
     public function nights(): int
