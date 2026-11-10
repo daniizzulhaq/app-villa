@@ -97,6 +97,102 @@ class HostexSyncService
         }
     }
 
+    /** Preview by default. Applying only attaches unique, exact matches to Hostex. */
+    public function reconcileVilla(Villa $villa, bool $apply = false, ?string $from = null, ?string $to = null): array
+    {
+        $result = ['entries' => [], 'eligible' => 0, 'conflicts' => 0, 'applied' => 0, 'error' => null];
+        try {
+            return Cache::store('file')->lock('hostex-sync', 300)->block(5, function () use ($villa, $apply, $from, $to, $result) {
+                if (config('propertyme.channel_manager_provider') !== 'hostex' || ! $villa->hostex_property_id || ! $villa->is_active) {
+                    throw new HostexException('An active villa with a verified Hostex mapping is required.');
+                }
+                if ($apply && $villa->channels()->where('is_active', true)->whereNotNull('ical_url')->where('ical_url', '!=', '')->exists()) {
+                    throw new HostexException('Disable this villa\'s iCal imports before applying reconciliation.');
+                }
+                $rows = $this->client->reservations((int) $villa->hostex_property_id,
+                    $from ?? today($villa->timezone)->subYear()->toDateString(),
+                    $to ?? today($villa->timezone)->addYear()->toDateString());
+                $platforms = BookingPlatform::pluck('id', 'slug')->all();
+
+                return DB::transaction(function () use ($villa, $rows, $platforms, $apply, $result) {
+                    $current = Villa::lockForUpdate()->findOrFail($villa->id);
+                    if ((string) $current->hostex_property_id !== (string) $villa->hostex_property_id || ! $current->is_active) {
+                        throw new HostexException('Villa mapping changed during reconciliation. Retry the preview.');
+                    }
+                    $matches = [];
+                    foreach ($rows as $row) {
+                        $attributes = $this->attributes($current, $row, $platforms);
+                        if (! $attributes['booking_ref']) {
+                            continue; // Never infer identity from dates or a guest name alone.
+                        }
+                        $legacy = Booking::where('villa_id', $current->id)->where('platform_id', $attributes['platform_id'])
+                            ->where('booking_ref', $attributes['booking_ref'])->where('source', '!=', 'hostex')
+                            ->lockForUpdate()->get();
+                        if ($legacy->isEmpty()) {
+                            continue;
+                        }
+                        $existing = Booking::withTrashed()->where('hostex_stay_code', $row['stay_code'])->lockForUpdate()->first();
+                        $reason = null;
+                        if ($legacy->count() !== 1) {
+                            $reason = 'Multiple existing bookings share this reference.';
+                        } elseif ($existing || $legacy->first()->hostex_stay_code) {
+                            $reason = 'A Hostex identifier is already assigned; records require manual review.';
+                        } elseif (! in_array($legacy->first()->source, ['ical', 'manual', 'import'], true)) {
+                            $reason = 'Unsupported existing source; manual review required.';
+                        } elseif ($legacy->first()->check_in->toDateString() !== $attributes['check_in']
+                            || $legacy->first()->check_out->toDateString() !== $attributes['check_out']) {
+                            $reason = 'Check-in or check-out differs; manual review required.';
+                        }
+                        foreach ($legacy as $booking) {
+                            $entry = [
+                                'booking_id' => $booking->id, 'source' => $booking->source,
+                                'check_in' => $booking->check_in->toDateString(), 'check_out' => $booking->check_out->toDateString(),
+                                'hostex_check_in' => $attributes['check_in'], 'hostex_check_out' => $attributes['check_out'],
+                                'stay_code' => $row['stay_code'], 'incomes' => $booking->incomes()->count(),
+                                'reason' => $reason,
+                            ];
+                            $result['entries'][] = $entry;
+                            if ($reason === null) {
+                                $matches[] = ['booking' => $booking, 'stay_code' => $row['stay_code']];
+                            }
+                        }
+                    }
+                    // One existing booking cannot stand for two Hostex stays in a group.
+                    $counts = array_count_values(array_map(fn ($match) => $match['booking']->id, $matches));
+                    foreach ($result['entries'] as &$entry) {
+                        if ($entry['reason'] === null && $counts[$entry['booking_id']] > 1) {
+                            $entry['reason'] = 'Multiple Hostex stays match this booking; manual review required.';
+                        }
+                        $result[$entry['reason'] === null ? 'eligible' : 'conflicts']++;
+                    }
+                    unset($entry);
+                    if ($apply && $result['conflicts']) {
+                        $result['error'] = 'Reconciliation has ambiguous or mismatched records. No changes saved. Review the listed booking IDs.';
+
+                        return $result;
+                    }
+                    if ($apply) {
+                        foreach ($matches as $match) {
+                            $booking = $match['booking'];
+                            $booking->forceFill(['source' => 'hostex', 'hostex_stay_code' => $match['stay_code']]);
+                            if ($booking->total_price !== null && ! in_array($booking->price_source, ['manual', 'import'], true)) {
+                                $booking->price_source = 'manual'; // Pin the existing local price across subsequent pulls.
+                            }
+                            $booking->save();
+                            $result['applied']++;
+                        }
+                    }
+
+                    return $result;
+                });
+            });
+        } catch (Throwable $exception) {
+            $result['error'] = $exception instanceof HostexException ? $exception->getMessage() : 'Hostex reconciliation failed. No changes saved. Check configuration and retry.';
+
+            return $result;
+        }
+    }
+
     private function attributes(Villa $villa, array $row, array $platforms): array
     {
         if ((string) ($row['property_id'] ?? '') !== (string) $villa->hostex_property_id

@@ -105,6 +105,40 @@ invalid data rolls back the whole villa import; safe status/error information is
 recorded on the villa. Verbose CLI output contains only exception category and
 SQLSTATE, never SQL bindings, guest details or HTTP headers.
 
+## Existing booking references on hosting
+
+If an initial pull stops with `A booking reference already exists outside
+Hostex`, existing local/iCal/import bookings must be reconciled. Do not delete
+them or bulk-update their source using SQL. From the hosting application folder,
+preview the plan for Avora (hosting villa #2):
+
+```bash
+php artisan propertyme:hostex-reconcile --villa=2
+```
+
+The preview does not change bookings, sync metadata or incomes. It lists booking
+IDs, source, local/Hostex dates, linked-income counts and match/conflict reasons.
+Only one-to-one matches on villa, platform, reference and **both dates** qualify.
+No guest names, notes, phone numbers or tokens are printed.
+
+If the plan has zero conflicts, apply and pull again:
+
+```bash
+php artisan propertyme:hostex-reconcile --villa=2 --apply
+php artisan propertyme:hostex-sync --villa=2
+```
+
+Applying only attaches the existing booking ID to the Hostex stay and changes
+its source. It preserves notes, creator, legacy iCal UID, existing prices and
+all income links/amounts. An existing non-null price is protected from later
+Hostex price replacement (manual/import price source); the original Hostex rate
+remains available separately after sync. No new income entry is created.
+
+Any ambiguous match, date mismatch, duplicate local reference, shared stay or
+already-assigned Hostex identity prevents **all** changes in that apply run.
+Review the listed booking IDs before retrying; the command does not guess, merge
+booking IDs, restore deleted bookings or move financial records.
+
 ## 5. Automatic refresh and hosting
 
 The schedule in `routes/console.php` pulls mapped active villas every five minutes
