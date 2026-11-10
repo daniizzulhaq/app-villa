@@ -1396,5 +1396,9 @@
     "Atur filter, lalu ketuk Terapkan.": "Stel uw filters in en selecteer Toepassen.",
     "Menampilkan :from–:to dari :total hasil": ":from–:to van :total resultaten",
     "Bagian formulir": "Formulieronderdelen",
-    "Isian bertanda * wajib diisi.": "Velden met * zijn verplicht."
+    "Isian bertanda * wajib diisi.": "Velden met * zijn verplicht.",
+    "Pendapatan net": "Netto-inkomsten",
+    "Setelah komisi OTA, sebelum management fee.": "Na OTA-commissie, voor beheerkosten.",
+    "Dari pemasukan tercatat, sebelum management fee.": "Op basis van geregistreerde inkomsten, voor beheerkosten.",
+    "Data pendapatan belum lengkap.": "Inkomstengegevens zijn onvolledig."
 }

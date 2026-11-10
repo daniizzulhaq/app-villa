@@ -1426,5 +1426,9 @@
     "Username": "Username",
     "Dipakai untuk login. Huruf kecil, tanpa spasi. Wajib jika email dikosongkan.": "Used to log in. Lowercase, no spaces. Required if email is left empty.",
     "Email (opsional)": "Email (optional)",
-    "Login: :username": "Login: :username"
+    "Login: :username": "Login: :username",
+    "Pendapatan net": "Net revenue",
+    "Setelah komisi OTA, sebelum management fee.": "After OTA commission, before management fee.",
+    "Dari pemasukan tercatat, sebelum management fee.": "From recorded income, before management fee.",
+    "Data pendapatan belum lengkap.": "Revenue data is incomplete."
 }

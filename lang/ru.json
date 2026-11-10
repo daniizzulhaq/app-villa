@@ -1396,5 +1396,9 @@
     "Atur filter, lalu ketuk Terapkan.": "Настройте фильтры и нажмите «Применить».",
     "Menampilkan :from–:to dari :total hasil": "Показано :from–:to из :total результатов",
     "Bagian formulir": "Разделы формы",
-    "Isian bertanda * wajib diisi.": "Поля со знаком * обязательны."
+    "Isian bertanda * wajib diisi.": "Поля со знаком * обязательны.",
+    "Pendapatan net": "Чистый доход",
+    "Setelah komisi OTA, sebelum management fee.": "После комиссии OTA, до платы за управление.",
+    "Dari pemasukan tercatat, sebelum management fee.": "По учтённым поступлениям, до платы за управление.",
+    "Data pendapatan belum lengkap.": "Данные о доходах неполны."
 }

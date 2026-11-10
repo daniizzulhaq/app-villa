@@ -1396,5 +1396,9 @@
     "Atur filter, lalu ketuk Terapkan.": "Wählen Sie Ihre Filter und dann Anwenden.",
     "Menampilkan :from–:to dari :total hasil": ":from–:to von :total Ergebnissen",
     "Bagian formulir": "Formularabschnitte",
-    "Isian bertanda * wajib diisi.": "Mit * markierte Felder sind Pflichtfelder."
+    "Isian bertanda * wajib diisi.": "Mit * markierte Felder sind Pflichtfelder.",
+    "Pendapatan net": "Nettoeinnahmen",
+    "Setelah komisi OTA, sebelum management fee.": "Nach OTA-Provision, vor Verwaltungsgebühren.",
+    "Dari pemasukan tercatat, sebelum management fee.": "Aus erfassten Einnahmen, vor Verwaltungsgebühren.",
+    "Data pendapatan belum lengkap.": "Die Einnahmendaten sind unvollständig."
 }

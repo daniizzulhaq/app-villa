@@ -1396,5 +1396,9 @@
     "Atur filter, lalu ketuk Terapkan.": "条件を設定してから適用を押してください。",
     "Menampilkan :from–:to dari :total hasil": ":total件中 :from–:to件を表示",
     "Bagian formulir": "フォームの項目",
-    "Isian bertanda * wajib diisi.": "* の項目は必須です。"
+    "Isian bertanda * wajib diisi.": "* の項目は必須です。",
+    "Pendapatan net": "純収益",
+    "Setelah komisi OTA, sebelum management fee.": "OTA手数料控除後、管理手数料控除前。",
+    "Dari pemasukan tercatat, sebelum management fee.": "記録済みの入金に基づく、管理手数料控除前の金額。",
+    "Data pendapatan belum lengkap.": "収益データが不完全です。"
 }

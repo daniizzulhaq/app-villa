@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Models\BookingPlatform;
 use App\Models\Villa;
 use App\Services\BookingService;
+use App\Services\Finance\BookingNetRevenue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -72,8 +73,8 @@ class BookingController extends Controller
         ]);
     }
 
-    /** JSON untuk FullCalendar — dipakai semua role. Tidak pernah berisi nominal uang. */
-    public function events(Request $request): JsonResponse
+    /** Calendar amounts are included only when the booking revenue policy allows access. */
+    public function events(Request $request, BookingNetRevenue $netRevenue): JsonResponse
     {
         $data = $request->validate([
             'start' => ['required', 'date'],
@@ -86,6 +87,7 @@ class BookingController extends Controller
         $bookings = Booking::query()
             ->whereIn('villa_id', Villa::accessibleBy($user)->select('id'))
             ->with(['villa:id,name', 'platform:id,name,color'])
+            ->when(! $user->isStaff(), fn ($q) => $q->withSum('incomes', 'net_revenue')->withCount('incomes'))
             ->when($data['villa'] ?? null, fn ($q, $v) => $q->where('villa_id', $v))
             ->when(! ($data['cancelled'] ?? false), fn ($q) => $q->where('status', '!=', BookingStatus::Cancelled->value))
             ->where('check_in', '<', Carbon::parse($data['end'])->toDateString())
@@ -97,6 +99,11 @@ class BookingController extends Controller
             $title = $b->guest_name ?: ($b->status === BookingStatus::NeedsCompletion ? __('Perlu dilengkapi') : __('Tamu'));
             if (empty($data['villa'])) {
                 $title = $b->villa->name.' · '.$title;
+            }
+            $revenueProps = [];
+            if ($user->can('viewRevenue', $b)) {
+                $display = $netRevenue->display($b);
+                $revenueProps = ['netRevenue' => $display['formatted'], 'netRevenueHint' => $display['hint']];
             }
             $events[] = [
                 'id' => (string) $b->id,
@@ -122,6 +129,7 @@ class BookingController extends Controller
                     'checkOut' => $b->check_out->translatedFormat('D, d M Y'),
                     'nights' => $b->nights(),
                     'url' => $user->isStaff() ? null : route('bookings.show', $b),
+                    ...$revenueProps,
                 ],
             ];
             // Latar tanggal terisi (beda warna dengan tanggal kosong) saat satu villa dipilih

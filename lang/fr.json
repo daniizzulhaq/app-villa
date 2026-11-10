@@ -1396,5 +1396,9 @@
     "Atur filter, lalu ketuk Terapkan.": "Réglez les filtres, puis sélectionnez Appliquer.",
     "Menampilkan :from–:to dari :total hasil": "Affichage de :from à :to sur :total résultats",
     "Bagian formulir": "Sections du formulaire",
-    "Isian bertanda * wajib diisi.": "Les champs marqués d’un * sont obligatoires."
+    "Isian bertanda * wajib diisi.": "Les champs marqués d’un * sont obligatoires.",
+    "Pendapatan net": "Revenu net",
+    "Setelah komisi OTA, sebelum management fee.": "Après commission OTA, avant les frais de gestion.",
+    "Dari pemasukan tercatat, sebelum management fee.": "D’après les revenus enregistrés, avant les frais de gestion.",
+    "Data pendapatan belum lengkap.": "Les données de revenus sont incomplètes."
 }

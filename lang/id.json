@@ -1364,5 +1364,9 @@
     "From Hostex": "Dari Hostex",
     "Original Hostex price": "Harga asli Hostex",
     "No automatic currency conversion.": "Tidak ada konversi mata uang otomatis.",
-    "OTA commission from Hostex": "Komisi OTA dari Hostex"
+    "OTA commission from Hostex": "Komisi OTA dari Hostex",
+    "Pendapatan net": "Pendapatan net",
+    "Setelah komisi OTA, sebelum management fee.": "Setelah komisi OTA, sebelum management fee.",
+    "Dari pemasukan tercatat, sebelum management fee.": "Dari pemasukan tercatat, sebelum management fee.",
+    "Data pendapatan belum lengkap.": "Data pendapatan belum lengkap."
 }

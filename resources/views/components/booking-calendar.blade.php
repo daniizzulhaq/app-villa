@@ -1,6 +1,6 @@
 {{--
   Kalender reservasi bersama (Manager/Owner/Staff).
-  Data dari route bookings.events — tanpa nominal uang. Klik booking → detail di bottom-sheet.
+  Data dari route bookings.events. Nominal hanya untuk pengguna yang boleh melihat pendapatan.
 --}}
 @props(['villas', 'platforms', 'selected' => null, 'initialDate' => null, 'showDetailLink' => false])
 <div x-data="bookingCalendar({ eventsUrl: @js(route('bookings.events')), villa: @js($selected), initialDate: @js($initialDate) })" {{ $attributes }}>
@@ -52,7 +52,12 @@
                         <dt>{{ __('Jumlah tamu') }}</dt><dd x-text="selected.guests ? selected.guests + ' orang' : '—'"></dd>
                         <template x-if="selected.ref"><dt>{{ __('Kode booking') }}</dt></template>
                         <template x-if="selected.ref"><dd x-text="selected.ref"></dd></template>
-                        <dt>{{ __('Catatan') }}</dt><dd class="fw-normal" style="white-space:pre-line" x-text="selected.notes || '—'"></dd>
+                        @if (! auth()->user()->isStaff() && (auth()->user()->isManager() || auth()->user()->isOwner()))
+                            <dt>{{ __('Pendapatan net') }}</dt>
+                            <dd><div class="num fw-semibold" x-text="selected.netRevenue ?? {{ Js::from(__('Belum diisi')) }}"></div><div class="fs-xs text-muted fw-normal mt-1" x-text="selected.netRevenueHint"></div></dd>
+                        @else
+                            <dt>{{ __('Catatan') }}</dt><dd class="fw-normal" style="white-space:pre-line" x-text="selected.notes || '—'"></dd>
+                        @endif
                     </dl>
                     <div class="pm-modal__actions">
                         <button type="button" class="btn btn-light" @click="selected = null">{{ __('Tutup') }}</button>

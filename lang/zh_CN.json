@@ -1396,5 +1396,9 @@
     "Atur filter, lalu ketuk Terapkan.": "设置筛选条件，然后点击应用。",
     "Menampilkan :from–:to dari :total hasil": "显示第 :from–:to 条，共 :total 条结果",
     "Bagian formulir": "表单章节",
-    "Isian bertanda * wajib diisi.": "标有 * 的字段为必填项。"
+    "Isian bertanda * wajib diisi.": "标有 * 的字段为必填项。",
+    "Pendapatan net": "净收入",
+    "Setelah komisi OTA, sebelum management fee.": "扣除OTA佣金后、扣除管理费前。",
+    "Dari pemasukan tercatat, sebelum management fee.": "根据已记录收入，扣除管理费前。",
+    "Data pendapatan belum lengkap.": "收入数据不完整。"
 }
