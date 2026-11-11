@@ -1430,5 +1430,9 @@
     "Cancelled booking; automatic revenue is excluded.": "Réservation annulée ; le revenu automatique est exclu.",
     ":count income entries": ":count entrées de revenus",
     "Includes automatic Hostex booking revenue; payouts are not verified.": "Inclut les revenus de réservation Hostex automatiques ; les versements ne sont pas vérifiés.",
-    "Automatic income matches these stay dates. Check the booking reference.": "Un revenu automatique correspond à ces dates de séjour. Vérifiez la référence de réservation."
+    "Automatic income matches these stay dates. Check the booking reference.": "Un revenu automatique correspond à ces dates de séjour. Vérifiez la référence de réservation.",
+    "Management fee breakdown": "Détail des frais de gestion",
+    "View fee details": "Voir le détail des frais",
+    "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "Frais par entrée de revenu, selon le pourcentage et la base de calcul enregistrés dans chaque transaction.",
+    "Income without a linked reservation": "Revenu sans réservation associée"
 }

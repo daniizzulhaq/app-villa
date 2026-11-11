@@ -102,10 +102,12 @@
         <div class="row g-3 mb-3">
             <div class="col-lg-4"><x-ui.stat hero :label="__('Final net profit')" :value="\App\Support\Rupiah::format($s->netProfit)" :tone="$s->isLoss() ? 'negative' : 'positive'" :hint="__('Margin :margin dari gross', ['margin' => $s->marginLabel()])" icon="bi-trophy" /></div>
             <div class="col-6 col-lg-2"><x-ui.stat :label="__('Gross income')" :value="\App\Support\Rupiah::short($s->gross)" :hint="$s->incomeCount.' pemasukan'" /></div>
-            <div class="col-6 col-lg-2"><x-ui.stat :label="__('Management fee')" :value="\App\Support\Rupiah::short($s->managementFee)" /></div>
+            <div class="col-6 col-lg-2"><x-ui.stat :label="__('Management fee')" :value="\App\Support\Rupiah::short($s->managementFee)" :hint="__('View fee details')" href="#management-fees" /></div>
             <div class="col-6 col-lg-2"><x-ui.stat :label="__('Pengeluaran')" :value="\App\Support\Rupiah::short($s->expenses)" :hint="__(':count nota valid', ['count' => $s->expenseCount])" /></div>
             <div class="col-6 col-lg-2"><x-ui.stat :label="__('Margin')" :value="$s->marginLabel()" :tone="$s->margin() === null ? null : ($s->isLoss() ? 'negative' : 'positive')" /></div>
         </div>
+
+        @include('reports._management-fees')
 
         <div class="row g-3 mb-3">
             <div class="col-lg-5">

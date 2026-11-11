@@ -171,6 +171,30 @@
     @endif
 
     <div class="page-break"></div>
+    <h2>{{ __('Management fee breakdown') }}</h2>
+    <p class="small muted">{{ __('Fees per income entry, using the percentage and calculation basis saved with each transaction.') }}</p>
+    <table class="grid">
+        <thead><tr>
+            <th>{{ __('Recorded date') }}</th><th>{{ __('Tamu / kode') }}</th><th>{{ __('Villa') }} / {{ __('Sumber') }}</th>
+            <th class="n">{{ __('Basis fee (Rp)') }}</th><th class="n">{{ __('Fee %') }}</th><th class="n">{{ __('Management fee') }}</th>
+        </tr></thead>
+        @forelse ($incomes as $income)
+            <tr>
+                <td>{{ $income->payment_date->format('d/m/Y') }}</td>
+                <td>{{ $income->booking?->guest_name ?: __('Income without a linked reservation') }}<br><span class="small muted">{{ $income->booking_ref ?: ($income->booking?->booking_ref ?: '#'.$income->id) }}</span>
+                    @if ($income->booking)<br><span class="small muted">{{ $income->booking->check_in->format('d/m/Y') }} – {{ $income->booking->check_out->format('d/m/Y') }}</span>@endif
+                </td>
+                <td>{{ $income->villa->name }}<br><span class="small muted">{{ $income->platform->name }}</span></td>
+                <td class="n">{{ Rupiah::format($income->fee_base_amount) }}<br><span class="small muted">{{ $income->fee_basis->label() }}</span></td>
+                <td class="n">{{ Rupiah::percent($income->fee_percentage) }}</td>
+                <td class="n">{{ Rupiah::format($income->fee_amount) }}</td>
+            </tr>
+        @empty
+            <tr><td colspan="6" class="muted">{{ __('Tidak ada pemasukan.') }}</td></tr>
+        @endforelse
+        <tfoot><tr><td colspan="5">{{ __('Total management fee') }}</td><td class="n">{{ Rupiah::format($s->managementFee) }}</td></tr></tfoot>
+    </table>
+
     <h2>{{ __('Rincian pemasukan') }}</h2>
     <table class="grid">
         <thead><tr><th>{{ __('Tgl bayar') }}</th>@unless($villa)<th>{{ __('Villa') }}</th>@endunless<th>{{ __('Platform') }}</th><th>{{ __('Tamu / kode') }}</th><th class="n">{{ __('Gross') }}</th><th class="n">{{ __('Komisi+pot.') }}</th><th class="n">{{ __('Fee') }}</th><th class="n">{{ __('Net stlh fee') }}</th></tr></thead>

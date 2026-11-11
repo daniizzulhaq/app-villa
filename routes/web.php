@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\BookingIncomeRecoveryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IcalExportController;
@@ -97,6 +98,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::resource('users', UserController::class)->except('show');
 
         Route::resource('bookings', BookingController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+        Route::get('/bookings/{booking}/income-recovery', [BookingIncomeRecoveryController::class, 'show'])->name('bookings.income-recovery');
+        Route::post('/bookings/{booking}/income-recovery', [BookingIncomeRecoveryController::class, 'store'])->name('bookings.recover-income');
         Route::get('/sinkronisasi', [SyncController::class, 'index'])->name('sync.index');
         Route::post('/sinkronisasi', [SyncController::class, 'run'])->middleware('throttle:10,1')->name('sync.run');
 

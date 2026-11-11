@@ -1430,5 +1430,9 @@
     "Cancelled booking; automatic revenue is excluded.": "预订已取消，自动收入不计入汇总。",
     ":count income entries": ":count 条收入记录",
     "Includes automatic Hostex booking revenue; payouts are not verified.": "包含 Hostex 自动预订收入，尚未核实款项到账。",
-    "Automatic income matches these stay dates. Check the booking reference.": "自动收入与此住宿日期匹配，请核查预订编号。"
+    "Automatic income matches these stay dates. Check the booking reference.": "自动收入与此住宿日期匹配，请核查预订编号。",
+    "Management fee breakdown": "管理费明细",
+    "View fee details": "查看费用明细",
+    "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "按每笔收入记录显示费用，使用该交易中保存的费率和计算基数。",
+    "Income without a linked reservation": "未关联预订的收入"
 }

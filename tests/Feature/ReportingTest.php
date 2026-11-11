@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Enums\FeeBasis;
 use App\Enums\ReportStatus;
 use App\Enums\UserRole;
+use App\Exports\ReportExport;
+use App\Models\Booking;
 use App\Models\BookingPlatform;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
@@ -15,8 +17,11 @@ use App\Models\Villa;
 use App\Notifications\ReportFinalizedNotification;
 use App\Services\Finance\FinanceCalculator;
 use App\Services\Finance\FinanceFilter;
+use App\Services\IncomeService;
+use App\Services\ReportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
 use OwenIt\Auditing\Models\Audit;
 use Tests\TestCase;
@@ -26,7 +31,9 @@ class ReportingTest extends TestCase
     use RefreshDatabase;
 
     private User $manager;
+
     private User $owner;
+
     private Villa $villa;
 
     protected function setUp(): void
@@ -142,6 +149,70 @@ class ReportingTest extends TestCase
         $this->actingAs($this->manager)->get(route('reports.pdf', ['type' => 'annual', 'year' => 2026]))->assertOk();
     }
 
+    public function test_management_fee_details_show_the_guest_and_saved_basis_and_match_export_totals(): void
+    {
+        $platform = BookingPlatform::where('slug', BookingPlatform::DIRECT)->firstOrFail();
+        $booking = Booking::create([
+            'villa_id' => $this->villa->id, 'platform_id' => $platform->id, 'status' => 'confirmed',
+            'guest_name' => 'Jana Fee Detail', 'booking_ref' => 'DIRECT-FEE',
+            'check_in' => '2026-10-17', 'check_out' => '2026-10-21',
+        ]);
+        $income = app(IncomeService::class)->create([
+            'villa_id' => $this->villa->id, 'platform_id' => $platform->id, 'booking_id' => $booking->id,
+            'payment_date' => '2026-10-17', 'gross_amount' => '6300003', 'platform_fee' => 0,
+        ], $this->manager);
+        // The report must use the transaction snapshot after villa settings change.
+        $this->villa->update(['fee_percentage' => 30, 'fee_basis' => FeeBasis::Gross]);
+        $params = ['villa' => $this->villa->id, 'year' => 2026, 'month' => 10];
+        $response = $this->actingAs($this->manager)->get(route('reports.monthly', $params))->assertOk()
+            ->assertSee('href="#management-fees"', false)->assertSee('Rincian management fee');
+        preg_match('/<section id="management-fees".*?<\/section>/s', $response->getContent(), $match);
+        $this->assertStringContainsString('Jana Fee Detail', $match[0]);
+        $this->assertStringContainsString('DIRECT-FEE', $match[0]);
+        $this->assertStringContainsString('Rp 6.300.003', $match[0]);
+        $this->assertStringContainsString('15%', $match[0]);
+        $this->assertStringContainsString('Rp 945.000', $match[0]);
+        $this->assertStringContainsString('Rp 12.495.000', $match[0]);
+        $this->assertStringContainsString('Pemasukan tanpa reservasi', $match[0]);
+        $this->assertStringContainsString(route('incomes.show', $income), $match[0]);
+
+        $data = app(ReportService::class)->build($this->manager, $this->villa->id, Carbon::parse('2026-10-01'), Carbon::parse('2026-10-31'), 'monthly');
+        $this->assertSame($data['summary']->managementFee, FinanceCalculator::sum($data['incomes']->pluck('fee_amount')));
+        $pdfHtml = view('reports.pdf', $data)->render();
+        $this->assertStringContainsString('Rincian management fee', $pdfHtml);
+        $this->assertStringContainsString('Jana Fee Detail', $pdfHtml);
+        $sheets = (new ReportExport($data))->sheets();
+        $feeSheet = collect($sheets)->first(fn ($sheet) => $sheet->title() === __('Management fee'));
+        $this->assertNotNull($feeSheet);
+        $rows = $feeSheet->array();
+        $row = collect($rows)->first(fn ($row) => ($row[4] ?? null) === 'DIRECT-FEE');
+        $this->assertSame(['Jana Fee Detail', 'DIRECT-FEE', '2026-10-17', '2026-10-21'], array_slice($row, 3, 4));
+        $this->assertSame([6300003.0, 15.0, 945000.45], array_slice($row, 8, 3));
+        $this->assertSame(12495000.45, end($rows)[10]);
+    }
+
+    public function test_owner_fee_details_only_include_final_months_and_accessible_villas(): void
+    {
+        $platformId = BookingPlatform::where('slug', BookingPlatform::DIRECT)->value('id');
+        foreach ([[$this->villa, '2026-10-17', 'Visible Final Guest'], [$this->villa, '2026-11-17', 'Hidden Draft Guest'], [$this->makeVilla(), '2026-10-17', 'Hidden Other Villa Guest']] as [$villa, $date, $guest]) {
+            $booking = Booking::create([
+                'villa_id' => $villa->id, 'platform_id' => $platformId, 'status' => 'confirmed',
+                'guest_name' => $guest, 'check_in' => $date, 'check_out' => Carbon::parse($date)->addDay(),
+            ]);
+            app(IncomeService::class)->create([
+                'villa_id' => $villa->id, 'platform_id' => $platformId, 'booking_id' => $booking->id,
+                'payment_date' => $date, 'gross_amount' => '1000000',
+            ], $this->manager);
+        }
+        MonthlyReport::create(['villa_id' => $this->villa->id, 'year' => 2026, 'month' => 10, 'status' => ReportStatus::Final]);
+        $response = $this->actingAs($this->owner)->get(route('reports.annual', ['year' => 2026]))->assertOk()
+            ->assertSee('Rincian management fee')->assertSee('Visible Final Guest')
+            ->assertDontSee('Hidden Draft Guest')->assertDontSee('Hidden Other Villa Guest');
+        $this->assertSame('11700000.00', $response->viewData('summary')->managementFee);
+        $data = $response->viewData('incomes');
+        $this->assertSame('11700000.00', FinanceCalculator::sum($data->pluck('fee_amount')));
+    }
+
     public function test_analytics_page_and_presets(): void
     {
         foreach (['this_month', 'last_12', 'this_year', 'last_year'] as $preset) {
@@ -183,7 +254,7 @@ class ReportingTest extends TestCase
         $airbnb = BookingPlatform::where('slug', 'airbnb')->value('id');
         $bcom = BookingPlatform::where('slug', 'booking-com')->value('id') ?? BookingPlatform::where('slug', '!=', 'airbnb')->value('id');
         $bcomName = BookingPlatform::find($bcom)->name;
-        $mk = fn ($attrs) => \App\Models\Booking::create($attrs + ['villa_id' => $this->villa->id, 'source' => 'ical', 'status' => 'needs_completion']);
+        $mk = fn ($attrs) => Booking::create($attrs + ['villa_id' => $this->villa->id, 'source' => 'ical', 'status' => 'needs_completion']);
 
         $hm = $mk(['platform_id' => $airbnb, 'ical_uid' => 'a', 'booking_ref' => 'HMPRICE1', 'check_in' => '2026-11-10', 'check_out' => '2026-11-13']);
         $bk = $mk(['platform_id' => $bcom, 'ical_uid' => 'b', 'check_in' => '2026-11-20', 'check_out' => '2026-11-22']);

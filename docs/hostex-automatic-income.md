@@ -103,6 +103,33 @@ pemasukan Hostex dalam periode tersebut.
 Matikan `HOSTEX_AUTO_INCOME_ENABLED` untuk menghentikan perubahan pemasukan
 otomatis. Pengaturan tersebut tidak menghapus pemasukan yang sudah tercatat.
 
+## Memulihkan pemasukan terhapus setelah diperiksa
+
+Jika detail booking menampilkan **Pemasukan yang dihapus perlu diperiksa sebelum
+pencatatan otomatis**, Manager yang memiliki akses ke villa dapat:
+
+1. Jalankan **Sinkron Hostex** agar nominal booking di PropertyMe terbaru.
+2. Buka detail booking yang benar, cocokkan villa, tamu, sumber, kode dan tanggal.
+3. Klik **Periksa pemasukan terhapus**. Bandingkan catatan lama dengan tanggal,
+   gross, komisi, net dan management fee yang akan dicatat dari Hostex.
+4. Klik **Pulihkan dan sinkronkan pemasukan** setelah rinciannya cocok.
+
+Pemulihan memakai ID pemasukan yang sama dan menyimpan catatan, lampiran, serta
+riwayat auditnya. Catatan tersebut selanjutnya dikelola sinkronisasi Hostex.
+Persentase dan basis fee aslinya dipertahankan, sedangkan nominal mengikuti
+data Hostex. Tidak ada perubahan yang dikirim ke Hostex/Airbnb.
+
+Proses ditolak jika ada transaksi lain yang juga cocok, identitas berbeda,
+nominal belum lengkap, mata uang selain IDR, fee custom, atau booking belum
+Confirmed. Bulan tanggal lama dan tanggal baru harus sama-sama belum Final.
+Jika datanya berubah setelah halaman pemeriksaan dibuka, muat ulang rincian.
+Sinkronisasi biasa tetap tidak memulihkan pemasukan yang sengaja dihapus.
+
+Fitur ini memerlukan pembaruan file aplikasi, view, route dan terjemahan di
+hosting, lalu `php artisan optimize:clear`. Tidak memerlukan migrasi baru atau
+build aset baru. Pemulihan data hosting dilakukan melalui langkah di atas,
+bukan dengan menyalin database lokal ke hosting.
+
 ## Verifikasi
 
 CLI menampilkan jumlah pemasukan `created`, `updated`, `archived`, dan `need

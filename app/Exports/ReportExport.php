@@ -71,12 +71,22 @@ class ReportExport implements Export, WithMultipleSheets
             $e->payment_method?->label(), $n($e->amount), $e->receipts->count().' foto', 'NOTA-'.str_pad((string) $e->id, 5, '0', STR_PAD_LEFT),
         ])->all();
 
+        $feeRows = $d['incomes']->map(fn ($i) => [
+            $i->payment_date->format('Y-m-d'), $i->villa->name, $i->platform->name,
+            $i->booking?->guest_name ?: __('Income without a linked reservation'), $i->booking_ref ?: ($i->booking?->booking_ref ?: '#'.$i->id),
+            $i->booking?->check_in->format('Y-m-d'), $i->booking?->check_out->format('Y-m-d'),
+            $i->fee_basis->label(), (float) $i->fee_base_amount, (float) $i->fee_percentage, (float) $i->fee_amount,
+        ])->all();
+        $feeRows[] = [__('Total management fee'), null, null, null, null, null, null, null, null, null, (float) $s->managementFee];
+
         return [
             new Sheet(__('Ringkasan'), [], $summaryRows, ['B' => '#,##0;[Red]-#,##0', 'C' => '#,##0', 'D' => '#,##0', 'E' => '#,##0', 'F' => '#,##0;[Red]-#,##0'], titleRow: true),
             new Sheet(__('Pemasukan'), [__('Recorded date'), __('Villa'), __('Platform'), __('Kode booking'), __('Tamu'), __('Gross'), __('Komisi'), __('Potongan lain'), __('Net revenue'), __('Fee %'), __('Basis fee'), __('Management fee'), __('Revenue after fee'), __('Sudah net?'), __('Catatan')],
                 $incomeRows, ['F' => '#,##0', 'G' => '#,##0', 'H' => '#,##0', 'I' => '#,##0', 'L' => '#,##0', 'M' => '#,##0']),
             new Sheet(__('Pengeluaran'), [__('Tanggal'), __('Villa'), __('Kategori'), __('Keterangan'), __('Vendor'), __('Metode bayar'), __('Nominal'), __('Foto nota'), __('Ref. nota')],
                 $expenseRows, ['G' => '#,##0']),
+            new Sheet(__('Management fee'), [__('Recorded date'), __('Villa'), __('Sumber'), __('Tamu'), __('Kode booking'), __('Check-in'), __('Check-out'), __('Basis fee'), __('Basis fee (Rp)'), __('Fee %'), __('Management fee')],
+                $feeRows, ['I' => '#,##0.00', 'J' => '0.##"%"', 'K' => '#,##0.00']),
         ];
     }
 }

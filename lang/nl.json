@@ -1430,5 +1430,9 @@
     "Cancelled booking; automatic revenue is excluded.": "Boeking geannuleerd; automatische inkomsten worden niet meegerekend.",
     ":count income entries": ":count inkomstenregistraties",
     "Includes automatic Hostex booking revenue; payouts are not verified.": "Inclusief automatische Hostex-reserveringsinkomsten; uitbetalingen zijn niet geverifieerd.",
-    "Automatic income matches these stay dates. Check the booking reference.": "Automatische inkomsten komen overeen met deze verblijfsdatums. Controleer de boekingsreferentie."
+    "Automatic income matches these stay dates. Check the booking reference.": "Automatische inkomsten komen overeen met deze verblijfsdatums. Controleer de boekingsreferentie.",
+    "Management fee breakdown": "Specificatie beheervergoeding",
+    "View fee details": "Vergoedingsdetails bekijken",
+    "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "Vergoeding per inkomstenregistratie, op basis van het percentage en de berekeningsgrondslag die bij de transactie zijn opgeslagen.",
+    "Income without a linked reservation": "Inkomsten zonder gekoppelde reservering"
 }

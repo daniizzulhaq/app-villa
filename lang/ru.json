@@ -1430,5 +1430,9 @@
     "Cancelled booking; automatic revenue is excluded.": "Бронирование отменено; автоматический доход не учитывается.",
     ":count income entries": ":count записей дохода",
     "Includes automatic Hostex booking revenue; payouts are not verified.": "Включены автоматические доходы от бронирований Hostex; выплаты не подтверждены.",
-    "Automatic income matches these stay dates. Check the booking reference.": "Автоматический доход соответствует этим датам проживания. Проверьте номер бронирования."
+    "Automatic income matches these stay dates. Check the booking reference.": "Автоматический доход соответствует этим датам проживания. Проверьте номер бронирования.",
+    "Management fee breakdown": "Детализация комиссии за управление",
+    "View fee details": "Посмотреть детализацию комиссии",
+    "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "Комиссия по каждой записи дохода с процентом и базой расчёта, сохранёнными в транзакции.",
+    "Income without a linked reservation": "Доход без связанного бронирования"
 }

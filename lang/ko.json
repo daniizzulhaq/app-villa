@@ -1430,5 +1430,9 @@
     "Cancelled booking; automatic revenue is excluded.": "예약이 취소되어 자동 수익에서 제외됩니다.",
     ":count income entries": "수입 항목 :count건",
     "Includes automatic Hostex booking revenue; payouts are not verified.": "Hostex 자동 예약 수익이 포함되어 있으며 정산금 입금은 확인되지 않았습니다.",
-    "Automatic income matches these stay dates. Check the booking reference.": "이 숙박 날짜와 일치하는 자동 수입이 있습니다. 예약 번호를 확인하세요."
+    "Automatic income matches these stay dates. Check the booking reference.": "이 숙박 날짜와 일치하는 자동 수입이 있습니다. 예약 번호를 확인하세요.",
+    "Management fee breakdown": "관리 수수료 내역",
+    "View fee details": "수수료 상세 보기",
+    "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "각 거래에 저장된 비율과 계산 기준에 따른 수입 항목별 수수료입니다.",
+    "Income without a linked reservation": "연결된 예약이 없는 수입"
 }

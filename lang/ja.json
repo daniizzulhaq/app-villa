@@ -1430,5 +1430,9 @@
     "Cancelled booking; automatic revenue is excluded.": "予約はキャンセルされました。自動収益は集計から除外されます。",
     ":count income entries": ":count件の収入記録",
     "Includes automatic Hostex booking revenue; payouts are not verified.": "Hostexの自動予約収益を含みます。入金は確認されていません。",
-    "Automatic income matches these stay dates. Check the booking reference.": "この宿泊日に対応する自動収入があります。予約番号を確認してください。"
+    "Automatic income matches these stay dates. Check the booking reference.": "この宿泊日に対応する自動収入があります。予約番号を確認してください。",
+    "Management fee breakdown": "管理手数料の内訳",
+    "View fee details": "手数料の詳細を見る",
+    "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "各取引に保存された料率と計算基準を使った収入明細ごとの手数料。",
+    "Income without a linked reservation": "予約に紐付いていない収入"
 }

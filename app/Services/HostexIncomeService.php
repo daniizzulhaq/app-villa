@@ -98,7 +98,7 @@ class HostexIncomeService
         $new = ! $income;
         $oldDate = $income?->payment_date?->toDateString();
         $restore = $income?->trashed() ?? false;
-        if ($restore && ! in_array($income->hostex_void_reason, ['inactive_booking', 'incomplete', 'existing_income'], true)) {
+        if ($restore && ! in_array($income->hostex_void_reason, ['inactive_booking', 'incomplete', 'existing_income', 'reviewed_restore'], true)) {
             return $this->finish($booking, $counts, 'deleted_income');
         }
         $income ??= new Income;

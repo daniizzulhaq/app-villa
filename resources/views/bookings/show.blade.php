@@ -5,6 +5,8 @@
             @can('update', $booking)
                 @if ($automaticIncome = $booking->incomes->first(fn ($income) => $income->isFromHostex()))
                     <a href="{{ route('incomes.show', $automaticIncome) }}" class="btn btn-light">{{ __('Automatic Hostex income') }}</a>
+                @elseif ($booking->hostex_income_error === 'deleted_income')
+                    <a href="{{ route('bookings.income-recovery', $booking) }}" class="btn btn-light">{{ __('Review deleted income') }}</a>
                 @elseif (Route::has('incomes.create'))
                     <a href="{{ route('incomes.create', ['booking' => $booking->id]) }}" class="btn btn-light"><i class="bi bi-box-arrow-in-down" aria-hidden="true"></i> {{ __('Tambah Pemasukan') }}</a>
                 @endif
