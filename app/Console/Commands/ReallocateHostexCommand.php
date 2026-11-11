@@ -13,6 +13,7 @@ class ReallocateHostexCommand extends Command
         {--from-villa= : Expected current PropertyMe villa ID; required when applying}
         {--from= : First check-in date}
         {--to= : Last check-in date}
+        {--archive-ical=* : Explicit target-villa iCal booking IDs to archive; repeat for multiple IDs}
         {--apply : Move verified Hostex bookings without income; default is preview only}';
 
     protected $description = 'Preview or correct Hostex booking allocations after splitting properties; never move income records';
@@ -21,16 +22,17 @@ class ReallocateHostexCommand extends Command
     {
         $targetId = $this->option('villa');
         $sourceId = $this->option('from-villa');
-        foreach ([$targetId, $sourceId] as $id) {
+        $archiveIds = $this->option('archive-ical');
+        foreach (array_merge([$targetId, $sourceId], $archiveIds) as $id) {
             if ($id !== null && (! ctype_digit((string) $id) || (int) $id < 1)) {
-                $this->error('Villa IDs must be positive numbers.');
+                $this->error('Villa and booking IDs must be positive numbers.');
 
                 return self::FAILURE;
             }
         }
         $apply = (bool) $this->option('apply');
-        if ($apply && ($targetId === null || $sourceId === null || (int) $targetId === (int) $sourceId)) {
-            $this->error('Specify different --villa=TARGET_ID and --from-villa=SOURCE_ID when applying.');
+        if (($apply || $archiveIds) && ($targetId === null || $sourceId === null || (int) $targetId === (int) $sourceId)) {
+            $this->error('Specify different --villa=TARGET_ID and --from-villa=SOURCE_ID for applying or archiving iCal records.');
 
             return self::FAILURE;
         }
@@ -43,12 +45,20 @@ class ReallocateHostexCommand extends Command
         $failed = false;
         foreach ($villas as $villa) {
             $this->info("Target villa #{$villa->id}; Hostex property {$villa->hostex_property_id}.");
-            $result = $allocations->reconcile($villa, $sourceId === null ? null : (int) $sourceId, $apply, $this->option('from'), $this->option('to'));
+            $result = $allocations->reconcile($villa, $sourceId === null ? null : (int) $sourceId, $apply, $this->option('from'), $this->option('to'), array_map('intval', $archiveIds));
             $this->table(['Booking ID', 'Current villa', 'Target villa', 'Dates', 'Income records', 'Result'], array_map(fn ($entry) => [
                 $entry['booking_id'], $entry['from_villa'], $entry['to_villa'],
                 $entry['check_in'].' / '.$entry['check_out'], $entry['incomes'], $entry['reason'] ?? 'Verified move',
             ], $result['entries']));
             $this->info("{$result['eligible']} eligible; {$result['conflicts']} conflicts; {$result['moved']} moved.");
+            if ($result['archives']) {
+                $this->table(['iCal booking ID', 'Villa', 'Hostex booking ID', 'Notes retained', 'Price retained', 'Action'], array_map(fn ($archive) => [
+                    $archive['booking_id'], $archive['villa_id'], $archive['hostex_booking_id'],
+                    $archive['has_notes'] ? 'Yes, in archive' : '-', $archive['has_price'] ? 'Yes, in archive' : '-',
+                    $archive['already_archived'] ? 'Already archived' : 'Archive feed record',
+                ], $result['archives']));
+                $this->line("{$result['archived']} iCal bookings archived. All original row data retained.");
+            }
             if ($result['error']) {
                 $this->error($result['error']);
             }

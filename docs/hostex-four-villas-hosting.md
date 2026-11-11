@@ -154,6 +154,51 @@ seluruh penerapan untuk villa itu dibatalkan. Jika ada konflik, kirim hasil
 pratinjau untuk pemeriksaan; jangan menghapus booking atau memindahkannya lewat
 SQL massal.
 
+### Bentrok dengan booking iCal lama: arsipkan secara terbatas
+
+Untuk kasus Daluca di hosting, pratinjau menemukan booking Hostex **#71** masih
+di villa **#2**, sementara booking iCal **#4** di villa **#6** memiliki tanggal
+16–19 November 2026. Pemilik memilih Hostex sebagai sumber booking dan menyetujui
+penghentian data iCal lama. Pilihan aman adalah mengarsipkan hanya record iCal
+yang disebut secara eksplisit, sambil mempertahankan semua kolom aslinya.
+
+Setelah push/pull perubahan kode, jalankan pratinjau di Terminal cPanel:
+
+```bash
+cd ~/app-villa
+php artisan optimize:clear
+php artisan propertyme:hostex-reallocate --villa=6 --from-villa=2 --archive-ical=4
+```
+
+Perintah belum mengubah data. Selain tabel perpindahan, muncul rencana arsip
+untuk ID iCal #4 beserta ID Hostex pasangannya. Jika hasilnya **0 conflicts**,
+tanpa pesan error, dan tabel sesuai villa/booking di atas, terapkan:
+
+```bash
+php artisan propertyme:hostex-reallocate --villa=6 --from-villa=2 --archive-ical=4 --apply
+php artisan propertyme:hostex-sync --villa=6
+```
+
+Pengarsipan memakai soft delete, sehingga catatan, harga, referensi, UID,
+pembuat dan data asli booking iCal tetap ada di database. Booking tersebut tidak
+lagi muncul di kalender aktif. Booking Hostex mempertahankan ID dan field
+aslinya saat dipindahkan ke Daluca. Catatan/harga iCal disimpan di arsip, bukan
+digabung otomatis ke booking Hostex. Tidak ada penghapusan permanen atau
+perubahan transaksi pemasukan.
+
+Opsi ini hanya menerima ID booking iCal dalam villa tujuan dan harus menemukan
+tepat satu booking Hostex dengan platform serta kedua tanggal yang sesuai.
+Referensi iCal boleh kosong untuk penghentian feed yang dipilih pemilik secara
+eksplisit; referensi yang terisi namun berbeda tetap ditolak. Semua alokasi
+Hostex tetap diverifikasi melalui API. Pemasukan tertaut/cocok berdasarkan
+referensi (termasuk pemasukan terhapus), UID yang masih berbenturan, atau konflik
+booking lain akan membatalkan seluruh penerapan, termasuk pengarsipan.
+
+Perintah dapat diulang; record yang sudah diarsipkan tidak dihapus permanen dan
+booking yang sudah dialokasikan dengan benar tidak dipindahkan lagi. Jangan
+menambahkan ID booking lain ke `--archive-ical` tanpa memeriksa data dan izin
+pemilik. Opsi tidak menghapus seluruh data iCal atau memengaruhi villa lain.
+
 ## Sinkron otomatis dan pemeriksaan hasil
 
 Cron Laravel hosting yang sudah berjalan cukup dipakai kembali. Tidak perlu cron

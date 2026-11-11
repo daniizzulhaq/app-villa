@@ -16,11 +16,21 @@ class HostexAllocationService
     public function __construct(private HostexClient $client) {}
 
     /** Preview by default. Move existing Hostex bookings only; never move incomes. */
-    public function reconcile(Villa $target, ?int $sourceId = null, bool $apply = false, ?string $from = null, ?string $to = null): array
+    public function reconcile(Villa $target, ?int $sourceId = null, bool $apply = false, ?string $from = null, ?string $to = null, array $archiveIcalIds = []): array
     {
-        $result = ['entries' => [], 'eligible' => 0, 'conflicts' => 0, 'moved' => 0, 'error' => null];
+        $result = ['entries' => [], 'archives' => [], 'eligible' => 0, 'conflicts' => 0, 'moved' => 0, 'archived' => 0, 'error' => null];
         try {
-            return Cache::store('file')->lock('hostex-sync', 300)->block(5, function () use ($target, $sourceId, $apply, $from, $to, $result) {
+            foreach ($archiveIcalIds as $id) {
+                if (! is_int($id) || $id < 1) {
+                    throw new HostexException('Archived iCal booking IDs must be positive integers.');
+                }
+            }
+            $archiveIcalIds = array_values(array_unique($archiveIcalIds));
+            if ($archiveIcalIds && (! $sourceId || $sourceId === $target->id)) {
+                throw new HostexException('Archiving selected iCal bookings requires explicit, different target/source villa IDs.');
+            }
+
+            return Cache::store('file')->lock('hostex-sync', 300)->block(5, function () use ($target, $sourceId, $apply, $from, $to, $archiveIcalIds, $result) {
                 if (config('propertyme.channel_manager_provider') !== 'hostex' || ! $target->hostex_property_id || ! $target->is_active) {
                     throw new HostexException('An active villa with a verified Hostex mapping is required.');
                 }
@@ -58,7 +68,7 @@ class HostexAllocationService
                 }
                 $platforms = BookingPlatform::pluck('id', 'slug')->all();
 
-                return DB::transaction(function () use ($target, $sourceId, $apply, $rows, $codes, $sourceVillas, $sourceStays, $platforms, $result) {
+                return DB::transaction(function () use ($target, $sourceId, $apply, $rows, $codes, $sourceVillas, $sourceStays, $platforms, $archiveIcalIds, $result) {
                     $villas = Villa::withTrashed()->whereIn('id', $sourceVillas->keys())->orderBy('id')->lockForUpdate()->get()->keyBy('id');
                     $current = $villas->get($target->id);
                     if (! $current || $current->trashed() || ! $current->is_active
@@ -74,6 +84,51 @@ class HostexAllocationService
                         }
                     }
                     $bookings = Booking::withTrashed()->whereIn('hostex_stay_code', $codes)->lockForUpdate()->get()->keyBy('hostex_stay_code');
+                    $archives = Booking::withTrashed()->whereIn('id', $archiveIcalIds)->orderBy('id')->lockForUpdate()->get();
+                    if ($archives->count() !== count($archiveIcalIds)) {
+                        throw new HostexException('One of the selected iCal bookings was not found. No changes saved.');
+                    }
+                    $remoteRows = collect($rows)->keyBy('stay_code');
+                    foreach ($archives as $legacy) {
+                        if ($legacy->villa_id !== $current->id || $legacy->source !== 'ical' || $legacy->hostex_stay_code !== null) {
+                            throw new HostexException("Booking #{$legacy->id} is not an iCal booking in the target villa. No changes saved.");
+                        }
+                        // This retires an explicitly selected feed record. A missing reference
+                        // is allowed, but a different known reference is never guessed away.
+                        $related = $bookings->filter(function ($booking) use ($legacy, $current, $sourceId, $remoteRows, $platforms) {
+                            $row = $remoteRows->get($booking->hostex_stay_code);
+
+                            return $booking->source === 'hostex' && ! $booking->trashed()
+                                && in_array($booking->villa_id, [$sourceId, $current->id], true)
+                                && $booking->platform_id === $legacy->platform_id
+                                && $booking->check_in->equalTo($legacy->check_in) && $booking->check_out->equalTo($legacy->check_out)
+                                && (! filled($legacy->booking_ref) || $legacy->booking_ref === $booking->booking_ref)
+                                && ($platforms[$this->platformSlug($row['channel_type'] ?? '')] ?? null) === $booking->platform_id
+                                && $booking->check_in->toDateString() === ($row['check_in_date'] ?? null)
+                                && $booking->check_out->toDateString() === ($row['check_out_date'] ?? null)
+                                && $booking->booking_ref === $this->reference($row);
+                        });
+                        if ($related->count() !== 1) {
+                            throw new HostexException("iCal booking #{$legacy->id} does not have one matching Hostex stay by platform, dates and available reference. No changes saved.");
+                        }
+                        $hostex = $related->first();
+                        $references = array_values(array_filter([$legacy->booking_ref, $hostex->booking_ref], fn ($ref) => filled($ref)));
+                        $incomeExists = Income::withTrashed()->where(function ($q) use ($legacy, $hostex, $current, $references) {
+                            $q->whereIn('booking_id', [$legacy->id, $hostex->id]);
+                            if ($references) {
+                                $q->orWhere(fn ($refs) => $refs->whereIn('villa_id', [$hostex->villa_id, $current->id])
+                                    ->where('platform_id', $legacy->platform_id)->whereIn('booking_ref', $references));
+                            }
+                        })->exists();
+                        if ($incomeExists) {
+                            throw new HostexException("iCal booking #{$legacy->id} or its Hostex stay has linked or matching income. No changes saved.");
+                        }
+                        $result['archives'][] = [
+                            'booking_id' => $legacy->id, 'villa_id' => $legacy->villa_id, 'hostex_booking_id' => $hostex->id,
+                            'already_archived' => $legacy->trashed(),
+                            'has_notes' => filled($legacy->notes), 'has_price' => $legacy->total_price !== null,
+                        ];
+                    }
                     $moves = [];
                     foreach ($rows as $row) {
                         $booking = $bookings->get($row['stay_code']);
@@ -81,13 +136,8 @@ class HostexAllocationService
                             continue;
                         }
                         $source = $villas->get($booking->villa_id);
-                        $slug = match ($row['channel_type'] ?? '') {
-                            'airbnb' => BookingPlatform::AIRBNB,
-                            'booking', 'bookingcom', 'booking.com' => BookingPlatform::BOOKING_COM,
-                            'direct', 'hostex', 'hostex_direct', 'booking_site' => BookingPlatform::DIRECT,
-                            default => BookingPlatform::OTHER,
-                        };
-                        $ref = mb_substr((string) (($row['channel_id'] ?? '') ?: ($row['reservation_code'] ?? '')), 0, 100) ?: null;
+                        $slug = $this->platformSlug($row['channel_type'] ?? '');
+                        $ref = $this->reference($row);
                         $incomes = Income::withTrashed()->where(function ($query) use ($booking, $current) {
                             $query->where('booking_id', $booking->id);
                             if ($booking->booking_ref) {
@@ -95,7 +145,10 @@ class HostexAllocationService
                                     ->where('platform_id', $booking->platform_id)->where('booking_ref', $booking->booking_ref));
                             }
                         })->count();
+                        $uidCollision = filled($booking->ical_uid) && Booking::withTrashed()->where('villa_id', $current->id)
+                            ->whereKeyNot($booking->id)->where('ical_uid', $booking->ical_uid)->exists();
                         $duplicate = Booking::withTrashed()->where('villa_id', $current->id)->whereKeyNot($booking->id)
+                            ->whereNotIn('id', $archiveIcalIds)
                             ->where(function ($q) use ($booking) {
                                 $q->whereRaw('1 = 0');
                                 if ($booking->ical_uid) {
@@ -118,6 +171,7 @@ class HostexAllocationService
                             ! array_key_exists($source->id, $sourceStays) => 'The source Hostex property could not be verified.',
                             isset($sourceStays[$source->id][$row['stay_code']]) => 'Stay still appears in the source Hostex property.',
                             $incomes > 0 => 'Linked or matching income exists; review financial allocation first.',
+                            $uidCollision => 'The target villa already has this iCal UID, including archives. Manual review required.',
                             $duplicate => 'The target villa already has a matching reference, legacy dates or iCal identity.',
                             ! isset($platforms[$slug]) || $booking->platform_id !== $platforms[$slug]
                                 || $booking->booking_ref !== $ref
@@ -141,6 +195,12 @@ class HostexAllocationService
                         return $result;
                     }
                     if ($apply) {
+                        foreach ($archives as $legacy) {
+                            if (! $legacy->trashed()) {
+                                $legacy->delete();
+                                $result['archived']++;
+                            }
+                        }
                         foreach ($moves as $booking) {
                             $booking->forceFill(['villa_id' => $current->id])->save();
                             $result['moved']++;
@@ -156,5 +216,20 @@ class HostexAllocationService
 
             return $result;
         }
+    }
+
+    private function platformSlug(string $channel): string
+    {
+        return match ($channel) {
+            'airbnb' => BookingPlatform::AIRBNB,
+            'booking', 'bookingcom', 'booking.com' => BookingPlatform::BOOKING_COM,
+            'direct', 'hostex', 'hostex_direct', 'booking_site' => BookingPlatform::DIRECT,
+            default => BookingPlatform::OTHER,
+        };
+    }
+
+    private function reference(array $row): ?string
+    {
+        return mb_substr((string) (($row['channel_id'] ?? '') ?: ($row['reservation_code'] ?? '')), 0, 100) ?: null;
     }
 }

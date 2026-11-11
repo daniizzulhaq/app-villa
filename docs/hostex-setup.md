@@ -155,6 +155,14 @@ See [the hosting allocation repair steps](hostex-four-villas-hosting.md). The
 command retains the existing booking ID and fields; any conflict blocks the
 whole villa's apply operation. It never moves income records or guesses merges.
 
+If an explicitly retired iCal booking blocks an allocation, use the scoped
+`--archive-ical=BOOKING_ID` option with both `--villa` and `--from-villa`.
+Preview first. This soft-archives only the selected feed row inside the same
+transaction as the verified moves; it retains the original notes/prices and
+refuses related income, mismatched identity details or any remaining conflict.
+See the Daluca example in the hosting guide. No migration or asset build is
+required for this option.
+
 ## 5. Automatic refresh and hosting
 
 The schedule in `routes/console.php` pulls mapped active villas every five minutes

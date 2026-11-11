@@ -100,6 +100,181 @@ class HostexAllocationTest extends TestCase
         ])->fresh();
     }
 
+    private function legacy(array $attributes = []): Booking
+    {
+        return Booking::create($attributes + [
+            'villa_id' => $this->target->id, 'platform_id' => BookingPlatform::where('slug', 'airbnb')->value('id'),
+            'source' => 'ical', 'ical_uid' => 'feed-'.uniqid().'@legacy.test', 'booking_ref' => 'REF-stay-1',
+            'check_in' => '2026-12-01', 'check_out' => '2026-12-04', 'status' => 'needs_completion',
+            'notes' => 'Keep the original feed notes', 'total_price' => 500000, 'price_source' => 'manual',
+        ])->fresh();
+    }
+
+    private function archiveArgs(Booking $legacy, bool $apply = false): array
+    {
+        return $this->args(['--from-villa' => $this->source->id, '--archive-ical' => [$legacy->id], '--apply' => $apply]);
+    }
+
+    public function test_explicit_archive_is_previewed_then_keeps_original_rows_and_allows_repeatable_sync(): void
+    {
+        $hostex = $this->booking();
+        $legacy = $this->legacy(['booking_ref' => null]);
+        $unselected = $this->legacy(['booking_ref' => 'REF-OTHER', 'check_in' => '2026-12-10', 'check_out' => '2026-12-12']);
+        $legacyBefore = $legacy->getRawOriginal();
+        $hostexBefore = $hostex->getRawOriginal();
+        $this->remote[502] = [$this->row()];
+        $this->artisan('propertyme:hostex-reallocate', $this->archiveArgs($legacy))
+            ->expectsOutputToContain('1 eligible; 0 conflicts; 0 moved.')
+            ->expectsOutputToContain('0 iCal bookings archived.')
+            ->doesntExpectOutputToContain('Keep the original feed notes')->assertSuccessful();
+        $this->assertSame($legacyBefore, $legacy->fresh()->getRawOriginal());
+        $this->assertSame($hostexBefore, $hostex->fresh()->getRawOriginal());
+
+        $this->artisan('propertyme:hostex-reallocate', $this->archiveArgs($legacy, true))
+            ->expectsOutputToContain('1 eligible; 0 conflicts; 1 moved.')
+            ->expectsOutputToContain('1 iCal bookings archived.')->assertSuccessful();
+        $archived = $legacy->fresh();
+        $this->assertTrue($archived->trashed());
+        foreach ($legacyBefore as $key => $value) {
+            if (! in_array($key, ['deleted_at', 'updated_at'], true)) {
+                $this->assertSame($value, $archived->getRawOriginal($key), $key);
+            }
+        }
+        $this->assertFalse($unselected->fresh()->trashed());
+        $this->assertSame($this->target->id, $hostex->fresh()->villa_id);
+        $this->assertSame('600000.00', $hostex->fresh()->total_price);
+        $this->assertSame('Keep local instructions', $hostex->fresh()->notes);
+        $this->assertDatabaseCount('bookings', 3);
+        $this->assertDatabaseCount('incomes', 0);
+        $this->assertSame(2, Booking::count());
+
+        $sync = app(HostexSyncService::class);
+        $result = $sync->syncVilla($this->target->fresh(), '2026-11-01', '2027-01-01');
+        $this->assertNull($result['error']);
+        $this->assertSame(0, $result['created']);
+        $this->artisan('propertyme:hostex-reallocate', $this->archiveArgs($legacy, true))
+            ->expectsOutputToContain('0 eligible; 0 conflicts; 0 moved.')
+            ->expectsOutputToContain('0 iCal bookings archived.')->assertSuccessful();
+        $this->assertDatabaseCount('bookings', 3);
+        $this->assertFalse($unselected->fresh()->trashed());
+    }
+
+    public function test_archiving_requires_explicit_scope_and_valid_ids(): void
+    {
+        $legacy = $this->legacy();
+        foreach ([['--archive-ical' => [$legacy->id]], $this->args(['--archive-ical' => [$legacy->id]]),
+            $this->args(['--from-villa' => $this->source->id, '--archive-ical' => ['invalid']])] as $args) {
+            $this->artisan('propertyme:hostex-reallocate', $args)->assertFailed();
+        }
+        $this->assertFalse($legacy->fresh()->trashed());
+        Http::assertNothingSent();
+    }
+
+    public function test_archiving_cannot_select_another_villas_booking_a_non_ical_record_or_unknown_id(): void
+    {
+        $hostex = $this->booking();
+        $this->remote[502] = [$this->row()];
+        $wrongVilla = $this->legacy(['villa_id' => $this->source->id]);
+        $manual = $this->legacy(['source' => 'manual']);
+        foreach ([$wrongVilla->id, $manual->id, $hostex->id, 999999] as $id) {
+            $result = app(HostexAllocationService::class)->reconcile($this->target, $this->source->id, true,
+                '2026-11-01', '2027-01-01', [$id]);
+            $this->assertNotNull($result['error']);
+            $this->assertSame(0, $result['moved']);
+            $this->assertSame(0, $result['archived']);
+        }
+        $this->assertFalse($wrongVilla->fresh()->trashed());
+        $this->assertFalse($manual->fresh()->trashed());
+        $this->assertSame($this->source->id, $hostex->fresh()->villa_id);
+    }
+
+    public function test_selected_ical_with_a_different_reference_platform_or_dates_is_not_archived(): void
+    {
+        $hostex = $this->booking();
+        $this->remote[502] = [$this->row()];
+        foreach ([['booking_ref' => 'DIFFERENT'], ['check_out' => '2026-12-05'],
+            ['platform_id' => BookingPlatform::where('slug', 'booking-com')->value('id')]] as $attributes) {
+            $legacy = $this->legacy($attributes);
+            $this->artisan('propertyme:hostex-reallocate', $this->archiveArgs($legacy, true))
+                ->expectsOutputToContain('does not have one matching Hostex stay')->assertFailed();
+            $this->assertFalse($legacy->fresh()->trashed());
+            $this->assertSame($this->source->id, $hostex->fresh()->villa_id);
+        }
+    }
+
+    public function test_archiving_rejects_an_ambiguous_hostex_match(): void
+    {
+        $this->booking();
+        $this->booking('stay-2', ['booking_ref' => 'REF-stay-1']);
+        $legacy = $this->legacy();
+        $this->remote[502] = [$this->row(), array_replace($this->row('stay-2'), ['channel_id' => 'REF-stay-1'])];
+        $this->artisan('propertyme:hostex-reallocate', $this->archiveArgs($legacy, true))
+            ->expectsOutputToContain('does not have one matching Hostex stay')->assertFailed();
+        $this->assertFalse($legacy->fresh()->trashed());
+        $this->assertSame(2, Booking::where('villa_id', $this->source->id)->count());
+    }
+
+    public function test_deleted_income_on_a_selected_ical_record_prevents_archiving_even_without_a_reference(): void
+    {
+        $hostex = $this->booking();
+        $legacy = $this->legacy(['booking_ref' => null]);
+        $income = $this->income($legacy);
+        $income->delete();
+        $before = $income->fresh()->getRawOriginal();
+        $this->remote[502] = [$this->row()];
+        $this->artisan('propertyme:hostex-reallocate', $this->archiveArgs($legacy, true))
+            ->expectsOutputToContain('has linked or matching income')->assertFailed();
+        $this->assertFalse($legacy->fresh()->trashed());
+        $this->assertSame($this->source->id, $hostex->fresh()->villa_id);
+        $this->assertSame($before, $income->fresh()->getRawOriginal());
+    }
+
+    public function test_unlinked_income_by_reference_also_prevents_archiving_and_all_moves(): void
+    {
+        $hostex = $this->booking();
+        $this->booking('stay-2');
+        $legacy = $this->legacy();
+        $income = $this->income($legacy, false);
+        $before = $income->getRawOriginal();
+        $this->remote[502] = [$this->row(), $this->row('stay-2')];
+        $this->artisan('propertyme:hostex-reallocate', $this->archiveArgs($legacy, true))
+            ->expectsOutputToContain('has linked or matching income')->assertFailed();
+        $this->assertFalse($legacy->fresh()->trashed());
+        $this->assertSame($this->source->id, $hostex->fresh()->villa_id);
+        $this->assertSame(2, Booking::where('villa_id', $this->source->id)->count());
+        $this->assertSame($before, $income->fresh()->getRawOriginal());
+    }
+
+    public function test_a_separate_conflict_prevents_archiving_and_keeps_the_entire_batch_unchanged(): void
+    {
+        $hostex = $this->booking();
+        $other = $this->booking('stay-2', ['check_in' => '2026-12-06', 'check_out' => '2026-12-09']);
+        $legacy = $this->legacy();
+        $blocker = $this->legacy(['booking_ref' => 'REF-stay-2', 'check_in' => '2026-12-06', 'check_out' => '2026-12-09']);
+        $this->remote[502] = [$this->row(), array_replace($this->row('stay-2'), [
+            'check_in_date' => '2026-12-06', 'check_out_date' => '2026-12-09',
+        ])];
+        $this->artisan('propertyme:hostex-reallocate', $this->archiveArgs($legacy, true))
+            ->expectsOutputToContain('1 eligible; 1 conflicts; 0 moved.')
+            ->expectsOutputToContain('0 iCal bookings archived.')->assertFailed();
+        $this->assertFalse($legacy->fresh()->trashed());
+        $this->assertFalse($blocker->fresh()->trashed());
+        $this->assertSame($this->source->id, $hostex->fresh()->villa_id);
+        $this->assertSame($this->source->id, $other->fresh()->villa_id);
+    }
+
+    public function test_archiving_does_not_bypass_the_database_ical_uid_uniqueness_constraint(): void
+    {
+        $hostex = $this->booking();
+        $legacy = $this->legacy(['ical_uid' => $hostex->ical_uid]);
+        $this->remote[502] = [$this->row()];
+        $this->artisan('propertyme:hostex-reallocate', $this->archiveArgs($legacy, true))
+            ->expectsOutputToContain('including archives. Manual review required.')
+            ->expectsOutputToContain('0 iCal bookings archived.')->assertFailed();
+        $this->assertFalse($legacy->fresh()->trashed());
+        $this->assertSame($this->source->id, $hostex->fresh()->villa_id);
+    }
+
     public function test_default_preview_finds_cross_villa_stays_without_changing_data_or_exposing_private_fields(): void
     {
         $booking = $this->booking();
