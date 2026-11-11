@@ -1400,5 +1400,13 @@
     "Pendapatan net": "Revenu net",
     "Setelah komisi OTA, sebelum management fee.": "Après commission OTA, avant les frais de gestion.",
     "Dari pemasukan tercatat, sebelum management fee.": "D’après les revenus enregistrés, avant les frais de gestion.",
-    "Data pendapatan belum lengkap.": "Les données de revenus sont incomplètes."
+    "Data pendapatan belum lengkap.": "Les données de revenus sont incomplètes.",
+    "Disable iCal": "Désactiver iCal",
+    "Disable iCal for this villa?": "Désactiver iCal pour cette villa ?",
+    "iCal imports will stop. Existing bookings, notes and income records will be kept.": "Les imports iCal seront arrêtés. Les réservations, notes et écritures de revenus existantes seront conservées.",
+    "iCal is still enabled. Disable it before importing bookings from Hostex.": "iCal est encore actif. Désactivez-le avant d’importer les réservations depuis Hostex.",
+    "iCal is disabled. Bookings are imported through Hostex.": "iCal est désactivé. Les réservations sont importées via Hostex.",
+    "iCal disabled for this villa. Existing bookings and income records were kept.": "iCal a été désactivé pour cette villa. Les réservations et écritures de revenus existantes ont été conservées.",
+    "Map this villa to Hostex before disabling iCal here.": "Associez cette villa à Hostex avant de désactiver iCal ici.",
+    "iCal synchronization is disabled for this channel.": "La synchronisation iCal est désactivée pour ce canal."
 }

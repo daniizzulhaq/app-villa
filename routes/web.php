@@ -90,6 +90,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     */
     Route::middleware('role:master|manager')->group(function () {
         Route::patch('/villas/{villa}/status', [VillaController::class, 'toggleActive'])->name('villas.toggle');
+        Route::patch('/villas/{villa}/ical/disable', [VillaController::class, 'disableIcal'])->name('villas.disable-ical');
         Route::resource('villas', VillaController::class);
 
         Route::patch('/users/{user}/status', [UserController::class, 'toggleActive'])->name('users.toggle');

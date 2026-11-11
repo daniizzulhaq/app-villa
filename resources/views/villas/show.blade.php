@@ -136,6 +136,7 @@
                 @endif
                 <div class="fs-sm text-muted mt-2">{{ __('Sinkron terakhir') }}: {{ $villa->hostex_last_success_at?->diffForHumans() ?? __('Belum pernah') }}</div>
                 <a href="{{ route('bookings.index', ['villa' => $villa->id]) }}" class="btn btn-sm btn-light mt-3">{{ __('Daftar reservasi') }}</a>
+                @include('villas._hostex-ical-control', ['villa' => $villa])
                 <form method="POST" action="{{ route('sync.run') }}" class="mt-3">
                     @csrf <input type="hidden" name="villa" value="{{ $villa->id }}">
                     <button class="btn btn-sm btn-primary w-100" type="submit" data-loading-text="{{ __('Menyinkronkan…') }}"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> {{ __('Sync Hostex now') }}</button>

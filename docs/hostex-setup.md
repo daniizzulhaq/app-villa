@@ -63,11 +63,11 @@ responses. Both endpoints are paginated using offset/limit.
 
 Avora is already villa **#3** in the local PropertyMe database. Do not create
 another villa or reuse the Beds24 IDs `367374` / `756263` as Hostex IDs.
-Find Avora's actual Hostex property ID using the connection check, matching its
-Airbnb listing ID `1273618741658905815`, then run (replace the example `501`):
+The verified Hostex property ID is `12840364`, matching Airbnb listing
+`1273618741658905815`. Run:
 
 ```powershell
-php artisan propertyme:hostex-map 3 501
+php artisan propertyme:hostex-map 3 12840364
 ```
 
 The command validates ownership/access through the Hostex API and persists
@@ -75,6 +75,10 @@ The command validates ownership/access through the Hostex API and persists
 mapping for an already mapped villa, and prevents assigning one Hostex property
 to two villas (including soft-deleted villas). A Hostex property represents a
 physical rentable unit; use its property ID, not a multi-unit room-type ID.
+
+For Sofi 1, Sofi 2 and Casa Daluca, use the verified mappings and hosting commands
+in [Setup empat villa di hosting](hostex-four-villas-hosting.md). Local villa IDs
+and mappings are database records; pushing application code does not transfer them.
 
 ## 4. Import and refresh bookings
 
@@ -99,7 +103,10 @@ manual reconciliation. Per-order totals/payment fields are not summed across
 stays and no income/payout entry is automatically created.
 
 Disable existing iCal imports before importing Hostex bookings for the same
-villa. The importer refuses active iCal feeds or a conflicting reference from
+villa. After mapping, use **Disable iCal** on the villa detail or synchronization
+page. It pauses only that villa's feeds and retains their URLs, history, existing
+bookings and income records. Other villas can continue using iCal.
+The importer refuses active iCal feeds or a conflicting reference from
 another source. iCal synchronization skips Hostex-mapped villas. Unexpected
 invalid data rolls back the whole villa import; safe status/error information is
 recorded on the villa. Verbose CLI output contains only exception category and

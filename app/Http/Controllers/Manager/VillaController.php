@@ -13,6 +13,7 @@ use App\Models\Villa;
 use App\Services\VillaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class VillaController extends Controller
@@ -122,6 +123,25 @@ class VillaController extends Controller
         $villa->update(['is_active' => ! $villa->is_active]);
 
         return back()->with('success', $villa->is_active ? __('Villa diaktifkan kembali.') : __('Villa dinonaktifkan. Data lama tetap tersimpan.'));
+    }
+
+    public function disableIcal(Villa $villa): RedirectResponse
+    {
+        $this->authorize('update', $villa);
+
+        DB::transaction(function () use ($villa) {
+            $current = Villa::lockForUpdate()->findOrFail($villa->id);
+            abort_unless(config('propertyme.channel_manager_provider') === 'hostex' && $current->hostex_property_id,
+                422, __('Map this villa to Hostex before disabling iCal here.'));
+
+            // Keep the feeds and their history; only stop future imports for this villa.
+            $current->channels()->where('is_active', true)
+                ->whereNotNull('ical_url')->where('ical_url', '!=', '')
+                ->update(['is_active' => false]);
+        });
+
+        return redirect()->route('villas.show', $villa)->with('success',
+            __('iCal disabled for this villa. Existing bookings and income records were kept.'));
     }
 
     private function formData(Villa $villa): array

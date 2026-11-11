@@ -1400,5 +1400,13 @@
     "Pendapatan net": "Чистый доход",
     "Setelah komisi OTA, sebelum management fee.": "После комиссии OTA, до платы за управление.",
     "Dari pemasukan tercatat, sebelum management fee.": "По учтённым поступлениям, до платы за управление.",
-    "Data pendapatan belum lengkap.": "Данные о доходах неполны."
+    "Data pendapatan belum lengkap.": "Данные о доходах неполны.",
+    "Disable iCal": "Отключить iCal",
+    "Disable iCal for this villa?": "Отключить iCal для этой виллы?",
+    "iCal imports will stop. Existing bookings, notes and income records will be kept.": "Импорт iCal будет остановлен. Существующие бронирования, заметки и записи о доходах сохранятся.",
+    "iCal is still enabled. Disable it before importing bookings from Hostex.": "iCal ещё включён. Отключите его перед импортом бронирований из Hostex.",
+    "iCal is disabled. Bookings are imported through Hostex.": "iCal отключён. Бронирования импортируются через Hostex.",
+    "iCal disabled for this villa. Existing bookings and income records were kept.": "iCal для этой виллы отключён. Существующие бронирования и записи о доходах сохранены.",
+    "Map this villa to Hostex before disabling iCal here.": "Подключите эту виллу к Hostex, прежде чем отключать здесь iCal.",
+    "iCal synchronization is disabled for this channel.": "Синхронизация iCal для этого канала отключена."
 }

@@ -1400,5 +1400,13 @@
     "Pendapatan net": "純収益",
     "Setelah komisi OTA, sebelum management fee.": "OTA手数料控除後、管理手数料控除前。",
     "Dari pemasukan tercatat, sebelum management fee.": "記録済みの入金に基づく、管理手数料控除前の金額。",
-    "Data pendapatan belum lengkap.": "収益データが不完全です。"
+    "Data pendapatan belum lengkap.": "収益データが不完全です。",
+    "Disable iCal": "iCalを無効にする",
+    "Disable iCal for this villa?": "このヴィラのiCalを無効にしますか？",
+    "iCal imports will stop. Existing bookings, notes and income records will be kept.": "iCalの取り込みを停止します。既存の予約、メモ、収入記録は保持されます。",
+    "iCal is still enabled. Disable it before importing bookings from Hostex.": "iCalはまだ有効です。Hostexから予約を取り込む前に無効にしてください。",
+    "iCal is disabled. Bookings are imported through Hostex.": "iCalは無効です。予約はHostexから取り込まれます。",
+    "iCal disabled for this villa. Existing bookings and income records were kept.": "このヴィラのiCalを無効にしました。既存の予約と収入記録は保持されています。",
+    "Map this villa to Hostex before disabling iCal here.": "ここでiCalを無効にする前に、このヴィラをHostexに連携してください。",
+    "iCal synchronization is disabled for this channel.": "このチャネルのiCal同期は無効です。"
 }

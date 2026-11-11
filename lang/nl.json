@@ -1400,5 +1400,13 @@
     "Pendapatan net": "Netto-inkomsten",
     "Setelah komisi OTA, sebelum management fee.": "Na OTA-commissie, voor beheerkosten.",
     "Dari pemasukan tercatat, sebelum management fee.": "Op basis van geregistreerde inkomsten, voor beheerkosten.",
-    "Data pendapatan belum lengkap.": "Inkomstengegevens zijn onvolledig."
+    "Data pendapatan belum lengkap.": "Inkomstengegevens zijn onvolledig.",
+    "Disable iCal": "iCal uitschakelen",
+    "Disable iCal for this villa?": "iCal voor deze villa uitschakelen?",
+    "iCal imports will stop. Existing bookings, notes and income records will be kept.": "iCal-imports worden gestopt. Bestaande boekingen, notities en inkomstenregistraties blijven bewaard.",
+    "iCal is still enabled. Disable it before importing bookings from Hostex.": "iCal is nog actief. Schakel dit uit voordat u boekingen uit Hostex importeert.",
+    "iCal is disabled. Bookings are imported through Hostex.": "iCal is uitgeschakeld. Boekingen worden via Hostex geïmporteerd.",
+    "iCal disabled for this villa. Existing bookings and income records were kept.": "iCal is voor deze villa uitgeschakeld. Bestaande boekingen en inkomstenregistraties zijn bewaard.",
+    "Map this villa to Hostex before disabling iCal here.": "Koppel deze villa aan Hostex voordat u iCal hier uitschakelt.",
+    "iCal synchronization is disabled for this channel.": "iCal-synchronisatie is voor dit kanaal uitgeschakeld."
 }

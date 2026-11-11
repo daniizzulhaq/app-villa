@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\BookingPlatform;
+use App\Models\Villa;
 use App\Models\VillaChannel;
 use App\Notifications\BookingSyncedNotification;
 use App\Support\Notify;
@@ -45,7 +46,7 @@ class IcalSyncService
     public function syncVilla(int $villaId): array
     {
         return VillaChannel::query()->with(['villa', 'platform'])
-            ->where('villa_id', $villaId)->whereNotNull('ical_url')
+            ->where('villa_id', $villaId)->where('is_active', true)->whereNotNull('ical_url')
             ->get()->map(fn (VillaChannel $c) => $this->syncChannel($c))->all();
     }
 
@@ -53,9 +54,11 @@ class IcalSyncService
     public function syncChannel(VillaChannel $channel): array
     {
         $result = ['channel' => $channel, 'created' => 0, 'updated' => 0, 'cancelled' => 0, 'error' => null, 'warning' => null];
-        $channel->loadMissing(['villa', 'platform']);
-
         try {
+            $channel->refresh()->load(['villa', 'platform']);
+            if (! $channel->is_active || blank($channel->ical_url) || ! $channel->villa?->is_active) {
+                throw new \RuntimeException('ICAL_DISABLED');
+            }
             if (config('propertyme.channel_manager_provider') === 'hostex' && $channel->villa?->hostex_property_id) {
                 throw new \RuntimeException('This villa uses Hostex. Use Hostex synchronization instead of iCal.');
             }
@@ -71,6 +74,11 @@ class IcalSyncService
                 Notify::managers(new BookingSyncedNotification($channel->villa, $channel->platform, $created, $cancelled), $channel->villa_id);
             }
         } catch (Throwable $e) {
+            if ($e->getMessage() === 'ICAL_DISABLED') {
+                $result['warning'] = __('iCal synchronization is disabled for this channel.');
+
+                return $result;
+            }
             $result['error'] = $this->friendlyError($e);
             $channel->forceFill(['last_synced_at' => now(), 'last_error' => $result['error']])->save();
             Log::warning('iCal sync gagal', ['channel' => $channel->id, 'error' => $e->getMessage()]);
@@ -137,6 +145,14 @@ class IcalSyncService
     private function apply(VillaChannel $channel, array $events): array
     {
         return DB::transaction(function () use ($channel, $events) {
+            // A feed can be disabled while its HTTP request is in flight.
+            $villa = Villa::lockForUpdate()->findOrFail($channel->villa_id);
+            $current = VillaChannel::lockForUpdate()->find($channel->id);
+            if (! $current || ! $current->is_active || blank($current->ical_url)
+                || $current->ical_url !== $channel->ical_url || ! $villa->is_active
+                || (config('propertyme.channel_manager_provider') === 'hostex' && $villa->hostex_property_id)) {
+                throw new \RuntimeException('ICAL_DISABLED');
+            }
             $created = [];
             $updated = 0;
             $seen = [];

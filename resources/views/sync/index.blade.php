@@ -32,6 +32,7 @@
                                 <td data-label="{{ __('Status') }}">
                                     <x-ui.badge :variant="$v->hostex_last_error ? 'danger' : ($v->hostex_last_success_at ? 'success' : 'neutral')">{{ $v->hostex_last_error ? __('Error') : ($v->hostex_last_success_at ? __('Normal') : __('Menunggu sinkron pertama')) }}</x-ui.badge>
                                     @if ($v->hostex_last_error)<div class="fs-sm text-negative mt-1">{{ $v->hostex_last_error }}</div>@endif
+                                    @include('villas._hostex-ical-control', ['villa' => $v])
                                 </td>
                                 <td data-label="{{ __('Perlu dilengkapi') }}">{{ $v->needs_completion_count }}</td>
                                 <td class="text-end stack-actions"><form method="POST" action="{{ route('sync.run') }}">@csrf <input type="hidden" name="villa" value="{{ $v->id }}"><button class="btn btn-sm btn-light" type="submit" data-loading-text="{{ __('Menyinkronkan…') }}">{{ __('Sync Hostex now') }}</button></form></td>
