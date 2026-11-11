@@ -66,6 +66,9 @@
 </footer>
 
 <main>
+    @if ($incomes->contains(fn ($income) => $income->isFromHostex()))
+        <p class="small muted">{{ __('Includes automatic Hostex booking revenue; payouts are not verified.') }}</p>
+    @endif
     <h1>{{ __('Laporan Keuangan :villa', ['villa' => $villa?->name ?? __('Semua Villa')]) }}</h1>
     <table class="info" style="margin-bottom: 12px">
         <tr><td style="width: 120px" class="muted">{{ __('Periode') }}</td><td>{{ $from->translatedFormat('d F Y') }} – {{ $to->translatedFormat('d F Y') }}</td>

@@ -12,6 +12,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class IncomeService
 {
@@ -46,6 +47,7 @@ class IncomeService
     {
         return DB::transaction(function () use ($data, $actor, $files) {
             $data = $this->withBookingDefaults($data);
+            $this->preventAutomaticDuplicate($data);
             $income = Income::create($this->fields($data) + $this->compute($data) + ['created_by' => $actor->id]);
             $this->storeAttachments($income, $files);
             $this->confirmBooking($income);
@@ -56,8 +58,11 @@ class IncomeService
 
     public function update(Income $income, array $data, array $files = [], array $removeIds = []): Income
     {
+        $this->guardAutomatic($income);
+
         return DB::transaction(function () use ($income, $data, $files, $removeIds) {
             $data = $this->withBookingDefaults($data + ['_ignore_id' => $income->id]);
+            $this->preventAutomaticDuplicate($data);
             $income->update($this->fields($data) + $this->compute($data));
 
             foreach ($income->attachments()->whereIn('id', $removeIds)->get() as $att) {
@@ -72,6 +77,7 @@ class IncomeService
 
     public function delete(Income $income): void
     {
+        $this->guardAutomatic($income);
         DB::transaction(function () use ($income) {
             // Lepas kode booking agar bisa dicatat/import ulang tanpa melanggar unique key.
             $income->forceFill(['booking_ref' => null])->saveQuietly();
@@ -99,7 +105,7 @@ class IncomeService
     /** Pemasukan dari booking mewarisi villa, platform & kode booking-nya. */
     private function withBookingDefaults(array $d): array
     {
-        if (! empty($d['booking_id']) && $b = Booking::find($d['booking_id'])) {
+        if (! empty($d['booking_id']) && $b = Booking::lockForUpdate()->find($d['booking_id'])) {
             $d['villa_id'] = $b->villa_id;
             $d['platform_id'] ??= $b->platform_id;
             // Warisi kode booking hanya jika belum dipakai pemasukan lain (mis. pembayaran ke-2 / cicilan).
@@ -111,6 +117,30 @@ class IncomeService
         }
 
         return $d;
+    }
+
+    private function guardAutomatic(Income $income): void
+    {
+        if ($income->isFromHostex()) {
+            throw ValidationException::withMessages(['income' => __('Automatic Hostex income is managed by synchronization.')]);
+        }
+    }
+
+    private function preventAutomaticDuplicate(array $data): void
+    {
+        $existing = Income::whereNotNull('hostex_stay_code')->where(function ($q) use ($data) {
+            $q->whereRaw('1 = 0');
+            if (! empty($data['booking_id'])) {
+                $q->orWhere('booking_id', $data['booking_id']);
+            }
+            if (filled($data['booking_ref'] ?? null)) {
+                $q->orWhere(fn ($ref) => $ref->where('villa_id', $data['villa_id'])->where('platform_id', $data['platform_id'])
+                    ->where('booking_ref', $data['booking_ref']));
+            }
+        })->lockForUpdate()->first();
+        if ($existing) {
+            throw ValidationException::withMessages(['booking_id' => __('This booking already has automatic Hostex income. Open the existing entry.')]);
+        }
     }
 
     private function confirmBooking(Income $income): void

@@ -12,7 +12,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 class Income extends Model implements AuditableContract
 {
-    use SoftDeletes, Auditable;
+    use Auditable, SoftDeletes;
 
     protected $fillable = [
         'booking_id', 'villa_id', 'platform_id', 'booking_ref', 'payment_date', 'gross_amount', 'platform_fee',
@@ -64,5 +64,10 @@ class Income extends Model implements AuditableContract
     public function attachments(): HasMany
     {
         return $this->hasMany(IncomeAttachment::class);
+    }
+
+    public function isFromHostex(): bool
+    {
+        return filled($this->hostex_stay_code);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services\Finance;
 
+use App\Enums\BookingStatus;
 use App\Enums\FeeBasis;
 use App\Models\Booking;
 use App\Support\Rupiah;
@@ -11,6 +12,18 @@ class BookingNetRevenue
 {
     public function display(Booking $booking): array
     {
+        if ((int) ($booking->incomes_count ?? 0) > 0 && $booking->incomes_sum_net_revenue !== null) {
+            return [
+                'formatted' => Rupiah::format($booking->incomes_sum_net_revenue),
+                'hint' => __('Dari pemasukan tercatat, sebelum management fee.'),
+            ];
+        }
+        if (config('services.hostex.auto_income_enabled') && $booking->source === 'hostex' && $booking->status === BookingStatus::Cancelled) {
+            return ['formatted' => null, 'hint' => __('Cancelled booking; automatic revenue is excluded.')];
+        }
+        if (config('services.hostex.auto_income_enabled') && $booking->source === 'hostex' && $booking->hostex_income_error) {
+            return ['formatted' => null, 'hint' => $booking->hostexIncomeIssueLabel()];
+        }
         if ($booking->source === 'hostex' && $booking->hostex_rate_amount !== null
             && $booking->hostex_commission_amount !== null
             && preg_match('/^[A-Z]{3}$/', (string) $booking->hostex_rate_currency)
@@ -25,13 +38,6 @@ class BookingNetRevenue
             return [
                 'formatted' => $currency === 'IDR' ? Rupiah::format($amount) : $currency.' '.number_format((float) $amount, 2, '.', ','),
                 'hint' => __('Setelah komisi OTA, sebelum management fee.'),
-            ];
-        }
-        // Aliases are eager-loaded by the calendar endpoint for financial roles only.
-        if ((int) ($booking->incomes_count ?? 0) > 0 && $booking->incomes_sum_net_revenue !== null) {
-            return [
-                'formatted' => Rupiah::format($booking->incomes_sum_net_revenue),
-                'hint' => __('Dari pemasukan tercatat, sebelum management fee.'),
             ];
         }
 

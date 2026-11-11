@@ -28,7 +28,7 @@ class HostexSyncTest extends TestCase
         parent::setUp();
         $this->seedBase();
         $this->travelTo(Carbon::parse('2026-11-10 12:00:00', 'Asia/Makassar'));
-        config(['propertyme.channel_manager_provider' => 'hostex', 'services.hostex.access_token' => 'test-hostex-token']);
+        config(['propertyme.channel_manager_provider' => 'hostex', 'services.hostex.access_token' => 'test-hostex-token', 'services.hostex.auto_income_enabled' => false]);
         Http::preventStrayRequests();
         Http::fake(['api.hostex.io/v3/reservations*' => fn () => Http::response([
             'error_code' => $this->remoteCode, 'error_msg' => 'sensitive error', 'data' => ['reservations' => $this->remoteRows],

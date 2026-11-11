@@ -40,9 +40,14 @@ class SyncHostexCommand extends Command
                 if ($result['foreign_currency']) {
                     $this->warn($result['foreign_currency'].' stays have non-IDR prices; original currency is retained and no Rupiah conversion was assumed.');
                 }
+                if (config('services.hostex.auto_income_enabled')) {
+                    $this->line("Income: {$result['income_created']} created, {$result['income_updated']} updated, {$result['income_voided']} archived, {$result['income_pending']} need review.");
+                }
             }
         }
-        $this->line('Hostex pull complete. No OTA settings or income ledger entries changed.');
+        $this->line(config('services.hostex.auto_income_enabled')
+            ? 'Hostex pull complete. Booking revenue synchronized; no OTA settings changed. Payouts were not verified.'
+            : 'Hostex pull complete. No OTA settings or income ledger entries changed.');
 
         return $failed ? self::FAILURE : self::SUCCESS;
     }

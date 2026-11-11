@@ -14,12 +14,13 @@ use Throwable;
 
 class HostexSyncService
 {
-    public function __construct(private HostexClient $client) {}
+    public function __construct(private HostexClient $client, private HostexIncomeService $incomes) {}
 
     /** Pulls bookings into the local database; never writes to Hostex or the OTA. */
     public function syncVilla(Villa $villa, ?string $from = null, ?string $to = null): array
     {
-        $result = ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'cancelled' => 0, 'skipped' => 0, 'foreign_currency' => 0, 'error' => null];
+        $result = ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'cancelled' => 0, 'skipped' => 0, 'foreign_currency' => 0,
+            'income_created' => 0, 'income_updated' => 0, 'income_voided' => 0, 'income_pending' => 0, 'error' => null];
         try {
             return Cache::store('file')->lock('hostex-sync', 300)->block(5, function () use ($villa, $from, $to, $result) {
                 if (config('propertyme.channel_manager_provider') !== 'hostex' || ! $villa->hostex_property_id || ! $villa->is_active) {
@@ -40,7 +41,7 @@ class HostexSyncService
                     }
                     foreach ($rows as $row) {
                         $attributes = $this->attributes($current, $row, $platforms->all());
-                        $booking = Booking::withTrashed()->where('hostex_stay_code', $row['stay_code'])->first();
+                        $booking = Booking::withTrashed()->where('hostex_stay_code', $row['stay_code'])->lockForUpdate()->first();
                         if ($booking && ($booking->source !== 'hostex' || $booking->villa_id !== $current->id)) {
                             throw new HostexException('A Hostex stay is already assigned to another local villa. Preview its allocation: php artisan propertyme:hostex-reallocate --villa='.$current->id);
                         }
@@ -75,6 +76,9 @@ class HostexSyncService
                             $result['cancelled'] += (int) $newCancellation;
                         } else {
                             $result['unchanged']++;
+                        }
+                        foreach ($this->incomes->sync($booking) as $key => $count) {
+                            $result[$key] += $count;
                         }
                     }
                     // Absence from a filtered response never cancels an existing booking.

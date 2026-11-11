@@ -28,6 +28,7 @@ class IncomePolicy
     public function update(User $user, Income $income): bool
     {
         return $user->isManager()
+            && ! $income->isFromHostex()
             && $user->canAccessVilla($income->villa_id)
             && ! MonthlyReport::isLocked($income->villa_id, $income->getOriginal('payment_date'));
     }

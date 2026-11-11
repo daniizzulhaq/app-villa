@@ -122,9 +122,20 @@ class PayoutImportService
             }
 
             $booking = $villa ? $this->findBooking($villa->id, $platform?->id, $ref, $checkIn, $checkOut) : null;
+            if (! $booking && $villa && $checkIn && $checkOut && Booking::where('villa_id', $villa->id)
+                ->when($platform, fn ($q) => $q->where('platform_id', $platform->id))
+                ->whereDate('check_in', $checkIn)->whereDate('check_out', $checkOut)
+                ->whereHas('incomes', fn ($q) => $q->whereNotNull('hostex_stay_code'))->exists()) {
+                $errors[] = __('Automatic income matches these stay dates. Check the booking reference.');
+            }
 
             $status = $errors ? 'error' : 'ok';
             $dupReason = null;
+            $automaticIncome = $booking && Income::where('booking_id', $booking->id)->whereNotNull('hostex_stay_code')->exists();
+            if (! $errors && $automaticIncome) {
+                $status = 'duplicate';
+                $dupReason = __('This booking already has automatic Hostex income. Open the existing entry.');
+            }
             if (! $errors && $ref) {
                 $key = $villa->id.'|'.$platform->id.'|'.mb_strtolower($ref);
                 if (isset($seen[$key])) {
@@ -158,7 +169,7 @@ class PayoutImportService
                 'check_out' => $checkOut,
                 'booking_id' => $booking?->id,
                 'booking_label' => $booking ? ($booking->guest_name ?: __('Tamu belum diisi')).' · '.$booking->check_in->translatedFormat('d M').' – '.$booking->check_out->translatedFormat('d M Y') : null,
-                'sets_price' => $booking && ! $errors && $this->priceChanges($booking, $gross, $isNet),
+                'sets_price' => $booking && ! $automaticIncome && ! $errors && $this->priceChanges($booking, $gross, $isNet),
             ];
         }
 
@@ -188,10 +199,16 @@ class PayoutImportService
                     continue;
                 }
                 $booking = ! empty($r['booking_id']) ? Booking::find($r['booking_id']) : null;
-                if ($booking && $this->completeBooking($booking, $r)) {
+                $automaticIncome = $booking && Income::where('booking_id', $booking->id)->whereNotNull('hostex_stay_code')->exists();
+                if ($booking && ! $automaticIncome && $this->completeBooking($booking, $r)) {
                     $priced[$booking->id] = true;
                 }
                 if ($r['status'] !== 'ok') {
+                    continue;
+                }
+                if ($automaticIncome) {
+                    $batch->increment('rows_duplicate');
+
                     continue;
                 }
                 // Cek ulang duplikat (bisa saja ada yang menyimpan di sela pratinjau & konfirmasi)
@@ -226,11 +243,20 @@ class PayoutImportService
     /** Cari reservasi untuk baris payout: kode booking dulu, lalu villa + platform + tanggal menginap. */
     public function findBooking(int $villaId, ?int $platformId, ?string $ref, ?string $checkIn, ?string $checkOut): ?Booking
     {
-        if ($ref && ($byRef = Booking::where('villa_id', $villaId)->where('booking_ref', $ref)->first())) {
+        if ($ref && ($byRef = Booking::where('villa_id', $villaId)->when($platformId, fn ($q) => $q->where('platform_id', $platformId))->where('booking_ref', $ref)->first())) {
             return $byRef;
         }
         if (! $checkIn) {
             return null;
+        }
+        if (! $ref && $checkOut) {
+            $automatic = Booking::where('villa_id', $villaId)->where('source', 'hostex')
+                ->when($platformId, fn ($q) => $q->where('platform_id', $platformId))
+                ->whereDate('check_in', $checkIn)->whereDate('check_out', $checkOut)
+                ->whereHas('incomes', fn ($q) => $q->whereNotNull('hostex_stay_code'))->limit(2)->get();
+            if ($automatic->isNotEmpty()) {
+                return $automatic->count() === 1 ? $automatic->first() : null;
+            }
         }
 
         $candidates = Booking::query()

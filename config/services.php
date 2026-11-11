@@ -5,6 +5,8 @@ return [
     'hostex' => [
         'access_token' => env('HOSTEX_ACCESS_TOKEN'),
         'sync_enabled' => (bool) env('HOSTEX_SYNC_ENABLED', false),
+        'auto_income_enabled' => (bool) env('HOSTEX_AUTO_INCOME_ENABLED', false),
+        'income_date_basis' => env('HOSTEX_INCOME_DATE_BASIS', 'check_in'),
     ],
 
     'beds24' => [

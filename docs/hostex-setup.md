@@ -4,7 +4,9 @@ Hostex is the active channel manager. This setup provides authenticated read
 access, property/listing discovery, verified villa mapping, reservation imports,
 and a five-minute polling schedule. Imports populate the local calendar/booking
 list, guest name/count, dates, arrival time, per-stay rate and OTA commission.
-It does not create financial ledger entries or receive real-time webhooks.
+Optional [automatic booking revenue](hostex-automatic-income.md) can populate
+incomes and financial reports after explicitly enabling `HOSTEX_AUTO_INCOME_ENABLED`.
+It does not receive real-time webhooks or verify actual payouts.
 It never writes prices, availability or bookings to Hostex or the OTA.
 
 ## 1. Prepare Hostex
@@ -100,7 +102,10 @@ manual IDR price can be edited and are preserved on later imports. The original
 Hostex per-stay rate/commission remain available separately. USD or other
 non-IDR amounts retain their currency and never become a Rupiah price without
 manual reconciliation. Per-order totals/payment fields are not summed across
-stays and no income/payout entry is automatically created.
+stays. With automatic income disabled, no income entry is created. When enabled,
+confirmed stays with complete IDR amounts populate one managed income entry per
+stay. Existing manual income and final reports are protected. Actual payouts are
+not verified or created by this reporting projection.
 
 Disable existing iCal imports before importing Hostex bookings for the same
 villa. After mapping, use **Disable iCal** on the villa detail or synchronization
@@ -188,8 +193,10 @@ button and CLI pull work independently of the schedule. Polling every five
 minutes is not instant webhook delivery; a public HTTPS webhook with verified
 events and deduplication remains a separate hosting enhancement.
 
-Booking value is not proof of a received payout. Record/reconcile actual income
-through PropertyMe's existing income workflow before relying on revenue reports.
+Booking revenue is not proof of a received payout. Automatic income mode records
+booking revenue by check-in or check-out for reporting; reconcile actual received
+funds separately. See the automatic-income guide for missing amounts, currency,
+cancellations, final reports and manual-entry safeguards.
 
 Official references:
 

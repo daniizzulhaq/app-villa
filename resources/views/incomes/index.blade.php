@@ -10,6 +10,13 @@
         </x-slot:actions>
     </x-ui.page-header>
 
+    @if (config('services.hostex.auto_income_enabled'))
+        <div class="alert alert-info fs-sm">{{ __('Hostex entries are booking revenue. Their recorded date follows :basis; payouts are not verified.', ['basis' => config('services.hostex.income_date_basis') === 'check_out' ? __('Check-out') : __('Check-in')]) }}</div>
+        @if ($pendingHostexIncome)
+            <div class="alert alert-warning fs-sm">{{ __(':count Hostex bookings need income review before finalizing.', ['count' => $pendingHostexIncome]) }}</div>
+        @endif
+    @endif
+
     <div class="row g-3 mb-3">
         <div class="col-6 col-lg-3"><x-ui.stat :label="__('Gross booking income')" :value="\App\Support\Rupiah::format($summary->gross)" :hint="$summary->incomeCount.' transaksi'" icon="bi-cash-stack" /></div>
         <div class="col-6 col-lg-3"><x-ui.stat :label="__('Komisi + potongan')" :value="\App\Support\Rupiah::format(\App\Services\Finance\FinanceCalculator::sum([$summary->platformFee, $summary->otherDeduction]))" icon="bi-scissors" icon-tone="warning" /></div>
@@ -38,7 +45,7 @@
         @else
             <div class="table-responsive">
                 <table class="table pm-table pm-table--stack">
-                    <thead><tr><th>{{ __('Tanggal bayar') }}</th><th>{{ __('Villa & tamu') }}</th><th>{{ __('Sumber') }}</th><th class="num">{{ __('Gross') }}</th><th class="num">{{ __('Komisi+potongan') }}</th><th class="num">{{ __('Fee') }}</th><th class="num">{{ __('Net setelah fee') }}</th><th><span class="visually-hidden">{{ __('Aksi') }}</span></th></tr></thead>
+                    <thead><tr><th>{{ __('Recorded date') }}</th><th>{{ __('Villa & tamu') }}</th><th>{{ __('Sumber') }}</th><th class="num">{{ __('Gross') }}</th><th class="num">{{ __('Komisi+potongan') }}</th><th class="num">{{ __('Fee') }}</th><th class="num">{{ __('Net setelah fee') }}</th><th><span class="visually-hidden">{{ __('Aksi') }}</span></th></tr></thead>
                     <tbody>
                     @foreach ($incomes as $i)
                         @php $deduct = \App\Services\Finance\FinanceCalculator::sum([$i->is_net_of_platform ? 0 : $i->platform_fee, $i->other_deduction]); @endphp
@@ -46,8 +53,9 @@
                             <td data-label="{{ __('Tanggal') }}" class="text-nowrap"><a href="{{ route('incomes.show', $i) }}" class="cell-title text-decoration-none">{{ $i->payment_date->translatedFormat('d M Y') }}</a>
                                 @if ($i->attachments_count)<i class="bi bi-paperclip text-muted" title="{{ __('Ada bukti bayar') }}" aria-label="{{ __('Ada bukti bayar') }}"></i>@endif</td>
                             <td data-label="{{ __('Villa & tamu') }}" class="stack-full">{{ $i->villa->name }}
-                                <div class="cell-sub">{{ $i->booking?->guest_name ?: '—' }} · {{ $i->booking_ref ?: __('tanpa kode') }}</div></td>
+                                <div class="cell-sub">{{ $i->booking?->guest_name ?: '—' }} · {{ $i->booking_ref ?: ($i->booking?->booking_ref ?: __('tanpa kode')) }}</div></td>
                             <td data-label="{{ __('Sumber') }}"><span class="d-inline-flex align-items-center gap-1"><span class="pm-platform-dot" style="background: {{ $i->platform->color }}" aria-hidden="true"></span>{{ $i->platform->name }}</span>
+                                @if ($i->isFromHostex())<div class="cell-sub">{{ __('Automatic Hostex income') }}</div>@endif
                                 @if ($i->is_net_of_platform)<div class="cell-sub">{{ __('sudah net') }}</div>@endif</td>
                             <td data-label="{{ __('Gross') }}" class="num">@rupiah($i->gross_amount)</td>
                             <td data-label="{{ __('Komisi+potongan') }}" class="num text-muted">@rupiah($deduct)</td>

@@ -211,5 +211,7 @@ Buka kalender atau daftar booking di masing-masing villa untuk melihat hasil.
 Pengaturan owner, wilayah, staff dan fee tetap memakai data hosting. Owner dan
 staff memerlukan penugasan yang sesuai agar dapat melihat villa tersebut.
 
-Sinkron menarik data booking untuk pelaporan. Impor tidak menulis harga atau
-ketersediaan ke OTA dan tidak membuat transaksi pemasukan secara otomatis.
+Sinkron menarik data booking untuk pelaporan dan tidak menulis harga atau
+ketersediaan ke OTA. Untuk meneruskan nilai booking ke Pemasukan dan laporan
+secara otomatis, aktifkan [pemasukan otomatis Hostex](hostex-automatic-income.md)
+setelah pemetaan dan alokasi booking lama selesai.

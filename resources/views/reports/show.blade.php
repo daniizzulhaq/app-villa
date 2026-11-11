@@ -19,6 +19,10 @@
         </x-slot:actions>
     </x-ui.page-header>
 
+    @if ($incomes->contains(fn ($income) => $income->isFromHostex()))
+        <div class="alert alert-info fs-sm">{{ __('Includes automatic Hostex booking revenue; payouts are not verified.') }}</div>
+    @endif
+
     {{-- Pilih periode & villa --}}
     <x-ui.card flush class="mb-3">
         <form method="GET" action="{{ route($route) }}" class="pm-toolbar border-0" data-no-lock>

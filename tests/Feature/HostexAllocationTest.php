@@ -30,7 +30,7 @@ class HostexAllocationTest extends TestCase
         parent::setUp();
         $this->seedBase();
         $this->travelTo(Carbon::parse('2026-11-11 12:00:00', 'Asia/Makassar'));
-        config(['propertyme.channel_manager_provider' => 'hostex', 'services.hostex.access_token' => 'test-private-token']);
+        config(['propertyme.channel_manager_provider' => 'hostex', 'services.hostex.access_token' => 'test-private-token', 'services.hostex.auto_income_enabled' => false]);
         $this->source = $this->makeVilla(['name' => 'Avora', 'is_active' => false]);
         $this->source->forceFill(['hostex_property_id' => 501])->save();
         $this->target = $this->makeVilla(['name' => 'Sofi 1']);

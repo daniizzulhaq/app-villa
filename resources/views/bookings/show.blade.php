@@ -3,13 +3,22 @@
                       :subtitle="$booking->villa->name.' · '.$booking->platform->name" :back="route('bookings.index')" :back-label="__('Daftar reservasi')">
         <x-slot:actions>
             @can('update', $booking)
-                @if (Route::has('incomes.create'))
+                @if ($automaticIncome = $booking->incomes->first(fn ($income) => $income->isFromHostex()))
+                    <a href="{{ route('incomes.show', $automaticIncome) }}" class="btn btn-light">{{ __('Automatic Hostex income') }}</a>
+                @elseif (Route::has('incomes.create'))
                     <a href="{{ route('incomes.create', ['booking' => $booking->id]) }}" class="btn btn-light"><i class="bi bi-box-arrow-in-down" aria-hidden="true"></i> {{ __('Tambah Pemasukan') }}</a>
                 @endif
                 <a href="{{ route('bookings.edit', $booking) }}" class="btn btn-primary"><i class="bi bi-pencil" aria-hidden="true"></i> {{ $booking->status === \App\Enums\BookingStatus::NeedsCompletion ? __('Lengkapi Data') : __('Edit') }}</a>
             @endcan
         </x-slot:actions>
     </x-ui.page-header>
+
+    @can('viewRevenue', $booking)
+        @if (config('services.hostex.auto_income_enabled') && $booking->source === 'hostex'
+            && ($booking->hostex_income_error || ($booking->hostex_status === 'accepted' && ! $booking->hostex_income_synced_at)))
+            <div class="alert alert-warning fs-sm">{{ $booking->hostexIncomeIssueLabel() }}</div>
+        @endif
+    @endcan
 
     @if ($booking->status === \App\Enums\BookingStatus::NeedsCompletion)
         <div class="alert alert-warning d-flex gap-2"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
@@ -56,11 +65,12 @@
             </x-ui.card>
         </div>
         <div class="col-lg-5">
-            <x-ui.card :title="__('Pendapatan booking')" :subtitle="__(':count pembayaran tercatat', ['count' => $booking->incomes->count()])" flush>
+            <x-ui.card :title="__('Pendapatan booking')" :subtitle="__(':count income entries', ['count' => $booking->incomes->count()])" flush>
                 @forelse ($booking->incomes as $inc)
                     <div class="d-flex justify-content-between gap-2 px-4 py-3 border-bottom">
                         <div>
                             <div class="fw-semibold text-ink">{{ $inc->payment_date->translatedFormat('d M Y') }}</div>
+                            @if ($inc->isFromHostex())<div class="fs-xs text-muted">{{ __('Automatic Hostex income') }}</div>@endif
                             <div class="fs-sm text-muted">{{ __('Gross') }} @rupiah($inc->gross_amount) {{ __('· Fee') }} @rupiah($inc->fee_amount)</div>
                         </div>
                         <div class="text-end">

@@ -120,6 +120,12 @@ class ReportService
         if ($pending) {
             $out[] = __(':count nota belum Valid (menunggu pemeriksaan / dikembalikan).', ['count' => $pending]);
         }
+        if (config('services.hostex.auto_income_enabled')) {
+            $pendingIncome = HostexIncomeService::pendingQuery([$villa->id], $from->toDateString(), $to->toDateString())->count();
+            if ($pendingIncome) {
+                $out[] = __(':count Hostex bookings need income review before finalizing.', ['count' => $pendingIncome]);
+            }
+        }
         if ($from->isFuture()) {
             $out[] = __('Bulan ini belum dimulai.');
         }

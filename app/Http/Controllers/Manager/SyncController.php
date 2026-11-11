@@ -60,6 +60,12 @@ class SyncController extends Controller
         $created = collect($results)->sum('created');
         $cancelled = collect($results)->sum('cancelled');
         $msg = __('Sinkron selesai: :created reservasi baru, :cancelled dibatalkan.', ['created' => $created, 'cancelled' => $cancelled]);
+        if (config('services.hostex.auto_income_enabled')) {
+            $msg .= ' '.__('Automatic income: :created created, :updated updated, :voided archived, :pending need review.', [
+                'created' => collect($results)->sum('income_created'), 'updated' => collect($results)->sum('income_updated'),
+                'voided' => collect($results)->sum('income_voided'), 'pending' => collect($results)->sum('income_pending'),
+            ]);
+        }
 
         return $errors->isEmpty()
             ? back()->with('success', $msg)

@@ -8,6 +8,10 @@
         </x-slot:actions>
     </x-ui.page-header>
 
+    @if ($income->isFromHostex())
+        <div class="alert alert-info fs-sm">{{ __('Hostex entries are booking revenue. Their recorded date follows :basis; payouts are not verified.', ['basis' => $income->hostex_date_basis === 'check_out' ? __('Check-out') : __('Check-in')]) }} {{ __('Automatic Hostex income is managed by synchronization.') }}</div>
+    @endif
+
     @if ($locked)
         <div class="alert alert-info d-flex gap-2"><i class="bi bi-lock" aria-hidden="true"></i><div>{{ __('Laporan bulan ini sudah') }} <strong>{{ __('Final') }}</strong>{{ __('. Pemasukan terkunci — Manager perlu membuka kunci laporan untuk mengubahnya.') }}</div></div>
     @endif
@@ -32,7 +36,7 @@
                     <dt>{{ __('Reservasi') }}</dt>
                     <dd>@if ($income->booking)<a href="{{ route('bookings.show', $income->booking) }}">{{ $income->booking->guest_name ?: __('Booking #').$income->booking->id }}</a> · {{ $income->booking->check_in->translatedFormat('d M') }}–{{ $income->booking->check_out->translatedFormat('d M Y') }}@else — @endif</dd>
                     <dt>{{ __('Kode booking') }}</dt><dd>{{ $income->booking_ref ?: '—' }}</dd>
-                    <dt>{{ __('Dicatat oleh') }}</dt><dd>{{ $income->creator?->name ?? ($income->import_batch_id ? __('Import file') : '—') }}, {{ $income->created_at->translatedFormat('d M Y H:i') }}</dd>
+                    <dt>{{ __('Dicatat oleh') }}</dt><dd>{{ $income->isFromHostex() ? __('Automatic Hostex income') : ($income->creator?->name ?? ($income->import_batch_id ? __('Import file') : '—')) }}, {{ $income->created_at->translatedFormat('d M Y H:i') }}</dd>
                     <dt>{{ __('Catatan') }}</dt><dd class="fw-normal" style="white-space:pre-line">{{ $income->notes ?: '—' }}</dd>
                 </dl>
             </x-ui.card>

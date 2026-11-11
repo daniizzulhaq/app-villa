@@ -7,10 +7,13 @@ use App\Http\Requests\IncomeRequest;
 use App\Models\Booking;
 use App\Models\BookingPlatform;
 use App\Models\Income;
+use App\Models\MonthlyReport;
 use App\Models\Villa;
 use App\Services\Finance\FinanceCalculator;
 use App\Services\Finance\FinanceFilter;
+use App\Services\HostexIncomeService;
 use App\Services\IncomeService;
+use App\Support\Rupiah;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -52,6 +55,9 @@ class IncomeController extends Controller
             'incomes' => $incomes,
             'filters' => $filters,
             'summary' => $this->calc->summary($finance),
+            'pendingHostexIncome' => config('services.hostex.auto_income_enabled')
+                ? HostexIncomeService::pendingQuery($finance->villaIds, $from->toDateString(), $to->toDateString())
+                    ->when($finance->platformId, fn ($q) => $q->where('platform_id', $finance->platformId))->count() : 0,
             'villas' => Villa::accessibleBy($user)->orderBy('name')->pluck('name', 'id'),
             'platforms' => BookingPlatform::orderBy('sort_order')->get(),
         ]);
@@ -81,7 +87,7 @@ class IncomeController extends Controller
         $income = $this->incomes->create($request->validated(), $request->user(), $request->file('attachments', []));
 
         return redirect()->route('incomes.show', $income)
-            ->with('success', __('Pemasukan tersimpan. Management fee :amount dihitung otomatis.', ['amount' => \App\Support\Rupiah::format($income->fee_amount)]));
+            ->with('success', __('Pemasukan tersimpan. Management fee :amount dihitung otomatis.', ['amount' => Rupiah::format($income->fee_amount)]));
     }
 
     public function show(Income $income): View
@@ -89,7 +95,7 @@ class IncomeController extends Controller
         $this->authorize('view', $income);
         $income->load(['villa', 'platform', 'booking', 'attachments', 'creator:id,name']);
 
-        return view('incomes.show', ['income' => $income, 'locked' => \App\Models\MonthlyReport::isLocked($income->villa_id, $income->payment_date)]);
+        return view('incomes.show', ['income' => $income, 'locked' => MonthlyReport::isLocked($income->villa_id, $income->payment_date)]);
     }
 
     public function edit(Income $income): View
