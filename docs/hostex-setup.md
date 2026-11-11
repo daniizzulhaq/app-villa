@@ -146,6 +146,15 @@ already-assigned Hostex identity prevents **all** changes in that apply run.
 Review the listed booking IDs before retrying; the command does not guess, merge
 booking IDs, restore deleted bookings or move financial records.
 
+If the error instead says `A Hostex stay is already assigned to another local
+villa`, run `php artisan propertyme:hostex-reallocate` for a read-only allocation
+preview. This handles stays imported under the wrong villa before Hostex listings
+were split. Applying requires explicit target/source villa IDs, current Hostex
+verification, exact identities/dates, and no linked or matching income records.
+See [the hosting allocation repair steps](hostex-four-villas-hosting.md). The
+command retains the existing booking ID and fields; any conflict blocks the
+whole villa's apply operation. It never moves income records or guesses merges.
+
 ## 5. Automatic refresh and hosting
 
 The schedule in `routes/console.php` pulls mapped active villas every five minutes

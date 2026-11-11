@@ -42,7 +42,7 @@ class HostexSyncService
                         $attributes = $this->attributes($current, $row, $platforms->all());
                         $booking = Booking::withTrashed()->where('hostex_stay_code', $row['stay_code'])->first();
                         if ($booking && ($booking->source !== 'hostex' || $booking->villa_id !== $current->id)) {
-                            throw new HostexException('A Hostex stay is already assigned to another local villa. Reconcile its allocation first.');
+                            throw new HostexException('A Hostex stay is already assigned to another local villa. Preview its allocation: php artisan propertyme:hostex-reallocate --villa='.$current->id);
                         }
                         if ($booking?->trashed()) {
                             $result['skipped']++;

@@ -107,9 +107,52 @@ hasilnya sebelum melanjutkan.
 
 Jika muncul `A Hostex stay is already assigned to another local villa`, booking
 mungkin sudah terimpor ke Avora ketika listing sebelumnya masih digabung.
-Rekonsiliasi referensi di atas tidak memindahkan booking antarvilla. Periksa ID
-booking dan tautan pemasukannya sebelum melakukan koreksi alokasi; jangan
-menghapus booking atau memindahkannya lewat SQL massal.
+Rekonsiliasi referensi di atas tidak memindahkan booking antarvilla. Gunakan
+pratinjau alokasi berikut dari Terminal hosting setelah kode diperbarui:
+
+```bash
+php artisan optimize:clear
+php artisan propertyme:hostex-reallocate
+```
+
+Pratinjau tidak mengubah data. Tabel menampilkan ID booking, ID villa saat ini,
+ID villa tujuan sesuai Hostex, tanggal, jumlah pemasukan terkait, dan alasan
+konflik. Untuk membatasi pemeriksaan ke Sofi 1, gunakan `--villa=8`.
+
+Jika tabel memastikan villa saat ini adalah Avora **#2**, tujuan sesuai tabel
+pemetaan di awal, dan **0 conflicts**, terapkan satu villa setiap kali:
+
+```bash
+# Casa Daluca: dari villa hosting #2 ke #6
+php artisan propertyme:hostex-reallocate --villa=6 --from-villa=2 --apply
+php artisan propertyme:hostex-sync --villa=6
+
+# Sofi 1: dari villa hosting #2 ke #8
+php artisan propertyme:hostex-reallocate --villa=8 --from-villa=2 --apply
+php artisan propertyme:hostex-sync --villa=8
+
+# Sofi 2: dari villa hosting #2 ke #9
+php artisan propertyme:hostex-reallocate --villa=9 --from-villa=2 --apply
+php artisan propertyme:hostex-sync --villa=9
+```
+
+Gunakan `--from` dan `--to` yang sama pada pratinjau dan penerapan jika memilih
+rentang check-in khusus. `--from-villa` adalah ID villa PropertyMe saat ini,
+bukan ID Hostex. Jika villa asal pada pratinjau berbeda dari #2, periksa pemetaan
+asal terlebih dahulu sebelum menerapkan perubahan.
+
+Perintah hanya memindahkan booking Hostex dengan `stay_code` yang sama,
+platform, referensi dan kedua tanggal yang sesuai. Alokasi diverifikasi melalui
+API properti tujuan dan asal; booking harus sudah tidak muncul di properti
+Hostex asal. ID booking, catatan, harga, UID iCal lama dan field lain dipertahankan.
+Tidak ada penulisan ke OTA atau transaksi pemasukan.
+
+Booking terhapus, sumber bukan Hostex, pemasukan terkait (termasuk yang telah
+dihapus atau yang cocok berdasarkan referensi), bentrok booking tujuan, atau
+data yang berbeda akan ditahan sebagai konflik. Jika satu booking bermasalah,
+seluruh penerapan untuk villa itu dibatalkan. Jika ada konflik, kirim hasil
+pratinjau untuk pemeriksaan; jangan menghapus booking atau memindahkannya lewat
+SQL massal.
 
 ## Sinkron otomatis dan pemeriksaan hasil
 
