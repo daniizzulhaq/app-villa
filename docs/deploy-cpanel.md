@@ -118,7 +118,7 @@ Scheduler ini menjalankan:
 | Jadwal | Tugas |
 |---|---|
 | Tiap 30 menit | `propertyme:sync-ical` — sinkron iCal Airbnb & Booking.com |
-| Tiap jam | `propertyme:advance-bookings` — status Checked-in / Checked-out |
+| Tiap jam | `propertyme:advance-bookings` — sesuaikan status lama menjadi Confirmed |
 | Harian 17:00 | `propertyme:notify-tomorrow` — jadwal besok ke Staff |
 | Tiap menit | `queue:work --stop-when-empty` — kirim email notifikasi |
 

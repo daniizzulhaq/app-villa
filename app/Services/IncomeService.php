@@ -16,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 
 class IncomeService
 {
-    public function __construct(private ImageCompressor $images) {}
+    public function __construct(private ImageCompressor $images, private ReportPeriodGuard $periods) {}
 
     /**
      * Snapshot fee: % & basis diambil dari riwayat fee yang berlaku pada payment_date,
@@ -46,7 +46,11 @@ class IncomeService
     public function create(array $data, User $actor, array $files = []): Income
     {
         return DB::transaction(function () use ($data, $actor, $files) {
+            $locked = $this->periods->lockVillas([$data['villa_id'] ?? null,
+                empty($data['booking_id']) ? null : Booking::whereKey($data['booking_id'])->value('villa_id')]);
             $data = $this->withBookingDefaults($data);
+            $this->periods->assertScope((int) $data['villa_id'], $locked);
+            $this->periods->assertOpen((int) $data['villa_id'], $data['payment_date'], 'payment_date');
             $this->preventAutomaticDuplicate($data);
             $income = Income::create($this->fields($data) + $this->compute($data) + ['created_by' => $actor->id]);
             $this->storeAttachments($income, $files);
@@ -58,10 +62,17 @@ class IncomeService
 
     public function update(Income $income, array $data, array $files = [], array $removeIds = []): Income
     {
-        $this->guardAutomatic($income);
-
         return DB::transaction(function () use ($income, $data, $files, $removeIds) {
+            $locked = $this->periods->lockVillas([$income->villa_id, $data['villa_id'] ?? null,
+                Income::whereKey($income->id)->value('villa_id'),
+                empty($data['booking_id']) ? null : Booking::whereKey($data['booking_id'])->value('villa_id')]);
+            $income = Income::lockForUpdate()->findOrFail($income->id);
+            $this->guardAutomatic($income);
+            $this->periods->assertScope($income->villa_id, $locked);
+            $this->periods->assertOpen($income->villa_id, $income->payment_date, 'payment_date');
             $data = $this->withBookingDefaults($data + ['_ignore_id' => $income->id]);
+            $this->periods->assertScope((int) $data['villa_id'], $locked);
+            $this->periods->assertOpen((int) $data['villa_id'], $data['payment_date'], 'payment_date');
             $this->preventAutomaticDuplicate($data);
             $income->update($this->fields($data) + $this->compute($data));
 
@@ -77,8 +88,12 @@ class IncomeService
 
     public function delete(Income $income): void
     {
-        $this->guardAutomatic($income);
         DB::transaction(function () use ($income) {
+            $locked = $this->periods->lockVillas([$income->villa_id, Income::whereKey($income->id)->value('villa_id')]);
+            $income = Income::lockForUpdate()->findOrFail($income->id);
+            $this->guardAutomatic($income);
+            $this->periods->assertScope($income->villa_id, $locked);
+            $this->periods->assertOpen($income->villa_id, $income->payment_date, 'payment_date');
             // Lepas kode booking agar bisa dicatat/import ulang tanpa melanggar unique key.
             $income->forceFill(['booking_ref' => null])->saveQuietly();
             $income->delete();

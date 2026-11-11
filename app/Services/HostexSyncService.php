@@ -205,11 +205,11 @@ class HostexSyncService
             || $row['check_out_date'] <= $row['check_in_date']) {
             throw new HostexException('Hostex returned an invalid stay identity, allocation or date. No booking changes saved.');
         }
-        $today = today($villa->timezone)->toDateString();
         $status = match ($row['status'] ?? null) {
-            'accepted' => $row['check_out_date'] <= $today ? BookingStatus::CheckedOut : ($row['check_in_date'] <= $today ? BookingStatus::CheckedIn : BookingStatus::Confirmed),
+            'accepted' => BookingStatus::Confirmed,
             'cancelled', 'denied', 'timeout' => BookingStatus::Cancelled,
-            'wait_accept', 'wait_pay' => BookingStatus::NeedsCompletion,
+            'wait_accept' => BookingStatus::OnHold,
+            'wait_pay' => BookingStatus::PendingPayments,
             default => throw new HostexException('Hostex returned an unsupported reservation status. No booking changes saved.'),
         };
         $slug = match ($row['channel_type'] ?? '') {

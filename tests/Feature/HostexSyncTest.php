@@ -297,7 +297,7 @@ class HostexSyncTest extends TestCase
         $booking = Booking::firstOrFail();
         $this->actingAs($master)->put(route('bookings.update', $booking), [
             'check_in' => '2030-01-01', 'check_out' => '2030-01-02', 'status' => 'cancelled', 'guest_name' => 'Local Override',
-            'guest_count' => 4, 'total_price' => 3200000, 'notes' => 'Local preparation note',
+            'guest_count' => 4, 'guest_phone' => '+62 812 3456 7890', 'total_price' => 3200000, 'notes' => 'Local preparation note',
         ])->assertSessionHasNoErrors();
         $booking->refresh();
         $this->assertSame('2026-12-01', $booking->check_in->toDateString());
@@ -305,6 +305,9 @@ class HostexSyncTest extends TestCase
         $this->assertSame('Test Guest', $booking->guest_name);
         $this->assertSame('3200000.00', $booking->total_price);
         $this->assertSame('Local preparation note', $booking->notes);
+        $this->assertSame('+62 812 3456 7890', $booking->guest_phone);
+        $this->sync($villa);
+        $this->assertSame('+62 812 3456 7890', $booking->fresh()->guest_phone);
         $this->actingAs($master)->delete(route('bookings.destroy', $booking))->assertForbidden();
         $this->actingAs($master)->get(route('bookings.show', $booking))->assertOk()->assertSee('Hostex API');
         $this->actingAs($master)->get(route('bookings.edit', $booking))->assertOk();
@@ -313,6 +316,20 @@ class HostexSyncTest extends TestCase
         $this->assertStringNotContainsString('3200000', $events);
         $this->assertStringNotContainsString('90000', $events);
         $this->assertStringNotContainsString('test-hostex-token', $events);
+    }
+
+    public function test_hostex_statuses_map_to_payment_and_hold_choices_without_date_advancement(): void
+    {
+        $villa = $this->villa();
+        $this->remote([
+            $this->row(['stay_code' => 'pending-payment', 'status' => 'wait_pay']),
+            $this->row(['stay_code' => 'pending-acceptance', 'status' => 'wait_accept']),
+            $this->row(['stay_code' => 'past-accepted', 'status' => 'accepted', 'check_in_date' => '2026-01-01', 'check_out_date' => '2026-01-03']),
+        ]);
+        $this->assertNull($this->sync($villa)['error']);
+        $this->assertSame(BookingStatus::PendingPayments, Booking::where('hostex_stay_code', 'pending-payment')->firstOrFail()->status);
+        $this->assertSame(BookingStatus::OnHold, Booking::where('hostex_stay_code', 'pending-acceptance')->firstOrFail()->status);
+        $this->assertSame(BookingStatus::Confirmed, Booking::where('hostex_stay_code', 'past-accepted')->firstOrFail()->status);
     }
 
     public function test_sync_button_obeys_villa_access_and_successful_sync_status_is_rendered(): void

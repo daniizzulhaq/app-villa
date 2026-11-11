@@ -41,7 +41,7 @@ class BookingController extends Controller
             ->withSum('incomes', 'gross_amount')
             ->when($filters['villa'] ?? null, fn ($q, $v) => $q->where('villa_id', $v))
             ->when($filters['platform'] ?? null, fn ($q, $v) => $q->where('platform_id', $v))
-            ->when($filters['status'] ?? null, fn ($q, $v) => $q->where('status', $v))
+            ->when($filters['status'] ?? null, fn ($q, $v) => $q->whereIn('status', BookingStatus::from($v)->filterValues()))
             ->when($filters['from'] ?? null, fn ($q, $v) => $q->where('check_out', '>=', $v))
             ->when($filters['to'] ?? null, fn ($q, $v) => $q->where('check_in', '<=', $v))
             ->when($filters['q'] ?? null, fn ($q, $s) => $q->where(fn ($w) => $w
@@ -86,7 +86,7 @@ class BookingController extends Controller
 
         $bookings = Booking::query()
             ->whereIn('villa_id', Villa::accessibleBy($user)->select('id'))
-            ->with(['villa:id,name', 'platform:id,name,color'])
+            ->with(['villa:id,name', 'platform:id,name,slug,color'])
             ->when(! $user->isStaff(), fn ($q) => $q->withSum('incomes', 'net_revenue')->withCount('incomes'))
             ->when($data['villa'] ?? null, fn ($q, $v) => $q->where('villa_id', $v))
             ->when(! ($data['cancelled'] ?? false), fn ($q) => $q->where('status', '!=', BookingStatus::Cancelled->value))
@@ -96,6 +96,7 @@ class BookingController extends Controller
 
         $events = [];
         foreach ($bookings as $b) {
+            $color = $b->platform->calendarColor();
             $title = $b->guest_name ?: ($b->status === BookingStatus::NeedsCompletion ? __('Perlu dilengkapi') : __('Tamu'));
             if (empty($data['villa'])) {
                 $title = $b->villa->name.' · '.$title;
@@ -111,8 +112,8 @@ class BookingController extends Controller
                 'start' => $b->check_in->toDateString(),
                 'end' => $b->check_out->toDateString(), // eksklusif = malam terakhir check_out-1
                 'allDay' => true,
-                'backgroundColor' => $b->status === BookingStatus::Cancelled ? '#cbd5e1' : $b->platform->color,
-                'borderColor' => $b->platform->color,
+                'backgroundColor' => $b->status === BookingStatus::Cancelled ? '#cbd5e1' : $color,
+                'borderColor' => $color,
                 'textColor' => '#ffffff',
                 'classNames' => ['pm-ev', 'pm-ev--'.$b->status->value],
                 'extendedProps' => [
@@ -122,6 +123,7 @@ class BookingController extends Controller
                     'statusBadge' => $b->status->badge(),
                     'guest' => $b->guest_name,
                     'guests' => $b->guest_count,
+                    'phone' => $b->guest_phone ?: ($b->phone_last4 ? '•••• '.$b->phone_last4 : null),
                     'arrival' => $b->arrival_time ? substr($b->arrival_time, 0, 5) : null,
                     'notes' => $b->notes,
                     'ref' => $b->booking_ref,
@@ -136,7 +138,7 @@ class BookingController extends Controller
             if (! empty($data['villa']) && $b->status !== BookingStatus::Cancelled) {
                 $events[] = [
                     'start' => $b->check_in->toDateString(), 'end' => $b->check_out->toDateString(),
-                    'display' => 'background', 'backgroundColor' => $b->platform->color, 'classNames' => ['pm-occupied'],
+                    'display' => 'background', 'backgroundColor' => $color, 'classNames' => ['pm-occupied'],
                 ];
             }
         }
@@ -209,7 +211,7 @@ class BookingController extends Controller
             'booking' => $booking,
             'villas' => Villa::active()->orderBy('name')->pluck('name', 'id'),
             'platforms' => BookingPlatform::orderBy('sort_order')->pluck('name', 'id'),
-            'statuses' => collect(BookingStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])->all(),
+            'statuses' => collect(BookingStatus::selectable())->mapWithKeys(fn ($s) => [$s->value => $s->label()])->all(),
         ];
     }
 }

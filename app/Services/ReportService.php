@@ -26,7 +26,7 @@ use Illuminate\Validation\ValidationException;
  */
 class ReportService
 {
-    public function __construct(private FinanceCalculator $calc) {}
+    public function __construct(private FinanceCalculator $calc, private ReportPeriodGuard $periods) {}
 
     public function build(User $user, ?int $villaId, Carbon $from, Carbon $to, string $type): array
     {
@@ -153,23 +153,29 @@ class ReportService
 
     public function finalize(Villa $villa, int $year, int $month, User $manager): MonthlyReport
     {
-        if ($b = $this->blockers($villa, $year, $month)) {
-            throw ValidationException::withMessages(['report' => __('Belum bisa Final: :reasons', ['reasons' => implode(' ', $b)])]);
-        }
-
-        $report = DB::transaction(function () use ($villa, $year, $month, $manager) {
-            $report = MonthlyReport::firstOrNew(['villa_id' => $villa->id, 'year' => $year, 'month' => $month]);
+        $newlyFinalized = false;
+        $report = DB::transaction(function () use ($villa, $year, $month, $manager, &$newlyFinalized) {
+            $locked = $this->periods->lockVillas([$villa->id]);
+            $this->periods->assertScope($villa->id, $locked);
+            $report = MonthlyReport::lockForUpdate()->firstOrNew(['villa_id' => $villa->id, 'year' => $year, 'month' => $month]);
+            if ($report->status === ReportStatus::Final) {
+                return $report;
+            }
+            if ($b = $this->blockers($villa, $year, $month)) {
+                throw ValidationException::withMessages(['report' => __('Belum bisa Final: :reasons', ['reasons' => implode(' ', $b)])]);
+            }
             $report->fill([
                 'status' => ReportStatus::Final,
                 'finalized_at' => now(),
                 'finalized_by' => $manager->id,
                 'revision' => ($report->revision ?? 0) + 1,
             ])->save();
+            $newlyFinalized = true;
 
             return $report;
         });
 
-        if ($villa->owner) {
+        if ($newlyFinalized && $villa->owner) {
             Notify::send([$villa->owner], new ReportFinalizedNotification($report));
         }
 
@@ -179,13 +185,18 @@ class ReportService
     /** Buka kunci — alasan wajib & tercatat di audit log. */
     public function unlock(MonthlyReport $report, User $manager, string $reason): MonthlyReport
     {
-        $report->update([
-            'status' => ReportStatus::Draft,
-            'unlocked_at' => now(),
-            'unlocked_by' => $manager->id,
-            'unlock_reason' => $reason,
-        ]);
+        return DB::transaction(function () use ($report, $manager, $reason) {
+            $locked = $this->periods->lockVillas([$report->villa_id]);
+            $current = MonthlyReport::lockForUpdate()->findOrFail($report->id);
+            $this->periods->assertScope($current->villa_id, $locked);
+            if ($current->status === ReportStatus::Final) {
+                $current->update([
+                    'status' => ReportStatus::Draft, 'unlocked_at' => now(),
+                    'unlocked_by' => $manager->id, 'unlock_reason' => $reason,
+                ]);
+            }
 
-        return $report;
+            return $current;
+        });
     }
 }

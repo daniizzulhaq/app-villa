@@ -35,7 +35,7 @@
             <div class="pm-filter-field"><label for="filter-to">{{ __('Sampai tanggal') }}</label><input type="date" id="filter-to" name="to" value="{{ $filters['to'] ?? '' }}" class="form-control"></div>
             </x-slot:advanced>
         </x-ui.filters>
-        <x-ui.status-tabs :statuses="\App\Enums\BookingStatus::cases()" />
+        <x-ui.status-tabs :statuses="\App\Enums\BookingStatus::selectable()" />
 
         @if ($bookings->isEmpty())
             <x-ui.empty-state art="search" :title="array_filter($filters) ? __('Tidak ada hasil yang cocok') : __('Belum ada reservasi')" :text="array_filter($filters) ? __('Coba kata kunci lain atau reset filter.') : __('Reservasi dari iCal muncul otomatis tiap 30 menit. Direct booking bisa dicatat manual.')">

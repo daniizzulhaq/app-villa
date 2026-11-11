@@ -51,7 +51,7 @@ class PayoutImportService
         'notes' => ['catatan', 'notes', 'keterangan', 'details'],
     ];
 
-    public function __construct(private IncomeService $incomes) {}
+    public function __construct(private IncomeService $incomes, private ReportPeriodGuard $periods) {}
 
     /** @return array{rows: array, columns: array, counts: array} */
     /** @param  array<int>|null  $allowedVillaIds  Manager wilayah: hanya villa wilayahnya (villa lain dianggap tidak ditemukan) */
@@ -186,6 +186,14 @@ class PayoutImportService
     public function import(array $preview, string $fileName, User $actor): ImportBatch
     {
         return DB::transaction(function () use ($preview, $fileName, $actor) {
+            // Preview data may be stale. Lock villas before bookings, matching Hostex sync,
+            // and recheck periods even for duplicate rows that can complete bookings.
+            $rows = collect($preview['rows'])->where('status', '!=', 'error');
+            $locked = $this->periods->lockVillas($rows->pluck('villa_id')->all());
+            foreach ($rows as $row) {
+                $this->periods->assertScope((int) $row['villa_id'], $locked);
+                $this->periods->assertOpen((int) $row['villa_id'], $row['payment_date'], 'payment_date');
+            }
             $batch = ImportBatch::create([
                 'type' => 'income', 'file_name' => Str::limit($fileName, 250, ''), 'rows_total' => count($preview['rows']),
                 'rows_duplicate' => $preview['counts']['duplicate'] ?? 0, 'rows_failed' => $preview['counts']['error'] ?? 0,
@@ -198,7 +206,10 @@ class PayoutImportService
                 if ($r['status'] === 'error') {
                     continue;
                 }
-                $booking = ! empty($r['booking_id']) ? Booking::find($r['booking_id']) : null;
+                $booking = ! empty($r['booking_id']) ? Booking::lockForUpdate()->find($r['booking_id']) : null;
+                if (! empty($r['booking_id'])) {
+                    $this->periods->assertScope((int) ($booking?->villa_id ?? 0), [(int) $r['villa_id']]);
+                }
                 $automaticIncome = $booking && Income::where('booking_id', $booking->id)->whereNotNull('hostex_stay_code')->exists();
                 if ($booking && ! $automaticIncome && $this->completeBooking($booking, $r)) {
                     $priced[$booking->id] = true;

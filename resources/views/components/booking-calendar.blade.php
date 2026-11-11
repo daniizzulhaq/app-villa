@@ -18,7 +18,7 @@
 
     <div class="pm-legend mb-3" aria-label="{{ __('Keterangan warna') }}">
         @foreach ($platforms as $p)
-            <span><span class="sw" style="background: {{ $p->color }}; border-color: {{ $p->color }}"></span>{{ $p->name }}</span>
+            <span><span class="sw" style="background: {{ $p->calendarColor() }}; border-color: {{ $p->calendarColor() }}"></span>{{ $p->name }}</span>
         @endforeach
         <span><span class="sw" style="background: repeating-linear-gradient(135deg,#94a3b8 0 3px,#cbd5e1 3px 6px)"></span>{{ __('Perlu dilengkapi') }}</span>
         <span><span class="sw" style="background:#fff"></span>{{ __('Kosong') }}</span>
@@ -50,6 +50,8 @@
                         <dt>{{ __('Check-out') }}</dt><dd x-text="selected.checkOut"></dd>
                         <dt>{{ __('Lama menginap') }}</dt><dd x-text="selected.nights + ' malam'"></dd>
                         <dt>{{ __('Jumlah tamu') }}</dt><dd x-text="selected.guests ? selected.guests + ' orang' : '—'"></dd>
+                        <template x-if="selected.phone"><dt>{{ __('No. HP tamu') }}</dt></template>
+                        <template x-if="selected.phone"><dd class="num" x-text="selected.phone"></dd></template>
                         <template x-if="selected.ref"><dt>{{ __('Kode booking') }}</dt></template>
                         <template x-if="selected.ref"><dd x-text="selected.ref"></dd></template>
                         @if (! auth()->user()->isStaff() && (auth()->user()->isManager() || auth()->user()->isOwner()))

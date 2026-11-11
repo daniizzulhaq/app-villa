@@ -70,14 +70,14 @@ class BookingService
     {
         return DB::transaction(function () use ($booking, $data) {
             if ($booking->source === 'hostex') {
-                $data = Arr::only($data, ['notes', 'total_price']);
+                $data = Arr::only($data, ['notes', 'total_price', 'guest_phone']);
             }
             // Tanggal, villa & platform booking dari iCal milik platform → tidak diubah manual.
             if ($booking->isFromPlatformSync()) {
                 $data = Arr::except($data, ['villa_id', 'platform_id', 'check_in', 'check_out']);
             }
 
-            $booking->fill(Arr::only($data, ['villa_id', 'platform_id', 'booking_ref', 'guest_name', 'guest_count', 'check_in', 'check_out', 'arrival_time', 'total_price', 'status', 'notes']));
+            $booking->fill(Arr::only($data, ['villa_id', 'platform_id', 'booking_ref', 'guest_name', 'guest_count', 'guest_phone', 'check_in', 'check_out', 'total_price', 'status', 'notes']));
             if ($booking->isDirty('total_price')) {
                 // Harga diubah manual → sinkron iCal tidak akan menimpanya lagi.
                 $booking->price_source = $booking->total_price === null ? null : 'manual';
@@ -98,23 +98,12 @@ class BookingService
         });
     }
 
-    /**
-     * Status otomatis berdasarkan tanggal (dijalankan scheduler tiap jam):
-     * Confirmed → Checked-in saat tanggal check-in tiba, → Checked-out setelah check-out.
-     * "Perlu dilengkapi" & "Cancelled" tidak disentuh.
-     */
+    /** Normalize legacy stay states without changing payment or hold statuses. */
     public function advanceStatuses(): int
     {
-        $today = now(config('app.timezone'))->toDateString();
+        $legacy = Booking::whereIn('status', [BookingStatus::CheckedIn->value, BookingStatus::CheckedOut->value])->get();
+        $legacy->each(fn (Booking $booking) => $booking->update(['status' => BookingStatus::Confirmed]));
 
-        $in = Booking::query()->where('status', BookingStatus::Confirmed->value)
-            ->where('check_in', '<=', $today)->where('check_out', '>', $today)->get();
-        $out = Booking::query()->whereIn('status', [BookingStatus::Confirmed->value, BookingStatus::CheckedIn->value])
-            ->where('check_out', '<=', $today)->get();
-
-        $in->each(fn (Booking $b) => $b->update(['status' => BookingStatus::CheckedIn]));
-        $out->each(fn (Booking $b) => $b->update(['status' => BookingStatus::CheckedOut]));
-
-        return $in->count() + $out->count();
+        return $legacy->count();
     }
 }

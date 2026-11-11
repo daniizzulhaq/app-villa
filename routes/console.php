@@ -14,7 +14,7 @@ Schedule::command('propertyme:sync-ical')->everyThirtyMinutes()->withoutOverlapp
 Schedule::command('propertyme:hostex-sync')->everyFiveMinutes()->withoutOverlapping(10)
     ->when(fn () => config('propertyme.channel_manager_provider') === 'hostex' && config('services.hostex.sync_enabled'));
 
-// Status booking mengikuti tanggal (Checked-in / Checked-out)
+// Sesuaikan status lama menjadi Confirmed; status pembayaran tidak mengikuti tanggal.
 Schedule::command('propertyme:advance-bookings')->hourly();
 
 // Pengingat jadwal besok untuk Staff

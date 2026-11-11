@@ -9,7 +9,7 @@ class AdvanceBookingStatusCommand extends Command
 {
     protected $signature = 'propertyme:advance-bookings';
 
-    protected $description = 'Ubah status Confirmed → Checked-in → Checked-out sesuai tanggal';
+    protected $description = 'Sesuaikan status Checked-in / Checked-out lama menjadi Confirmed';
 
     public function handle(BookingService $bookings): int
     {

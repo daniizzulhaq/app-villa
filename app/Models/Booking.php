@@ -17,7 +17,7 @@ class Booking extends Model implements AuditableContract
     protected array $auditExclude = ['hostex_income_synced_at'];
 
     protected $fillable = [
-        'villa_id', 'platform_id', 'source', 'ical_uid', 'booking_ref', 'guest_name', 'guest_count', 'phone_last4',
+        'villa_id', 'platform_id', 'source', 'ical_uid', 'booking_ref', 'guest_name', 'guest_count', 'guest_phone', 'phone_last4',
         'check_in', 'check_out', 'arrival_time', 'total_price', 'price_source', 'status', 'cancelled_at', 'notes', 'created_by',
     ];
 

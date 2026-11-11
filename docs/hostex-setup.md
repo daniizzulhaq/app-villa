@@ -94,11 +94,11 @@ Managers can also use **Sync Hostex now** on the villa detail page or the usual
 synchronization page. Access is checked against the manager's villa scope.
 The same `stay_code` updates the same booking on later pulls. A filtered/empty
 response never cancels absent bookings; only an explicit cancelled/denied/timeout
-status does. Pending confirmation/payment stays need completion; accepted stays
-follow the application's existing date-based check-in/out status behavior.
+status does. Pending confirmation stays are On Hold, pending payment stays are
+Pending Payments, and accepted stays are Confirmed regardless of stay dates.
 
-Synced dates, guest details and status are managed by Hostex. Local notes and a
-manual IDR price can be edited and are preserved on later imports. The original
+Synced dates, guest details and status are managed by Hostex. Local notes, a guest
+phone number and a manual IDR price can be edited and are preserved on later imports. The original
 Hostex per-stay rate/commission remain available separately. USD or other
 non-IDR amounts retain their currency and never become a Rupiah price without
 manual reconciliation. Per-order totals/payment fields are not summed across

@@ -315,15 +315,97 @@ class BookingTest extends TestCase
         $this->get('/ical/'.str_repeat('x', 48).'.ics')->assertNotFound();
     }
 
-    public function test_statuses_advance_automatically(): void
+    public function test_dates_do_not_change_payment_statuses_and_legacy_stay_statuses_are_normalized(): void
     {
         $villa = $this->makeVilla();
         $b = Booking::create(['villa_id' => $villa->id, 'platform_id' => $this->platform('direct'), 'check_in' => today()->subDay(), 'check_out' => today()->addDay(), 'status' => 'confirmed']);
         $done = Booking::create(['villa_id' => $villa->id, 'platform_id' => $this->platform('direct'), 'check_in' => today()->subDays(5), 'check_out' => today()->subDays(2), 'status' => 'confirmed']);
+        $pending = Booking::create(['villa_id' => $villa->id, 'platform_id' => $this->platform('direct'), 'check_in' => today()->subDay(), 'check_out' => today()->addDay(), 'status' => 'pending_payments']);
+        $hold = Booking::create(['villa_id' => $villa->id, 'platform_id' => $this->platform('direct'), 'check_in' => today()->subDay(), 'check_out' => today()->addDay(), 'status' => 'on_hold']);
+        $legacy = Booking::create(['villa_id' => $villa->id, 'platform_id' => $this->platform('direct'), 'check_in' => today()->subDay(), 'check_out' => today()->addDay(), 'status' => 'checked_in']);
 
         $this->artisan('propertyme:advance-bookings')->assertSuccessful();
 
-        $this->assertSame(BookingStatus::CheckedIn, $b->fresh()->status);
-        $this->assertSame(BookingStatus::CheckedOut, $done->fresh()->status);
+        $this->assertSame(BookingStatus::Confirmed, $b->fresh()->status);
+        $this->assertSame(BookingStatus::Confirmed, $done->fresh()->status);
+        $this->assertSame(BookingStatus::PendingPayments, $pending->fresh()->status);
+        $this->assertSame(BookingStatus::OnHold, $hold->fresh()->status);
+        $this->assertSame(BookingStatus::Confirmed, $legacy->fresh()->status);
+    }
+
+    public function test_phone_is_saved_updated_and_visible_in_booking_details_and_staff_calendar(): void
+    {
+        $manager = $this->makeUser(UserRole::Master);
+        $villa = $this->makeVilla();
+        $this->actingAs($manager)->post(route('bookings.store'), $this->payload($villa->id, today()->toDateString(), today()->addDays(2)->toDateString(), [
+            'guest_phone' => '+62 812-3456-7890', 'status' => 'pending_payments',
+        ]))->assertSessionHasNoErrors();
+        $booking = Booking::firstOrFail();
+        $this->assertSame('+62 812-3456-7890', $booking->guest_phone);
+        $this->actingAs($manager)->get(route('bookings.show', $booking))->assertOk()->assertSee('+62 812-3456-7890');
+        $this->actingAs($manager)->put(route('bookings.update', $booking), $this->payload($villa->id, today()->toDateString(), today()->addDays(2)->toDateString(), [
+            'guest_phone' => '081234567891', 'status' => 'on_hold',
+        ]))->assertSessionHasNoErrors();
+        $this->assertSame('081234567891', $booking->fresh()->guest_phone);
+        $staff = $this->makeUser(UserRole::Staff);
+        $staff->assignedVillas()->attach($villa);
+        $this->actingAs($staff)->get(route('staff.calendar'))->assertOk()->assertSee('081234567891');
+        $this->actingAs($staff)->getJson(route('bookings.events', ['start' => today()->toDateString(), 'end' => today()->addWeek()->toDateString()]))
+            ->assertOk()->assertJsonPath('0.extendedProps.phone', '081234567891');
+    }
+
+    public function test_new_statuses_reserve_dates_and_cancelled_releases_them(): void
+    {
+        $manager = $this->makeUser(UserRole::Master);
+        $villa = $this->makeVilla();
+        foreach (['pending_payments', 'on_hold'] as $status) {
+            $this->actingAs($manager)->post(route('bookings.store'), $this->payload($villa->id, '2026-12-01', '2026-12-04', ['status' => $status]))
+                ->assertSessionHasNoErrors();
+            $booking = Booking::latest('id')->firstOrFail();
+            $this->assertSame($status, $booking->status->value);
+            $this->actingAs($manager)->post(route('bookings.store'), $this->payload($villa->id, '2026-12-02', '2026-12-05'))
+                ->assertSessionHasErrors('check_in');
+            $this->actingAs($manager)->put(route('bookings.update', $booking), $this->payload($villa->id, '2026-12-01', '2026-12-04', ['status' => 'cancelled']))
+                ->assertSessionHasNoErrors();
+            $this->assertNotNull($booking->fresh()->cancelled_at);
+        }
+    }
+
+    public function test_form_has_four_status_options_and_phone_instead_of_arrival_time(): void
+    {
+        $manager = $this->makeUser(UserRole::Master);
+        $html = $this->actingAs($manager)->get(route('bookings.create'))->assertOk()
+            ->assertSee('name="guest_phone"', false)->assertDontSee('name="arrival_time"', false)->getContent();
+        preg_match('/<select[^>]*name="status"[^>]*>(.*?)<\/select>/s', $html, $match);
+        preg_match_all('/<option[^>]*value="([^"]+)"/', $match[1], $options);
+        $this->assertSame(['confirmed', 'pending_payments', 'on_hold', 'cancelled'], $options[1]);
+        foreach (['Confirmed', 'Pending Payments', 'On Hold', 'Cancelled'] as $label) {
+            $this->assertStringContainsString($label, $match[1]);
+        }
+        foreach (['checked_in', 'checked_out', 'needs_completion'] as $status) {
+            $this->actingAs($manager)->post(route('bookings.store'), $this->payload($this->makeVilla()->id, '2026-12-01', '2026-12-04', ['status' => $status]))
+                ->assertSessionHasErrors('status');
+        }
+    }
+
+    public function test_direct_booking_calendar_uses_gray_even_when_database_still_stores_green(): void
+    {
+        BookingPlatform::where('slug', BookingPlatform::DIRECT)->update(['color' => '#0E8F63']);
+        $manager = $this->makeUser(UserRole::Master);
+        $villa = $this->makeVilla();
+        Booking::create($this->payload($villa->id, '2026-12-01', '2026-12-04'));
+        $this->actingAs($manager)->getJson(route('bookings.events', ['villa' => $villa->id, 'start' => '2026-12-01', 'end' => '2027-01-01']))
+            ->assertOk()->assertJsonPath('0.backgroundColor', '#6B7280')->assertJsonPath('0.borderColor', '#6B7280')->assertJsonPath('1.backgroundColor', '#6B7280');
+        $this->actingAs($manager)->get(route('bookings.calendar'))->assertOk()->assertSee('#6B7280')->assertDontSee('#0E8F63');
+        $staff = $this->makeUser(UserRole::Staff);
+        $staff->assignedVillas()->attach($villa);
+        $this->actingAs($staff)->get(route('staff.calendar'))->assertOk()->assertSee('#6B7280')->assertDontSee('#0E8F63');
+        $this->actingAs($staff)->getJson(route('bookings.events', ['start' => '2026-12-01', 'end' => '2027-01-01']))
+            ->assertOk()->assertJsonPath('0.backgroundColor', '#6B7280');
+        $this->assertSame('#0E8F63', BookingPlatform::where('slug', BookingPlatform::DIRECT)->value('color'));
+        $airbnb = BookingPlatform::where('slug', BookingPlatform::AIRBNB)->firstOrFail();
+        Booking::create($this->payload($villa->id, '2026-12-10', '2026-12-14', ['platform_id' => $airbnb->id]));
+        $events = $this->actingAs($manager)->getJson(route('bookings.events', ['start' => '2026-12-09', 'end' => '2026-12-15']))->assertOk();
+        $events->assertJsonPath('0.backgroundColor', $airbnb->color)->assertJsonPath('0.borderColor', $airbnb->color);
     }
 }

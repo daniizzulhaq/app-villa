@@ -1,4 +1,5 @@
 {
+    "The transaction changed. Reload the page and try again.": "The transaction changed. Reload the page and try again.",
     "Pilih villa, foto nota, lalu isi detail pengeluaran.": "Choose the villa, take a receipt photo, then enter the expense details.",
     "Link iCal lainnya": "Other iCal link",
     "Opsional: satu link ekspor iCal dari platform lain, misalnya Traveloka, Agoda, atau Trip.com, jika tersedia.": "Optional: one iCal export link from another platform, such as Traveloka, Agoda, or Trip.com, if available.",
@@ -1459,5 +1460,6 @@
     "Cancelled booking; automatic revenue is excluded.": "Cancelled booking; automatic revenue is excluded.",
     ":count income entries": ":count income entries",
     "Includes automatic Hostex booking revenue; payouts are not verified.": "Includes automatic Hostex booking revenue; payouts are not verified.",
-    "Automatic income matches these stay dates. Check the booking reference.": "Automatic income matches these stay dates. Check the booking reference."
+    "Automatic income matches these stay dates. Check the booking reference.": "Automatic income matches these stay dates. Check the booking reference.",
+    "Nama, jumlah tamu, nomor telepon, dan catatan tampil di kalender Staff untuk persiapan villa.": "Guest name, guest count, phone number, and notes appear in the Staff calendar to help prepare the villa."
 }

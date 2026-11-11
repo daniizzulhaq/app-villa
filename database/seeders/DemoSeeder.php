@@ -95,8 +95,8 @@ class DemoSeeder extends Seeder
         $booking = Booking::create([
             'villa_id' => $villa->id, 'platform_id' => $platform->id, 'source' => 'manual',
             'booking_ref' => $ref, 'guest_name' => $guest, 'guest_count' => 2,
-            'check_in' => today()->subDay(), 'check_out' => today()->addDays(3), 'arrival_time' => '14:00',
-            'status' => BookingStatus::CheckedIn, 'notes' => 'Data contoh', 'created_by' => $actor->id,
+            'check_in' => today()->subDay(), 'check_out' => today()->addDays(3), 'guest_phone' => '+62 812 3456 7890',
+            'status' => BookingStatus::Confirmed, 'notes' => 'Data contoh', 'created_by' => $actor->id,
         ]);
 
         app(IncomeService::class)->create([

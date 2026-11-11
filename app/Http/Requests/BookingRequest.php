@@ -41,9 +41,9 @@ class BookingRequest extends FormRequest
             'booking_ref' => ['nullable', 'string', 'max:100'],
             'guest_name' => ['nullable', 'string', 'max:150'],
             'guest_count' => ['nullable', 'integer', 'min:1', 'max:99'],
-            'arrival_time' => ['nullable', 'date_format:H:i'],
+            'guest_phone' => ['nullable', 'string', 'max:40', 'regex:/^\+?[0-9][0-9\s().-]*$/'],
             'total_price' => ['nullable', 'numeric', 'min:0', 'max:9999999999999'],
-            'status' => ['required', Rule::enum(BookingStatus::class)],
+            'status' => ['required', Rule::in(array_map(fn ($status) => $status->value, BookingStatus::selectable()))],
             'notes' => ['nullable', 'string', 'max:3000'],
         ];
     }
@@ -53,7 +53,7 @@ class BookingRequest extends FormRequest
         return [
             'villa_id' => 'villa', 'platform_id' => __('sumber booking'), 'check_in' => 'tanggal check-in',
             'check_out' => 'tanggal check-out', 'booking_ref' => __('kode booking'), 'guest_name' => __('nama tamu'),
-            'guest_count' => __('jumlah tamu'), 'arrival_time' => __('jam datang'), 'total_price' => __('harga reservasi'),
+            'guest_count' => __('jumlah tamu'), 'guest_phone' => __('No. HP tamu'), 'total_price' => __('harga reservasi'),
         ];
     }
 
