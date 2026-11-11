@@ -1479,5 +1479,12 @@
     "The deleted income no longer matches this booking. Reload the review.": "The deleted income no longer matches this booking. Reload the review.",
     "The booking or income amounts changed. Reload the review before restoring.": "The booking or income amounts changed. Reload the review before restoring.",
     "Other income entries match this booking. Review them before restoring to avoid duplicate revenue.": "Other income entries match this booking. Review them before restoring to avoid duplicate revenue.",
-    "Recovery requires an accepted Hostex booking and enabled automatic income.": "Recovery requires an accepted Hostex booking and enabled automatic income."
+    "Recovery requires an accepted Hostex booking and enabled automatic income.": "Recovery requires an accepted Hostex booking and enabled automatic income.",
+    "Financial statement": "Financial statement",
+    "Prepared by": "Prepared by",
+    "Report reference": "Report reference",
+    "Page :page of :pages": "Page :page of :pages",
+    "No activity in this period.": "No activity in this period.",
+    "Income and expenses are shown in Indonesian Rupiah (IDR).": "Income and expenses are shown in Indonesian Rupiah (IDR).",
+    "Pengeluaran hanya yang berstatus Valid.": "Only validated expenses are included."
 }

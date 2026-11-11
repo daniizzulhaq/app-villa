@@ -1434,5 +1434,12 @@
     "Management fee breakdown": "管理费明细",
     "View fee details": "查看费用明细",
     "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "按每笔收入记录显示费用，使用该交易中保存的费率和计算基数。",
-    "Income without a linked reservation": "未关联预订的收入"
+    "Income without a linked reservation": "未关联预订的收入",
+    "Financial statement": "财务报表",
+    "Prepared by": "编制人",
+    "Report reference": "报告编号",
+    "Page :page of :pages": "第 :page 页，共 :pages 页",
+    "No activity in this period.": "此期间暂无交易。",
+    "Income and expenses are shown in Indonesian Rupiah (IDR).": "收入和支出以印尼盾（IDR）显示。",
+    "Pengeluaran hanya yang berstatus Valid.": "仅包含已审核的支出。"
 }

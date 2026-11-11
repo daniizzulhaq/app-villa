@@ -1434,5 +1434,12 @@
     "Management fee breakdown": "Détail des frais de gestion",
     "View fee details": "Voir le détail des frais",
     "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "Frais par entrée de revenu, selon le pourcentage et la base de calcul enregistrés dans chaque transaction.",
-    "Income without a linked reservation": "Revenu sans réservation associée"
+    "Income without a linked reservation": "Revenu sans réservation associée",
+    "Financial statement": "Rapport financier",
+    "Prepared by": "Préparé par",
+    "Report reference": "Référence du rapport",
+    "Page :page of :pages": "Page :page sur :pages",
+    "No activity in this period.": "Aucune transaction sur cette période.",
+    "Income and expenses are shown in Indonesian Rupiah (IDR).": "Les revenus et dépenses sont indiqués en roupies indonésiennes (IDR).",
+    "Pengeluaran hanya yang berstatus Valid.": "Seules les dépenses validées sont incluses."
 }

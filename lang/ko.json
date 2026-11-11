@@ -1434,5 +1434,12 @@
     "Management fee breakdown": "관리 수수료 내역",
     "View fee details": "수수료 상세 보기",
     "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "각 거래에 저장된 비율과 계산 기준에 따른 수입 항목별 수수료입니다.",
-    "Income without a linked reservation": "연결된 예약이 없는 수입"
+    "Income without a linked reservation": "연결된 예약이 없는 수입",
+    "Financial statement": "재무 보고서",
+    "Prepared by": "작성자",
+    "Report reference": "보고서 번호",
+    "Page :page of :pages": ":page / :pages페이지",
+    "No activity in this period.": "이 기간에 거래가 없습니다.",
+    "Income and expenses are shown in Indonesian Rupiah (IDR).": "수입과 지출은 인도네시아 루피아(IDR)로 표시됩니다.",
+    "Pengeluaran hanya yang berstatus Valid.": "승인된 지출만 포함됩니다."
 }

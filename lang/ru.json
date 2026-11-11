@@ -1434,5 +1434,12 @@
     "Management fee breakdown": "Детализация комиссии за управление",
     "View fee details": "Посмотреть детализацию комиссии",
     "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "Комиссия по каждой записи дохода с процентом и базой расчёта, сохранёнными в транзакции.",
-    "Income without a linked reservation": "Доход без связанного бронирования"
+    "Income without a linked reservation": "Доход без связанного бронирования",
+    "Financial statement": "Финансовый отчёт",
+    "Prepared by": "Подготовил",
+    "Report reference": "Номер отчёта",
+    "Page :page of :pages": "Страница :page из :pages",
+    "No activity in this period.": "За этот период операций нет.",
+    "Income and expenses are shown in Indonesian Rupiah (IDR).": "Доходы и расходы указаны в индонезийских рупиях (IDR).",
+    "Pengeluaran hanya yang berstatus Valid.": "Включены только проверенные расходы."
 }

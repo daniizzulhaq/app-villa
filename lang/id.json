@@ -1417,5 +1417,12 @@
     "The deleted income no longer matches this booking. Reload the review.": "Pemasukan terhapus tidak lagi cocok dengan booking ini. Muat ulang pemeriksaan.",
     "The booking or income amounts changed. Reload the review before restoring.": "Data booking atau nominal pemasukan berubah. Muat ulang pemeriksaan sebelum memulihkan.",
     "Other income entries match this booking. Review them before restoring to avoid duplicate revenue.": "Ada pemasukan lain yang cocok dengan booking ini. Periksa transaksi tersebut sebelum memulihkan agar pendapatan tidak dihitung ganda.",
-    "Recovery requires an accepted Hostex booking and enabled automatic income.": "Pemulihan memerlukan booking Hostex berstatus Confirmed dan fitur pemasukan otomatis aktif."
+    "Recovery requires an accepted Hostex booking and enabled automatic income.": "Pemulihan memerlukan booking Hostex berstatus Confirmed dan fitur pemasukan otomatis aktif.",
+    "Financial statement": "Laporan keuangan",
+    "Prepared by": "Disusun oleh",
+    "Report reference": "Referensi laporan",
+    "Page :page of :pages": "Halaman :page dari :pages",
+    "No activity in this period.": "Belum ada transaksi pada periode ini.",
+    "Income and expenses are shown in Indonesian Rupiah (IDR).": "Nominal pemasukan dan pengeluaran ditampilkan dalam Rupiah (IDR).",
+    "Pengeluaran hanya yang berstatus Valid.": "Pengeluaran hanya yang berstatus Valid."
 }

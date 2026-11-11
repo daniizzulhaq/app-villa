@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ReportStatus;
 use App\Exports\ReportExport;
 use App\Models\MonthlyReport;
 use App\Models\Villa;
@@ -69,6 +68,14 @@ class ReportController extends Controller
         try {
             $data = $this->dataFor($request);
             $pdf = Pdf::loadView('reports.pdf', $data)->setPaper('a4')->setOption(['isRemoteEnabled' => false, 'defaultFont' => 'DejaVu Sans']);
+            $pdf->render();
+            $pageLabel = __('Page :page of :pages');
+            $pdf->getDomPDF()->getCanvas()->page_script(static function ($number, $count, $canvas, $fonts) use ($pageLabel) {
+                $font = $fonts->getFont('DejaVu Sans', 'normal');
+                $text = strtr($pageLabel, [':page' => (string) $number, ':pages' => (string) $count]);
+                $width = $fonts->getTextWidth($text, $font, 6.5);
+                $canvas->text($canvas->get_width() - 36 - $width, $canvas->get_height() - 37, $text, $font, 6.5, [0.44, 0.44, 0.44]);
+            });
 
             return $pdf->download($this->fileName($data, 'pdf'));
         } finally {

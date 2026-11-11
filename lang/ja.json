@@ -1434,5 +1434,12 @@
     "Management fee breakdown": "管理手数料の内訳",
     "View fee details": "手数料の詳細を見る",
     "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "各取引に保存された料率と計算基準を使った収入明細ごとの手数料。",
-    "Income without a linked reservation": "予約に紐付いていない収入"
+    "Income without a linked reservation": "予約に紐付いていない収入",
+    "Financial statement": "財務報告書",
+    "Prepared by": "作成者",
+    "Report reference": "レポート番号",
+    "Page :page of :pages": ":pagesページ中:pageページ",
+    "No activity in this period.": "この期間の取引はありません。",
+    "Income and expenses are shown in Indonesian Rupiah (IDR).": "収入と支出はインドネシアルピア（IDR）で表示されます。",
+    "Pengeluaran hanya yang berstatus Valid.": "承認済みの支出のみが含まれます。"
 }

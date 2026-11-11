@@ -1434,5 +1434,12 @@
     "Management fee breakdown": "Aufschlüsselung der Verwaltungsgebühren",
     "View fee details": "Gebührendetails ansehen",
     "Fees per income entry, using the percentage and calculation basis saved with each transaction.": "Gebühren je Einnahmeneintrag mit dem in der Transaktion gespeicherten Prozentsatz und der Berechnungsgrundlage.",
-    "Income without a linked reservation": "Einnahme ohne verknüpfte Reservierung"
+    "Income without a linked reservation": "Einnahme ohne verknüpfte Reservierung",
+    "Financial statement": "Finanzbericht",
+    "Prepared by": "Erstellt von",
+    "Report reference": "Berichtsreferenz",
+    "Page :page of :pages": "Seite :page von :pages",
+    "No activity in this period.": "Keine Transaktionen in diesem Zeitraum.",
+    "Income and expenses are shown in Indonesian Rupiah (IDR).": "Einnahmen und Ausgaben werden in Indonesischen Rupiah (IDR) angegeben.",
+    "Pengeluaran hanya yang berstatus Valid.": "Nur geprüfte Ausgaben sind enthalten."
 }
