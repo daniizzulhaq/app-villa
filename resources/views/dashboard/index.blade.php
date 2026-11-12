@@ -72,33 +72,6 @@
         <div><i class="bi bi-wallet2" aria-hidden="true"></i><span><small>{{ __('Net booking revenue') }}</small><strong>{{ Rupiah::short($s->netRevenue) }}</strong></span></div>
     </div>
 
-    {{-- Grafik --}}
-    <div class="row g-3 mb-3">
-        <div class="col-xl-8">
-            <x-ui.card :title="__('Performa keuangan')" :subtitle="$filters['month'] ? __('6 bulan terakhir hingga :period', ['period' => $periodLabel]) : __('Per bulan, :period', ['period' => $periodLabel])">
-                <div x-data="chart({ type: 'bar', height: 320, labels: @js($series->pluck('label')->values()), series: [
-                        { name: @js(__('Gross income')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->gross))->values()) },
-                        { name: @js(__('Management fee')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->managementFee))->values()) },
-                        { name: @js(__('Pengeluaran')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->expenses))->values()) },
-                        { name: @js(__('Net profit')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->netProfit))->values()) } ],
-                        colors: ['#d5b363', '#b88b2b', '#eadfc9', '#a77c25'] })">
-                    <div x-show="loading"><x-ui.skeleton height="300px" /></div>
-                    <x-ui.empty-state x-show="empty" x-cloak :title="__('Belum ada transaksi')" :text="__('Grafik muncul setelah pemasukan atau pengeluaran tercatat.')" />
-                    <div x-ref="chart"></div>
-                </div>
-            </x-ui.card>
-        </div>
-        <div class="col-xl-4 d-grid gap-3">
-            <x-ui.card :title="__('Pemasukan per platform')">
-                <div x-data="chart({ type: 'donut', height: 320, labels: @js($byPlatform->pluck('name')), series: @js($byPlatform->map(fn ($p) => F::toFloat($p->gross))), colors: @js($byPlatform->pluck('color')) })">
-                    <div x-show="loading"><x-ui.skeleton height="210px" /></div>
-                    <p x-show="empty" x-cloak class="text-muted fs-sm text-center py-4 mb-0">{{ __('Belum ada pemasukan.') }}</p>
-                    <div x-ref="chart"></div>
-                </div>
-            </x-ui.card>
-        </div>
-    </div>
-
     @if ($isManager)
         <div class="pm-section-heading"><div><h2>{{ __('Operasional hari ini') }}</h2><p>{{ __('Detail kecil untuk pelayanan yang lebih baik.') }}</p></div></div>
         <div class="row g-3 mb-3">
@@ -176,4 +149,31 @@
     @unless ($isManager)
         <p class="fs-sm text-muted mt-3 mb-0"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ __('Pengeluaran yang dihitung hanya yang sudah diperiksa (Valid) oleh Manager. Laporan resmi tersedia setelah ditandai Final.') }}</p>
     @endunless
+
+    {{-- Grafik --}}
+    <div class="row g-3 mt-3">
+        <div class="col-xl-8 order-2 order-xl-1">
+            <x-ui.card :title="__('Performa keuangan')" :subtitle="$filters['month'] ? __('6 bulan terakhir hingga :period', ['period' => $periodLabel]) : __('Per bulan, :period', ['period' => $periodLabel])">
+                <div x-data="chart({ type: 'bar', height: 320, labels: @js($series->pluck('label')->values()), series: [
+                        { name: @js(__('Gross income')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->gross))->values()) },
+                        { name: @js(__('Management fee')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->managementFee))->values()) },
+                        { name: @js(__('Pengeluaran')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->expenses))->values()) },
+                        { name: @js(__('Net profit')), data: @js($series->map(fn ($r) => F::toFloat($r['summary']->netProfit))->values()) } ],
+                        colors: ['#d5b363', '#b88b2b', '#eadfc9', '#a77c25'] })">
+                    <div x-show="loading"><x-ui.skeleton height="300px" /></div>
+                    <x-ui.empty-state x-show="empty" x-cloak :title="__('Belum ada transaksi')" :text="__('Grafik muncul setelah pemasukan atau pengeluaran tercatat.')" />
+                    <div x-ref="chart"></div>
+                </div>
+            </x-ui.card>
+        </div>
+        <div class="col-xl-4 d-grid gap-3 order-1 order-xl-2">
+            <x-ui.card :title="__('Pemasukan per platform')">
+                <div x-data="chart({ type: 'donut', height: 320, labels: @js($byPlatform->pluck('name')), series: @js($byPlatform->map(fn ($p) => F::toFloat($p->gross))), colors: @js($byPlatform->pluck('color')) })">
+                    <div x-show="loading"><x-ui.skeleton height="210px" /></div>
+                    <p x-show="empty" x-cloak class="text-muted fs-sm text-center py-4 mb-0">{{ __('Belum ada pemasukan.') }}</p>
+                    <div x-ref="chart"></div>
+                </div>
+            </x-ui.card>
+        </div>
+    </div>
 </x-layouts.app>
