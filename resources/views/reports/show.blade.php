@@ -25,22 +25,33 @@
 
     {{-- Pilih periode & villa --}}
     <x-ui.card flush class="mb-3">
-        <form method="GET" action="{{ route($route) }}" class="pm-toolbar border-0" data-no-lock>
-            <a href="{{ $nav($prev) }}" class="btn btn-light" aria-label="{{ __('Periode sebelumnya') }}"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
-            @if ($isMonthly)
-                <select name="month" class="form-select" aria-label="{{ __('Bulan') }}" onchange="this.form.submit()" style="flex: 0 1 150px">
-                    @for ($m = 1; $m <= 12; $m++)<option value="{{ $m }}" @selected($m === $month)>{{ \Illuminate\Support\Carbon::create(null, $m, 1)->translatedFormat('F') }}</option>@endfor
+        <form method="GET" action="{{ route($route) }}" class="pm-toolbar pm-report-filters border-0" data-no-lock>
+            <a href="{{ $nav($prev) }}" class="btn btn-light btn-icon pm-report-filters__prev" aria-label="{{ __('Periode sebelumnya') }}"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
+            <div @class(['pm-report-filters__period', 'pm-report-filters__period--annual' => ! $isMonthly])>
+                @if ($isMonthly)
+                    <div>
+                        <label for="reportMonth" class="pm-report-filters__label">{{ __('Bulan') }}</label>
+                        <select id="reportMonth" name="month" class="form-select" aria-label="{{ __('Bulan') }}" onchange="this.form.submit()">
+                            @for ($m = 1; $m <= 12; $m++)<option value="{{ $m }}" @selected($m === $month)>{{ \Illuminate\Support\Carbon::create(null, $m, 1)->translatedFormat('F') }}</option>@endfor
+                        </select>
+                    </div>
+                @endif
+                <div>
+                    <label for="reportYear" class="pm-report-filters__label">{{ __('Tahun') }}</label>
+                    <select id="reportYear" name="year" class="form-select" aria-label="{{ __('Tahun') }}" onchange="this.form.submit()">
+                        @for ($y = max(today()->year + 1, $year); $y >= min(today()->year - 5, $year); $y--)<option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>@endfor
+                    </select>
+                </div>
+            </div>
+            <a href="{{ $nav($next) }}" class="btn btn-light btn-icon pm-report-filters__next" aria-label="{{ __('Periode berikutnya') }}"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+            <div class="pm-report-filters__villa">
+                <label for="reportVilla" class="pm-report-filters__label">{{ __('Villa') }}</label>
+                <select id="reportVilla" name="villa" class="form-select" aria-label="{{ __('Villa') }}" onchange="this.form.submit()">
+                    <option value="">{{ __('Semua villa (gabungan)') }}</option>
+                    @foreach ($villaOptions as $id => $n)<option value="{{ $id }}" @selected($villaId === $id)>{{ $n }}</option>@endforeach
                 </select>
-            @endif
-            <select name="year" class="form-select" aria-label="{{ __('Tahun') }}" onchange="this.form.submit()" style="flex: 0 1 110px">
-                @for ($y = max(today()->year + 1, $year); $y >= min(today()->year - 5, $year); $y--)<option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>@endfor
-            </select>
-            <a href="{{ $nav($next) }}" class="btn btn-light" aria-label="{{ __('Periode berikutnya') }}"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
-            <select name="villa" class="form-select" aria-label="{{ __('Villa') }}" onchange="this.form.submit()" style="flex: 1 1 220px">
-                <option value="">{{ __('Semua villa (gabungan)') }}</option>
-                @foreach ($villaOptions as $id => $n)<option value="{{ $id }}" @selected($villaId === $id)>{{ $n }}</option>@endforeach
-            </select>
-            <a href="{{ $isMonthly ? route('reports.annual', array_filter(['villa' => $villaId, 'year' => $year])) : route('reports.monthly', array_filter(['villa' => $villaId, 'year' => $year, 'month' => 1])) }}" class="btn btn-ghost">
+            </div>
+            <a href="{{ $isMonthly ? route('reports.annual', array_filter(['villa' => $villaId, 'year' => $year])) : route('reports.monthly', array_filter(['villa' => $villaId, 'year' => $year, 'month' => 1])) }}" class="btn btn-ghost pm-report-filters__mode">
                 {{ $isMonthly ? __('Lihat tahunan') : __('Lihat bulanan') }}
             </a>
         </form>
