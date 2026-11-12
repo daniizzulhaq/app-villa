@@ -134,12 +134,16 @@ class ReportController extends Controller
             'year' => ['nullable', 'integer', 'between:2000,2100'],
             'month' => ['nullable', 'integer', 'between:1,12'],
         ]);
-        $villaId = $v['villa'] ?? null;
+        $villaId = isset($v['villa']) ? (int) $v['villa'] : null;
         abort_if($villaId && ! $request->user()->canAccessVilla($villaId), 403);
 
         $default = today()->subMonth();
 
-        return [$villaId, $v['year'] ?? ($withMonth ? $default->year : today()->year), $withMonth ? ($v['month'] ?? $default->month) : null];
+        return [
+            $villaId,
+            (int) ($v['year'] ?? ($withMonth ? $default->year : today()->year)),
+            $withMonth ? (int) ($v['month'] ?? $default->month) : null,
+        ];
     }
 
     private function villaOptions(Request $request)

@@ -15,9 +15,9 @@
         @endforeach
     </div>
     <div x-cloak x-show="open" class="pm-modal-backdrop" style="background: rgba(15,27,45,.9)" @click.self="open = null" @keydown.escape.window="open = null">
-        <div class="text-center" style="max-width: 96vw">
-            <img :src="open" alt="{{ __('Foto nota ukuran penuh') }}" style="max-width: 96vw; max-height: 80vh; border-radius: 12px">
-            <div class="mt-3 d-flex gap-2 justify-content-center">
+        <div class="pm-lightbox" role="dialog" aria-modal="true" aria-label="{{ __('Foto nota ukuran penuh') }}" x-trap.noscroll="open">
+            <img :src="open" alt="{{ __('Foto nota ukuran penuh') }}">
+            <div class="pm-lightbox__actions">
                 <a :href="open" target="_blank" rel="noopener" class="btn btn-light"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> {{ __('Buka gambar asli') }}</a>
                 <button type="button" class="btn btn-light" @click="open = null">{{ __('Tutup') }}</button>
             </div>

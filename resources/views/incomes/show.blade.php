@@ -19,6 +19,7 @@
     <div class="row g-3">
         <div class="col-lg-6">
             <x-ui.card :title="__('Perhitungan')">
+                <div class="table-responsive">
                 <table class="pm-ledger">
                     <tr><td>{{ __('Gross booking income') }}</td><td>@rupiah($income->gross_amount)</td></tr>
                     <tr class="sub minus"><td>{{ __('Komisi platform :lagi', ['lagi' => $income->is_net_of_platform ? __('(sudah termasuk, tidak dipotong lagi)') : '']) }}</td><td>@rupiah($income->is_net_of_platform ? 0 : $income->platform_fee)</td></tr>
@@ -27,6 +28,7 @@
                     <tr class="sub minus"><td>{{ __('Management fee :fee_percentage ×', ['fee_percentage' => \App\Support\Rupiah::percent($income->fee_percentage)]) }} @rupiah($income->fee_base_amount)</td><td>@rupiah($income->fee_amount)</td></tr>
                     <tr class="total"><td>{{ __('Revenue after fee') }}</td><td>@rupiah(\Brick\Math\BigDecimal::of($income->net_revenue)->minus($income->fee_amount))</td></tr>
                 </table>
+                </div>
                 <p class="fs-sm text-muted mt-3 mb-0"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ __('Basis fee: :label. Persentase & basis disimpan sebagai snapshot saat transaksi dicatat.', ['label' => $income->fee_basis->label()]) }}</p>
             </x-ui.card>
         </div>

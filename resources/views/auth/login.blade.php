@@ -28,12 +28,11 @@
             {{-- Pilih bahasa sebelum login --}}
             <x-ui.locale-switcher class="position-absolute top-0 end-0 m-3" />
             <div class="pm-auth__form">
-                <div class="pm-auth__mobile-brand d-lg-none">
+                <div class="pm-auth__welcome">
                     <x-ui.brand-mark />
                     <span class="pm-brand__sub">VILLA MANAGEMENT</span>
                 </div>
 
-                <div class="pm-auth__welcome"><i class="bi bi-flower2" aria-hidden="true"></i></div>
                 <span class="pm-eyebrow text-muted">{{ __('Selamat datang kembali') }}</span>
                 <h1 class="pm-auth__title">{{ __('Masuk ke akun Anda') }}</h1>
                 <p class="text-muted mb-4">{{ __('Gunakan email atau username dan kata sandi yang diberikan Manager.') }}</p>

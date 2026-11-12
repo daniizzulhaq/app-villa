@@ -77,7 +77,7 @@
                 $latestNotifs = $user->notifications()->limit(6)->get();
             @endphp
             <div class="dropdown">
-                <button class="btn btn-ghost btn-icon position-relative" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
+                <button class="btn btn-ghost btn-icon position-relative" data-bs-toggle="dropdown" data-bs-display="static" data-bs-auto-close="outside" aria-expanded="false"
                         aria-label="{{ __('Notifikasi') }}{{ $unread ? ', '.__(':count belum dibaca', ['count' => $unread]) : '' }}">
                     <i class="bi bi-bell{{ $unread ? '-fill' : '' }}" aria-hidden="true"></i>
                     @if ($unread)<span class="pm-notif-dot" aria-hidden="true">{{ $unread > 9 ? '9+' : $unread }}</span>@endif
@@ -89,11 +89,13 @@
                             <form method="POST" action="{{ route('notifications.read-all') }}" data-no-lock>@csrf<button class="btn btn-sm btn-ghost" type="submit">{{ __('Tandai dibaca') }}</button></form>
                         @endif
                     </div>
-                    @forelse ($latestNotifs as $n)
-                        @include('notifications._item', ['n' => $n])
-                    @empty
-                        <p class="px-3 py-4 text-muted fs-sm mb-0 text-center">{{ __('Belum ada notifikasi.') }}</p>
-                    @endforelse
+                    <div class="pm-notif-menu__items" role="region" aria-label="{{ __('Notifikasi') }}" tabindex="0">
+                        @forelse ($latestNotifs as $n)
+                            @include('notifications._item', ['n' => $n])
+                        @empty
+                            <p class="px-3 py-4 text-muted fs-sm mb-0 text-center">{{ __('Belum ada notifikasi.') }}</p>
+                        @endforelse
+                    </div>
                     <a href="{{ route('notifications.index') }}" class="d-block text-center py-2 fs-sm fw-semibold text-decoration-none">{{ __('Lihat semua') }}</a>
                 </div>
             </div>

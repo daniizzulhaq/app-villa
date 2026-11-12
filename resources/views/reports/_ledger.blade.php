@@ -1,4 +1,5 @@
 {{-- Rincian rumus keuangan. $s: FinanceSummary --}}
+<div class="table-responsive">
 <table class="pm-ledger">
     <tr><td>{{ __('Gross booking income') }}</td><td>@rupiah($s->gross)</td></tr>
     <tr class="sub minus"><td>{{ __('Komisi platform') }}</td><td>@rupiah($s->platformFee)</td></tr>
@@ -10,3 +11,4 @@
     <tr class="total"><td>{{ __('Final net profit') }}</td><td class="{{ $s->isLoss() ? 'text-negative' : 'text-positive' }}">@rupiah($s->netProfit)</td></tr>
     <tr class="sub"><td>{{ __('Net profit margin') }}</td><td>{{ $s->marginLabel() }}</td></tr>
 </table>
+</div>

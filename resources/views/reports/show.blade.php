@@ -33,7 +33,7 @@
                 </select>
             @endif
             <select name="year" class="form-select" aria-label="{{ __('Tahun') }}" onchange="this.form.submit()" style="flex: 0 1 110px">
-                @for ($y = today()->year + 1; $y >= today()->year - 5; $y--)<option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>@endfor
+                @for ($y = max(today()->year + 1, $year); $y >= min(today()->year - 5, $year); $y--)<option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>@endfor
             </select>
             <a href="{{ $nav($next) }}" class="btn btn-light" aria-label="{{ __('Periode berikutnya') }}"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
             <select name="villa" class="form-select" aria-label="{{ __('Villa') }}" onchange="this.form.submit()" style="flex: 1 1 220px">
@@ -133,6 +133,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
+                            <div class="table-responsive">
                             <table class="table table-sm fs-sm mb-0">
                                 <thead><tr><th>{{ __('Platform') }}</th><th class="text-end">{{ __('Gross') }}</th><th class="text-end">{{ __('Fee') }}</th></tr></thead>
                                 @forelse ($pf as $p)
@@ -141,6 +142,7 @@
                                     <tr><td colspan="3" class="text-muted">—</td></tr>
                                 @endforelse
                             </table>
+                            </div>
                         </div>
                     </div>
                 </x-ui.card>
@@ -155,6 +157,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
+                            <div class="table-responsive">
                             <table class="table table-sm fs-sm mb-0">
                                 @forelse ($byCategory as $c)
                                     <tr><td>{{ __($c->name) }}</td><td class="text-end num">@rupiah($c->total)</td></tr>
@@ -162,6 +165,7 @@
                                     <tr><td class="text-muted">—</td></tr>
                                 @endforelse
                             </table>
+                            </div>
                         </div>
                     </div>
                 </x-ui.card>
