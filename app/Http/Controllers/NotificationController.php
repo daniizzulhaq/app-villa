@@ -2,16 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\NotificationCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class NotificationController extends Controller
 {
     public function index(Request $request): View
     {
+        $category = $this->category($request);
+        $unreadCounts = [];
+        foreach (NotificationCategory::cases() as $inbox) {
+            $unreadCounts[$inbox->value] = $inbox->notifications($request->user())->whereNull('read_at')->count();
+        }
+
         return view('notifications.index', [
-            'notifications' => $request->user()->notifications()->paginate(20),
+            'category' => $category,
+            'unreadCounts' => $unreadCounts,
+            'notifications' => $category->notifications($request->user())->paginate(20)->withQueryString(),
         ]);
     }
 
@@ -21,10 +31,11 @@ class NotificationController extends Controller
         $n = $request->user()->notifications()->findOrFail($id);
         $n->markAsRead();
 
-        $url = $n->data['url'] ?? route('notifications.index');
+        $fallback = route('notifications.index', ['category' => NotificationCategory::forType($n->type)->value]);
+        $url = $n->data['url'] ?? $fallback;
         // Hanya izinkan redirect ke aplikasi sendiri
         if (! str_starts_with($url, url('/'))) {
-            $url = route('notifications.index');
+            $url = $fallback;
         }
 
         return redirect($url);
@@ -32,8 +43,15 @@ class NotificationController extends Controller
 
     public function readAll(Request $request): RedirectResponse
     {
-        $request->user()->unreadNotifications->markAsRead();
+        $this->category($request)->notifications($request->user())->whereNull('read_at')->update(['read_at' => now()]);
 
         return back()->with('success', __('Semua notifikasi ditandai sudah dibaca.'));
+    }
+
+    private function category(Request $request): NotificationCategory
+    {
+        $data = $request->validate(['category' => ['nullable', Rule::enum(NotificationCategory::class)]]);
+
+        return NotificationCategory::from($data['category'] ?? NotificationCategory::General->value);
     }
 }

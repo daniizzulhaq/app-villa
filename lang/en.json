@@ -1492,5 +1492,10 @@
     "Choose a JPG, PNG, WebP, HEIC, or PDF file.": "Choose a JPG, PNG, WebP, HEIC, or PDF file.",
     "Could not prepare :name. Take another photo or choose a JPG/PNG image.": "Could not prepare :name. Take another photo or choose a JPG/PNG image.",
     ":name exceeds the :max MB limit.": ":name exceeds the :max MB limit.",
-    ":count of :max files · photos optimized automatically": ":count of :max files · photos optimized automatically"
+    ":count of :max files · photos optimized automatically": ":count of :max files · photos optimized automatically",
+    "Receipt": "Receipt",
+    "Notification categories": "Notification categories",
+    "No receipt notifications yet.": "No receipt notifications yet.",
+    "New receipts, resubmissions, and returned receipts appear here.": "New receipts, resubmissions, and returned receipts appear here.",
+    "Booking updates, schedules, and finalized reports appear here.": "Booking updates, schedules, and finalized reports appear here."
 }

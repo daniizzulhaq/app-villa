@@ -72,33 +72,8 @@
             <x-ui.locale-switcher class="d-none d-md-block" />
             <a href="{{ route('search') }}" class="btn btn-ghost btn-icon d-lg-none" aria-label="{{ __('Cari') }}"><i class="bi bi-search" aria-hidden="true"></i></a>
 
-            @php
-                $unread = $user->unreadNotifications()->count();
-                $latestNotifs = $user->notifications()->limit(6)->get();
-            @endphp
-            <div class="dropdown">
-                <button class="btn btn-ghost btn-icon position-relative" data-bs-toggle="dropdown" data-bs-display="static" data-bs-auto-close="outside" aria-expanded="false"
-                        aria-label="{{ __('Notifikasi') }}{{ $unread ? ', '.__(':count belum dibaca', ['count' => $unread]) : '' }}">
-                    <i class="bi bi-bell{{ $unread ? '-fill' : '' }}" aria-hidden="true"></i>
-                    @if ($unread)<span class="pm-notif-dot" aria-hidden="true">{{ $unread > 9 ? '9+' : $unread }}</span>@endif
-                </button>
-                <div class="dropdown-menu dropdown-menu-end pm-notif-menu">
-                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                        <strong class="text-ink">{{ __('Notifikasi') }}</strong>
-                        @if ($unread)
-                            <form method="POST" action="{{ route('notifications.read-all') }}" data-no-lock>@csrf<button class="btn btn-sm btn-ghost" type="submit">{{ __('Tandai dibaca') }}</button></form>
-                        @endif
-                    </div>
-                    <div class="pm-notif-menu__items" role="region" aria-label="{{ __('Notifikasi') }}" tabindex="0">
-                        @forelse ($latestNotifs as $n)
-                            @include('notifications._item', ['n' => $n])
-                        @empty
-                            <p class="px-3 py-4 text-muted fs-sm mb-0 text-center">{{ __('Belum ada notifikasi.') }}</p>
-                        @endforelse
-                    </div>
-                    <a href="{{ route('notifications.index') }}" class="d-block text-center py-2 fs-sm fw-semibold text-decoration-none">{{ __('Lihat semua') }}</a>
-                </div>
-            </div>
+            <x-ui.notification-menu :category="\App\Enums\NotificationCategory::Receipt" />
+            <x-ui.notification-menu :category="\App\Enums\NotificationCategory::General" />
             <div class="dropdown">
                 <button class="btn btn-ghost px-2 d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ __('Menu akun') }}">
                     <x-ui.avatar :user="$user" />
@@ -111,6 +86,7 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-person" aria-hidden="true"></i> {{ __('Profil saya') }}</a></li>
                     <li><a class="dropdown-item" href="{{ route('notifications.index') }}"><i class="bi bi-bell" aria-hidden="true"></i> {{ __('Notifikasi') }}</a></li>
+                    <li><a class="dropdown-item" href="{{ route('notifications.index', ['category' => 'receipt']) }}"><i class="bi bi-receipt" aria-hidden="true"></i> {{ __('Receipt') }}</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}" data-no-lock>

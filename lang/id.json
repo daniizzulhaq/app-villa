@@ -1430,5 +1430,10 @@
     "Choose a JPG, PNG, WebP, HEIC, or PDF file.": "Pilih file JPG, PNG, WebP, HEIC, atau PDF.",
     "Could not prepare :name. Take another photo or choose a JPG/PNG image.": "Foto :name tidak dapat disiapkan. Foto ulang atau pilih gambar JPG/PNG.",
     ":name exceeds the :max MB limit.": ":name melebihi batas :max MB.",
-    ":count of :max files · photos optimized automatically": ":count dari :max file · foto otomatis diperkecil"
+    ":count of :max files · photos optimized automatically": ":count dari :max file · foto otomatis diperkecil",
+    "Receipt": "Receipt",
+    "Notification categories": "Kategori notifikasi",
+    "No receipt notifications yet.": "Belum ada notifikasi Receipt.",
+    "New receipts, resubmissions, and returned receipts appear here.": "Nota baru, nota yang dikirim ulang, dan nota yang dikembalikan muncul di sini.",
+    "Booking updates, schedules, and finalized reports appear here.": "Informasi reservasi, jadwal, dan laporan Final muncul di sini."
 }
