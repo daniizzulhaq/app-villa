@@ -7,6 +7,9 @@
         'Gagal memuat kalender. Periksa koneksi lalu coba lagi.', 'Gagal menyalin. Salin manual.', 'jt', 'rb', 'M', 'Kolom ini',
         'Link disalin.', 'Maksimal :max foto per nota.', 'Masukkan alamat lengkap, diawali https://', 'Menyimpan…',
         'Tidak ada reservasi di periode ini — villa kosong.', 'Total', 'Ukuran foto maksimal 10 MB.', 'Ya, lanjutkan',
+        'Please wait until the receipt photos are ready.', 'Choose a JPG, PNG, WebP, HEIC, or PDF file.',
+        'Could not prepare :name. Take another photo or choose a JPG/PNG image.', ':name exceeds the :max MB limit.',
+        ':count of :max files · photos optimized automatically',
     ];
     $jsMessages = [];
     foreach ($jsKeys as $k) {

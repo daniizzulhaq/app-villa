@@ -1,6 +1,7 @@
 import * as bootstrap from 'bootstrap';
 import Alpine from 'alpinejs';
 import focus from '@alpinejs/focus';
+import { receiptPicker } from './receipt-picker';
 
 window.bootstrap = bootstrap;
 
@@ -62,6 +63,12 @@ Alpine.store('confirm', {
 document.addEventListener('submit', async (e) => {
     const form = e.target;
     if (!(form instanceof HTMLFormElement)) return;
+
+    if (form.dataset.receiptProcessing) {
+        e.preventDefault();
+        window.toast(t('Please wait until the receipt photos are ready.'), 'info');
+        return;
+    }
 
     if (form.dataset.confirm && !form.dataset.confirmed) {
         e.preventDefault();
@@ -226,38 +233,7 @@ Alpine.data('photoPicker', (existing = null) => ({
 }));
 
 // Foto nota: kamera HP langsung terbuka, bisa memotret beberapa kali (file digabung, tidak saling menimpa)
-Alpine.data('receiptPicker', ({ max = 6, existing = 0 } = {}) => ({
-    files: [],
-    previews: [],
-    existing,
-    get count() { return this.files.length + this.existing; },
-    add(e) {
-        const picked = Array.from(e.target.files || []);
-        for (const f of picked) {
-            if (this.count >= max) {
-                window.toast(t('Maksimal :max foto per nota.', { max }), 'warning');
-                break;
-            }
-            if (f.size > 10 * 1024 * 1024) {
-                window.toast(t(':name lebih dari 10 MB, dilewati.', { name: f.name }), 'error');
-                continue;
-            }
-            this.files.push(f);
-            this.previews.push(f.type.startsWith('image/') ? URL.createObjectURL(f) : null);
-        }
-        this.sync();
-    },
-    remove(i) {
-        this.files.splice(i, 1);
-        this.previews.splice(i, 1);
-        this.sync();
-    },
-    sync() {
-        const dt = new DataTransfer();
-        this.files.forEach((f) => dt.items.add(f));
-        this.$refs.input.files = dt.files;
-    },
-}));
+Alpine.data('receiptPicker', receiptPicker);
 
 // Salin teks (link iCal, dsb.)
 Alpine.data('copyText', () => ({

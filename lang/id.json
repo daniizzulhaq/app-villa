@@ -1424,5 +1424,11 @@
     "Page :page of :pages": "Halaman :page dari :pages",
     "No activity in this period.": "Belum ada transaksi pada periode ini.",
     "Income and expenses are shown in Indonesian Rupiah (IDR).": "Nominal pemasukan dan pengeluaran ditampilkan dalam Rupiah (IDR).",
-    "Pengeluaran hanya yang berstatus Valid.": "Pengeluaran hanya yang berstatus Valid."
+    "Pengeluaran hanya yang berstatus Valid.": "Pengeluaran hanya yang berstatus Valid.",
+    "Preparing receipt photos…": "Menyiapkan foto nota…",
+    "Please wait until the receipt photos are ready.": "Tunggu sampai foto nota selesai disiapkan.",
+    "Choose a JPG, PNG, WebP, HEIC, or PDF file.": "Pilih file JPG, PNG, WebP, HEIC, atau PDF.",
+    "Could not prepare :name. Take another photo or choose a JPG/PNG image.": "Foto :name tidak dapat disiapkan. Foto ulang atau pilih gambar JPG/PNG.",
+    ":name exceeds the :max MB limit.": ":name melebihi batas :max MB.",
+    ":count of :max files · photos optimized automatically": ":count dari :max file · foto otomatis diperkecil"
 }

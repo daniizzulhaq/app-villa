@@ -1486,5 +1486,11 @@
     "Page :page of :pages": "Page :page of :pages",
     "No activity in this period.": "No activity in this period.",
     "Income and expenses are shown in Indonesian Rupiah (IDR).": "Income and expenses are shown in Indonesian Rupiah (IDR).",
-    "Pengeluaran hanya yang berstatus Valid.": "Only validated expenses are included."
+    "Pengeluaran hanya yang berstatus Valid.": "Only validated expenses are included.",
+    "Preparing receipt photos…": "Preparing receipt photos…",
+    "Please wait until the receipt photos are ready.": "Please wait until the receipt photos are ready.",
+    "Choose a JPG, PNG, WebP, HEIC, or PDF file.": "Choose a JPG, PNG, WebP, HEIC, or PDF file.",
+    "Could not prepare :name. Take another photo or choose a JPG/PNG image.": "Could not prepare :name. Take another photo or choose a JPG/PNG image.",
+    ":name exceeds the :max MB limit.": ":name exceeds the :max MB limit.",
+    ":count of :max files · photos optimized automatically": ":count of :max files · photos optimized automatically"
 }

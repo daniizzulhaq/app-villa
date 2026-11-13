@@ -22,6 +22,17 @@ aturan `.gitignore` hanya mengabaikan `/build` di akar proyek, bukan `public/bui
 `bcmath`, `gd`, `intl`, `mbstring`, `pdo_mysql`, `zip`, `fileinfo`, `curl`, `openssl`, `xml`, `dom`.
 Atur juga `memory_limit` ≥ 256M, `upload_max_filesize` ≥ 12M, `post_max_size` ≥ 64M (upload beberapa foto nota sekaligus).
 
+Foto nota dari kamera dan galeri diperkecil di browser **sebelum dikirim**: sisi
+terpanjang maksimal 1600 px dan hasil maksimal 1 MB per foto. Tombol Kirim menunggu
+proses foto selesai. PDF tidak dikompres; batas aplikasi tetap 10 MB per file dan
+6 file per nota, sehingga pengaturan PHP di atas tetap diperlukan.
+
+Jika muncul **“The receipt photo failed to upload”**, PHP belum menerima file
+secara utuh. Periksa batas upload pada **MultiPHP INI Editor untuk domain yang
+dipakai**, koneksi, folder sementara PHP, serta kuota penyimpanan. Kompresi di
+server baru bisa berjalan setelah PHP menerima file. Pastikan build JavaScript
+terbaru ikut terunggah agar foto kamera tidak dikirim dalam ukuran aslinya.
+
 ## 3. Struktur folder di server
 
 Letakkan aplikasi **di luar** `public_html` agar `.env` & `storage` tidak bisa diakses dari web:

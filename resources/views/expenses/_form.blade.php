@@ -10,6 +10,7 @@
     $showMore = $errors->hasAny(['vendor', 'payment_method', 'description']) || ($isEdit && $expense->vendor);
 @endphp
 <form method="POST" enctype="multipart/form-data" data-validate novalidate
+      x-data="{ receiptsBusy: false }" @receipts-processing="receiptsBusy = $event.detail"
       action="{{ $isEdit ? route('expenses.update', $expense) : route('expenses.store') }}">
     @csrf
     @if ($isEdit) @method('PUT') @endif
@@ -39,7 +40,7 @@
                 </section>
 
                 {{-- 2. Foto --}}
-                <section class="pm-form-section" id="expense-photo" x-data="receiptPicker({ max: {{ $maxFiles }}, existing: {{ $existingReceipts->count() }} })">
+                <section class="pm-form-section" id="expense-photo" x-data="receiptPicker({ max: {{ $maxFiles }}, existing: {{ $existingReceipts->count() }}, maxBytes: {{ (int) config('propertyme.upload.max_kb', 10240) * 1024 }}, maxSide: {{ (int) config('propertyme.upload.max_side', 1600) }} })" :aria-busy="processing">
                     <h2 class="pm-form-section__title mb-3"><span class="text-muted">2.</span> {{ __('Foto nota') }}</h2>
 
                     @if ($existingReceipts->isNotEmpty())
@@ -66,7 +67,7 @@
                                 <span class="fs-xs fw-normal">{{ __('Kamera langsung terbuka') }}</span>
                             </label>
                             {{-- input kamera terpisah agar capture tetap jalan; hasilnya digabung ke input utama --}}
-                            <input type="file" id="f_camera" accept="image/*" capture="environment" class="visually-hidden" @change="add($event); $event.target.value=''">
+                            <input type="file" id="f_camera" accept="image/*" capture="environment" class="visually-hidden" :disabled="processing" @change="add($event); $event.target.value=''">
                         </div>
                         <div class="col-5 col-sm-4">
                             <label class="pm-camera-btn h-100 mb-0" for="f_gallery" style="border-style: solid; background: #fff">
@@ -74,7 +75,7 @@
                                 <span>{{ __('Dari galeri') }}</span>
                                 <span class="fs-xs fw-normal">{{ __('Bisa pilih banyak') }}</span>
                             </label>
-                            <input type="file" id="f_gallery" accept="image/*,application/pdf" multiple class="visually-hidden" @change="add($event); $event.target.value=''">
+                            <input type="file" id="f_gallery" accept="image/*,application/pdf" multiple class="visually-hidden" :disabled="processing" @change="add($event); $event.target.value=''">
                         </div>
                     </div>
                     <input type="file" name="receipts[]" multiple x-ref="input" class="d-none" aria-hidden="true" tabindex="-1">
@@ -90,7 +91,7 @@
                             </template>
                         </div>
                     </template>
-                    <div class="form-text" x-text="count + ' dari {{ $maxFiles }} foto · otomatis dikompres'"></div>
+                    <div class="form-text" role="status" aria-live="polite" x-text="processing ? {{ Js::from(__('Preparing receipt photos…')) }} : window.t(':count of :max files · photos optimized automatically', { count, max: {{ $maxFiles }} })"></div>
                     @error('receipts')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     @error('receipts.*')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </section>
@@ -129,9 +130,9 @@
                 <div class="pm-form-actions">
                     <a href="{{ auth()->user()->isStaff() ? route('staff.activity') : ($isEdit ? route('expenses.show', $expense) : route('expenses.index')) }}" class="btn btn-light">{{ __('Batal') }}</a>
                     @unless ($isEdit)
-                        <button type="submit" name="after" value="another" class="btn btn-light d-none d-sm-inline-flex" data-loading-text="{{ __('Mengirim…') }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ __('Simpan & tambah lagi') }}</button>
+                        <button type="submit" name="after" value="another" class="btn btn-light d-none d-sm-inline-flex" :disabled="receiptsBusy" data-loading-text="{{ __('Mengirim…') }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ __('Simpan & tambah lagi') }}</button>
                     @endunless
-                    <button type="submit" class="btn btn-primary btn-lg" data-loading-text="{{ __('Mengunggah…') }}">
+                    <button type="submit" class="btn btn-primary btn-lg" :disabled="receiptsBusy" data-loading-text="{{ __('Mengunggah…') }}">
                         <i class="bi bi-send" aria-hidden="true"></i>
                         {{ $isEdit ? ($expense->status === \App\Enums\ExpenseStatus::Returned && auth()->user()->isStaff() ? __('Kirim Ulang') : __('Simpan')) : (auth()->user()->isStaff() ? __('Kirim Nota') : __('Simpan')) }}
                     </button>
