@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\ExpenseReturnedNotification;
 use App\Notifications\ExpenseSubmittedNotification;
 use App\Support\Notify;
+use Brick\Math\BigDecimal;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -60,6 +61,15 @@ class ExpenseService
             $this->periods->assertScope((int) ($data['villa_id'] ?? $expense->villa_id), $locked);
             $this->periods->assertOpen((int) ($data['villa_id'] ?? $expense->villa_id), $data['expense_date'] ?? $expense->expense_date, 'expense_date');
             $expense->fill(Arr::only($data, self::FIELDS));
+            if ($expense->recurring_expense_id) {
+                $expense->base_amount = $data['base_amount'];
+                $expense->additions = array_values($data['additions'] ?? []);
+                $total = BigDecimal::of((string) $expense->base_amount);
+                foreach ($expense->additions as $addition) {
+                    $total = $total->plus((string) $addition['amount']);
+                }
+                $expense->amount = (string) $total;
+            }
 
             // Staff memperbaiki nota yang dikembalikan → kirim ulang ke antrean pemeriksaan
             if ($actor->isStaff() && $expense->status === ExpenseStatus::Returned) {

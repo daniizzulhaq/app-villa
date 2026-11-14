@@ -99,7 +99,11 @@
                 {{-- 3. Data --}}
                 <section class="pm-form-section" id="expense-details">
                     <h2 class="pm-form-section__title mb-3"><span class="text-muted">3.</span> {{ __('Nominal & kategori') }}</h2>
-                    <x-form.money name="amount" :label="__('Nominal')" :value="$expense->amount" required class="fs-5" />
+                    @if ($expense->recurring_expense_id)
+                        @include('expenses._recurring-amount')
+                    @else
+                        <x-form.money name="amount" :label="__('Nominal')" :value="$expense->amount" required class="fs-5" />
+                    @endif
                     <x-form.textarea name="notes" :label="__('Catatan')" :value="$expense->notes" rows="2" maxlength="3000" />
 
                     <fieldset class="mb-3">

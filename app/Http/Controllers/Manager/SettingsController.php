@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
 use App\Models\ExpenseCategory;
+use App\Models\RecurringExpense;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -64,7 +65,8 @@ class SettingsController extends Controller
     {
         abort_unless(auth()->user()->isMaster(), 403);
 
-        if ($category->is_default || $category->expenses()->withTrashed()->exists()) {
+        if ($category->is_default || $category->expenses()->withTrashed()->exists()
+            || RecurringExpense::withTrashed()->where('category_id', $category->id)->exists()) {
             return back()->with('error', __('Kategori bawaan atau yang sudah dipakai tidak bisa dihapus — nonaktifkan saja.'));
         }
         $category->delete();

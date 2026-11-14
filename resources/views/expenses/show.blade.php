@@ -17,6 +17,18 @@
     @endif
 
     <div class="row g-3">
+        @if ($expense->recurring_expense_id)
+            <div class="col-12"><x-ui.card :title="__('Rincian pengeluaran rutin')">
+                <p class="text-muted">{{ __('Dibuat otomatis untuk periode :month.', ['month' => $expense->recurring_period->translatedFormat('F Y')]) }}</p>
+                <dl class="pm-dl">
+                    <dt>{{ __('Nominal pokok') }}</dt><dd>@rupiah($expense->base_amount)</dd>
+                    @foreach ($expense->additions ?? [] as $addition)
+                        <dt>{{ $addition['label'] }}</dt><dd>@rupiah($addition['amount']) @if (!empty($addition['note']))<div class="fw-normal fs-sm" style="white-space:pre-line">{{ $addition['note'] }}</div>@endif</dd>
+                    @endforeach
+                    <dt>{{ __('Total pengeluaran') }}</dt><dd>@rupiah($expense->amount)</dd>
+                </dl>
+            </x-ui.card></div>
+        @endif
         <div class="col-lg-7"><x-ui.card :title="__('Foto nota')" :subtitle="$expense->receipts->count().' file'">
             @if ($expense->receipts->isEmpty())<p class="text-muted mb-0">{{ __('Tidak ada foto nota.') }}</p>@else @include('expenses._receipts', ['receipts' => $expense->receipts]) @endif
         </x-ui.card></div>

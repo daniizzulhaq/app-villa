@@ -14,6 +14,9 @@ Schedule::command('propertyme:sync-ical')->everyThirtyMinutes()->withoutOverlapp
 Schedule::command('propertyme:hostex-sync')->everyFiveMinutes()->withoutOverlapping(10)
     ->when(fn () => config('propertyme.channel_manager_provider') === 'hostex' && config('services.hostex.sync_enabled'));
 
+// Pengeluaran rutin yang sudah jatuh tempo, termasuk jadwal yang tertinggal.
+Schedule::command('propertyme:generate-recurring-expenses')->hourly()->withoutOverlapping(55);
+
 // Sesuaikan status lama menjadi Confirmed; status pembayaran tidak mengikuti tanggal.
 Schedule::command('propertyme:advance-bookings')->hourly();
 

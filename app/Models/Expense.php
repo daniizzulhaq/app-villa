@@ -14,11 +14,12 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 class Expense extends Model implements AuditableContract
 {
-    use SoftDeletes, Auditable;
+    use Auditable, SoftDeletes;
 
     protected $fillable = [
         'villa_id', 'category_id', 'expense_date', 'description', 'vendor', 'amount', 'payment_method',
         'notes', 'status', 'return_reason', 'created_by', 'checked_by', 'checked_at',
+        'recurring_expense_id', 'recurring_period', 'base_amount', 'additions',
     ];
 
     protected function casts(): array
@@ -26,6 +27,9 @@ class Expense extends Model implements AuditableContract
         return [
             'expense_date' => 'date',
             'amount' => 'decimal:2',
+            'base_amount' => 'decimal:2',
+            'recurring_period' => 'date',
+            'additions' => 'array',
             'status' => ExpenseStatus::class,
             'payment_method' => PaymentMethod::class,
             'checked_at' => 'datetime',

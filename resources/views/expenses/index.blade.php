@@ -3,6 +3,9 @@
     <x-ui.page-header icon="bi-receipt" :title="$user->isOwner() ? __('Pengeluaran & Nota') : __('Pengeluaran')"
                       :subtitle="$user->isOwner() ? __('Pengeluaran operasional yang sudah diperiksa Manager, lengkap dengan bukti nota.') : __('Semua pengeluaran operasional villa beserta status pemeriksaan nota.')">
         <x-slot:actions>
+            @if ($user->isManager())
+                <a href="{{ route('recurring-expenses.index') }}" class="btn btn-light"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> {{ __('Pengeluaran Rutin') }}</a>
+            @endif
             @unless ($user->isStaff())
                 <a href="{{ route('expenses.gallery', array_filter(['villa' => $filters['villa'] ?? null])) }}" class="btn btn-light"><i class="bi bi-images" aria-hidden="true"></i> {{ __('Galeri Nota') }}</a>
             @endunless
@@ -44,6 +47,7 @@
                         <tr>
                             <td data-label="{{ __('Tanggal') }}" class="text-nowrap">{{ $e->expense_date->translatedFormat('d M Y') }}</td>
                             <td class="stack-full"><a href="{{ route('expenses.show', $e) }}" class="cell-title text-decoration-none">{{ $e->description }}</a>
+                                @if ($e->recurring_expense_id)<span class="badge text-bg-light"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> {{ __('Otomatis') }}</span>@endif
                                 <div class="cell-sub">{{ __(':vendor · oleh :name', ['vendor' => $e->vendor ?: '—', 'name' => $e->creator?->name ?? '—']) }}</div></td>
                             <td data-label="{{ __('Villa') }}">{{ $e->villa?->name }}</td>
                             <td data-label="{{ __('Kategori') }}"><i class="bi {{ $e->category->icon }} text-muted" aria-hidden="true"></i> {{ __($e->category->name) }}</td>

@@ -20,6 +20,7 @@ use App\Http\Controllers\Manager\VillaController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PrivateFileController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RecurringExpenseController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Staff\ActivityController;
@@ -90,6 +91,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     |----------------------------------------------------------------------
     */
     Route::middleware('role:master|manager')->group(function () {
+        Route::resource('recurring-expenses', RecurringExpenseController::class)->except('show');
+        Route::get('/recurring-expenses/{recurring_expense}/additions', [RecurringExpenseController::class, 'additions'])->name('recurring-expenses.additions');
+        Route::post('/recurring-expenses/{recurring_expense}/additions', [RecurringExpenseController::class, 'storeAddition'])->name('recurring-expenses.additions.store');
+        Route::delete('/recurring-expenses/{recurring_expense}/additions/{addition}', [RecurringExpenseController::class, 'destroyAddition'])->name('recurring-expenses.additions.destroy');
         Route::patch('/villas/{villa}/status', [VillaController::class, 'toggleActive'])->name('villas.toggle');
         Route::patch('/villas/{villa}/ical/disable', [VillaController::class, 'disableIcal'])->name('villas.disable-ical');
         Route::resource('villas', VillaController::class);

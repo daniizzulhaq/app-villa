@@ -2,6 +2,10 @@
 
 namespace App\Support;
 
+use App\Enums\BookingStatus;
+use App\Enums\ExpenseStatus;
+use App\Models\Booking;
+use App\Models\Expense;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +31,7 @@ final class Navigation
                 ['group' => __('Keuangan'), 'items' => [
                     self::item(__('Pemasukan'), 'bi-box-arrow-in-down', 'incomes.index', 'incomes.*'),
                     self::item(__('Pengeluaran'), 'bi-receipt', 'expenses.index', 'expenses.*'),
+                    self::item(__('Pengeluaran Rutin'), 'bi-arrow-repeat', 'recurring-expenses.index', 'recurring-expenses.*'),
                     self::item(__('Pemeriksaan Nota'), 'bi-patch-check', 'reviews.index', 'reviews.*'),
                     self::item(__('Laporan'), 'bi-file-earmark-text', 'reports.index', 'reports.*'),
                     self::item(__('Grafik & Analisis'), 'bi-bar-chart-line', 'analytics.index', 'analytics.*'),
@@ -122,10 +127,10 @@ final class Navigation
         $cache = [];
         if ($user?->isManager()) {
             // Manager wilayah: hanya villa di wilayahnya
-            $cache['reviews.index'] = $user->restrictToVillas(\App\Models\Expense::query())->where('status', \App\Enums\ExpenseStatus::Pending->value)->count();
-            $cache['bookings.calendar'] = $user->restrictToVillas(\App\Models\Booking::query())->where('status', \App\Enums\BookingStatus::NeedsCompletion->value)->count();
+            $cache['reviews.index'] = $user->restrictToVillas(Expense::query())->where('status', ExpenseStatus::Pending->value)->count();
+            $cache['bookings.calendar'] = $user->restrictToVillas(Booking::query())->where('status', BookingStatus::NeedsCompletion->value)->count();
         } elseif ($user?->isStaff()) {
-            $cache['staff.activity'] = \App\Models\Expense::where('created_by', $user->id)->where('status', \App\Enums\ExpenseStatus::Returned->value)->count();
+            $cache['staff.activity'] = Expense::where('created_by', $user->id)->where('status', ExpenseStatus::Returned->value)->count();
         }
 
         return $cache;
